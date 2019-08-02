@@ -23,11 +23,14 @@ class ContextRNN(nn.Module):
 
     def forward(self, input_seqs, input_lengths, hidden=None):
         # Note: we run this all at once (over multiple batches of multiple sequences)
+        # print("input_seqs in size: ", input_seqs.size())
         embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long()) 
         embedded = embedded.view(input_seqs.size()+(embedded.size(-1),))
         embedded = torch.sum(embedded, 2).squeeze(2) 
         embedded = self.dropout_layer(embedded)
         hidden = self.get_state(input_seqs.size(1))
+        # print("input_seqs out size: ", input_seqs.size())
+        # print("embedded size: ", embedded.size())
         if input_lengths:
             embedded = nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=False)
         outputs, hidden = self.gru(embedded, hidden)
@@ -143,6 +146,7 @@ class LocalMemoryDecoder(nn.Module):
         
         # Start to generate word-by-word
         for t in range(max_target_length):
+            temp = self.C(decoder_input)
             embed_q = self.dropout_layer(self.C(decoder_input)) # b * e
             if len(embed_q.size()) == 1: embed_q = embed_q.unsqueeze(0)
             _, hidden = self.sketch_rnn(embed_q.unsqueeze(0), hidden)
