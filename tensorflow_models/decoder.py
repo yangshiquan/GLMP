@@ -28,7 +28,7 @@ class LocalMemoryDecoder(tf.keras.Model):
 
     def call(self, extKnow, story_size, story_lengths, copy_list, encode_hidden,
              target_batches, max_target_length, batch_size, use_teacher_forcing,
-             get_decoded_words, global_pointer):
+             get_decoded_words, global_pointer, training=True):
         all_decoder_outputs_vocab = tf.zeros([max_target_length, batch_size, self.num_vocab])  # max_target_length * batch_size * num_vocab.
         all_decoder_outputs_ptr = tf.zeros([max_target_length, batch_size, story_size[1]])  # max_target_length * batch_size * memory_size.
         # memory_mask_for_step = tf.ones([story_size[0], story_size[1]])  # batch_size * memory_size.
@@ -39,7 +39,8 @@ class LocalMemoryDecoder(tf.keras.Model):
         hidden = tf.expand_dims(self.relu(self.projector(encode_hidden)), 0)  # 1 * batch_size * embedding_dim.
 
         for t in range(max_target_length):
-            embed_q = self.dropout_layer(self.C(decoder_input))  # batch_size * embedding_dim.
+            if training:
+                embed_q = self.dropout_layer(self.C(decoder_input), training=training)  # batch_size * embedding_dim.
             if len(embed_q.get_shape()) == 1:
                 embed_q = tf.expand_dims(embed_q, 0)
             _, hidden = self.sketch_rnn(tf.expand_dims(embed_q, 0), hidden)  # 1 * batch_size * embedding_dim.
@@ -49,7 +50,7 @@ class LocalMemoryDecoder(tf.keras.Model):
             all_decoder_outputs_vocab[t] = p_vocab
             _, topvi = tf.math.top_k(p_vocab)  # topvi: batch_size * 1.
 
-            prob_soft, prob_logits = extKnow(query_vector, global_pointer)  # query_vector: batch_size * embedding_dim, global_pointer: batch_size * memory_size.
+            prob_soft, prob_logits = extKnow(query_vector, global_pointer, training=training)  # query_vector: batch_size * embedding_dim, global_pointer: batch_size * memory_size.
             all_decoder_outputs_ptr[t] = prob_logits  # need to check whether use softmax or not, prob_logits: batch_size * memory_size.
 
             if use_teacher_forcing:

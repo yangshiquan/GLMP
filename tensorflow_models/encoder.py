@@ -27,7 +27,8 @@ class ContextRNN(tf.keras.Model):
         embedded = tf.reshape(
             embedded, [input_seqs.get_shape()[0], input_seqs.get_shape()[1], input_seqs.get_shape()[2], embedded.get_shape()[-1]])  # embedded: batch_size * input_length * MEM_TOKEN_SIZE * embedding_dim.
         embedded = tf.math.reduce_sum(embedded, 2)  # embedded: batch_size * input_length * embedding_dim.
-        embedded = self.dropout_layer(embedded)
+        if training:
+            embedded = self.dropout_layer(embedded, training=training)
         hidden = self.initialize_hidden_state(input_seqs.get_shape()[0])
         outputs, hidden = self.gru(embedded,
                                   initial_state=hidden,

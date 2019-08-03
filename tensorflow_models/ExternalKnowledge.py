@@ -25,7 +25,7 @@ class ExternalKnowledge(tf.keras.Model):
             full_memory[bi, start:end, :] = full_memory[bi, start:end, :] + hiddens[bi, :conv_len[bi], :]
         return full_memory
 
-    def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs):
+    def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs, training=True):
         u = [hidden]  # different: hidden without squeeze(0), hidden: batch_size * embedding_size.
         story_size = story.get_shape()
         self.m_story = []
@@ -34,7 +34,8 @@ class ExternalKnowledge(tf.keras.Model):
         embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
         if not args['ablationH']:
             embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
-        embedding_A = self.dropout_layer(embedding_A)
+        if training:
+            embedding_A = self.dropout_layer(embedding_A, training=training)
 
         u_temp = tf.tile(tf.expand_dims(u[-1], 1), embedding_A.get_shape())  # u_temp: batch_size * memory_size * embedding_dim.
         prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)  # prob_logits: batch_size * memory_size
@@ -53,7 +54,7 @@ class ExternalKnowledge(tf.keras.Model):
         self.m_story.append(embedding_C)
         return self.sigmoid(prob_logits), u[-1]
 
-    def call(self, query_vector, global_pointer):
+    def call(self, query_vector, global_pointer, training=True):
         u = [query_vector]  # query_vector: batch_size * embedding_dim.
         embed_A = self.m_story[0]  # embed_A: batch_size * memory_size * embedding_dim.
         if not args['ablationG']:

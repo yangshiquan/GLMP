@@ -157,7 +157,7 @@ class GLMP(nn.Module):
             elm_temp = [ word_arr[0] for word_arr in elm ]
             self.copy_list.append(elm_temp) 
         
-        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse = self.decoder.forward(
+        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse = self.decoder(
             self.extKnow, 
             story.size(), 
             data['context_arr_lengths'],
