@@ -28,11 +28,11 @@ class GLMP(tf.keras.Model):
         self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
         self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
         self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout)
+        self.checkpoint = tf.train.Checkpoint(encoder=self.encoder,
+                                              extKnow=self.extKnow,
+                                              decoder=self.decoder)
         if path:
-            self.checkpoint_load = tf.train.Checkpoint(encoder=self.encoder,
-                                                       extKnow=self.extKnow,
-                                                       decoder=self.decoder)
-            self.checkpoint_load(path + '-1')  # path include: directory + prefix.
+            self.checkpoint.restore(path)  # path include: directory + prefix + id.
 
         self.encoder_optimizer = tf.keras.optimizers.Adam(lr)
         self.extKnow_optimizer = tf.keras.optimizers.Adam(lr)
@@ -40,9 +40,7 @@ class GLMP(tf.keras.Model):
         # TODO: lr scheduler.
 
         self.criterion_bce = tf.nn.sigmoid_cross_entropy_with_logits()  # need to check if this loss function actually equals pytorch criterion_bce.
-        self.checkpoint = tf.train.Checkpoint(encoder=self.encoder,
-                                              extKnow=self.extKnow,
-                                              decoder=self.decoder)
+
         self.reset()
 
     def print_loss(self):
@@ -62,7 +60,8 @@ class GLMP(tf.keras.Model):
         directory = 'save/GLMP-'+args["addName"]+name_data+str(self.task)+'HDD'+str(self.hidden_size)+'BSZ'+str(args['batch'])+'DR'+str(self.dropout)+'L'+layer_info+'lr'+str(self.lr)+str(dec_type)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        self.checkpoint.save(directory + '/model.ckpt')
+        checkpoint_prefix = directory + '/ckpt'
+        self.checkpoint.save(file_prefix=checkpoint_prefix)
 
     def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words, training):
         # build unknown mask for memory if training mode
