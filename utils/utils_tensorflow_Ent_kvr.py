@@ -192,6 +192,10 @@ def text_to_sequence(pairs, lang):
         conv_arr = preprocess(pair['conv_arr'], lang.word2index, trg=False)
         kb_arr = preprocess(pair['kb_arr'], lang.word2index, trg=False)
         sketch_response = preprocess(pair['sketch_response'], lang.word2index)
+        # additional plain information
+        context_arr_plain = pair['context_arr']
+        response_plain = pair['response']
+        kb_arr_plain = pair['kb_arr']
         sequence_data.append({
             'context_arr':context_arr,
             'response':response,
@@ -199,7 +203,10 @@ def text_to_sequence(pairs, lang):
             'selector_index':selector_index,
             'conv_arr':conv_arr,
             'kb_arr':kb_arr,
-            'sketch_response':sketch_response
+            'sketch_response':sketch_response,
+            'context_arr_plain':context_arr_plain,
+            'response_plain':response_plain,
+            'kb_arr_plain':kb_arr_plain
         })
     return sequence_data
 
@@ -263,13 +270,20 @@ def structure_transform(data):
     ptr_index, _ = padding(data_info['ptr_index'], False)
     conv_arr, conv_arr_lengths = padding(data_info['conv_arr'], True)
     sketch_response, _ = padding(data_info['sketch_response'], False)
-    kb_arr, kb_arr_length = padding(data_info['kb_arr'], True)
+    kb_arr, kb_arr_lengths = padding(data_info['kb_arr'], True)
 
     for key in data_info.keys():
         try:
             data_info_processed[key] = locals()[key]
         except:
             data_info_processed[key] = data_info[key]
+
+    # additional plain information
+    data_info_processed['context_arr_lengths'] = context_arr_lengths
+    data_info_processed['response_lengths'] = response_lengths
+    data_info_processed['conv_arr_lengths'] = conv_arr_lengths
+    data_info_processed['kb_arr_lengths'] = kb_arr_lengths
+
     return data_info_processed
 
 
@@ -285,7 +299,14 @@ def build_dataset(data_info, batch_size):
                                                   data_info['conv_arr'],
                                                   data_info['ptr_index'],
                                                   data_info['selector_index'],
-                                                  data_info['kb_arr'])).shuffle(len(data_info['context_arr']))
+                                                  data_info['kb_arr'],
+                                                  data_info['context_arr_plain'],
+                                                  data_info['response_plain'],
+                                                  data_info['kb_arr_plain'],
+                                                  data_info['context_arr_lengths'],
+                                                  data_info['response_lengths'],
+                                                  data_info['conv_arr_lengths'],
+                                                  data_info['kb_arr_lengths'])).shuffle(len(data_info['context_arr']))
     dataset = dataset.batch(batch_size, drop_remainder=False)
     return dataset
 
