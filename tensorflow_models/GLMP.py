@@ -8,6 +8,7 @@ import numpy as np
 from tensorflow.python.framework import ops
 import json
 from utils.measures import wer, moses_multi_bleu
+from utils.tensorflow_masked_cross_entropy import *
 
 
 class GLMP(tf.keras.Model):
@@ -126,9 +127,13 @@ class GLMP(tf.keras.Model):
                                                                                                               False,
                                                                                                               True)
             # TODO: loss calculation and backpropagation.
-            loss_g = 0.0
-            loss_v = 0.0
-            loss_l = 0.0
+            loss_g = self.criterion_bce(global_pointer, data['selector_index'])
+            loss_v = masked_cross_entropy(all_decoder_outputs_vocab,  # need to transpose ?
+                                          data['sketch_response'],
+                                          data['respose_lengths'])
+            loss_l = masked_cross_entropy(all_decoder_outputs_ptr,  # need to transpose ?
+                                          data['ptr_index'],
+                                          data['response_lengths'])
             loss = loss_g + loss_v + loss_l
 
         # compute gradients for encoder, decoder and external knowledge
