@@ -28,7 +28,8 @@ class GLMP(tf.keras.Model):
         self.softmax = tf.keras.layers.Softmax(0)
         self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
         self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
-        self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout)
+        self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang,
+                                          hidden_size, self.decoder_hop, dropout)
         self.checkpoint = tf.train.Checkpoint(encoder=self.encoder,
                                               extKnow=self.extKnow,
                                               decoder=self.decoder)
@@ -50,7 +51,8 @@ class GLMP(tf.keras.Model):
         print_loss_v = self.loss_v / self.print_every
         print_loss_l = self.loss_l / self.print_every
         self.print_every += 1
-        return 'L:{:.2f}, LE:{:.2f}, LG:{:.2f}, LP:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l)
+        return 'L:{:.2f}, LE:{:.2f}, LG:{:.2f}, LP:{:.2f}'.format(
+            print_loss_avg, print_loss_g, print_loss_v, print_loss_l)
 
     def reset(self):
         self.loss, self.print_every, self.loss_g, self.loss_v, self.loss_l = 0.0, 1.0, 0.0, 0.0, 0.0
@@ -58,18 +60,22 @@ class GLMP(tf.keras.Model):
     def save_model(self, dec_type):
         name_data = "KVR/" if self.task=='' else "BABI/"
         layer_info = str(self.n_layers)
-        directory = 'save/GLMP-'+args["addName"]+name_data+str(self.task)+'HDD'+str(self.hidden_size)+'BSZ'+str(args['batch'])+'DR'+str(self.dropout)+'L'+layer_info+'lr'+str(self.lr)+str(dec_type)
+        directory = 'save/GLMP-'+args["addName"]+name_data+str(self.task)+'HDD'+\
+                    str(self.hidden_size)+'BSZ'+str(args['batch'])+'DR'+str(self.dropout)+\
+                    'L'+layer_info+'lr'+str(self.lr)+str(dec_type)
         if not os.path.exists(directory):
             os.makedirs(directory)
         checkpoint_prefix = directory + '/ckpt'
         self.checkpoint.save(file_prefix=checkpoint_prefix)
 
-    def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words, training):
+    def encode_and_decode(self, data, max_target_length, use_teacher_forcing,
+                          get_decoded_words, training):
         # build unknown mask for memory if training mode
         if args['unk_mask'] and training:  # different: training flag need to be fed from outside explicitly.
             story_size = data['context_arr'].size()
             rand_mask = np.ones(story_size)
-            bi_mask = np.random.binomial([np.ones((story_size[0], story_size[1]))], 1 - self.dropout)[0]
+            bi_mask = np.random.binomial([np.ones((story_size[0], story_size[1]))],
+                                         1 - self.dropout)[0]
             rand_mask[:, :, 0] = rand_mask[:, :, 0] * bi_mask
             conv_rand_mask = np.ones(data['conv_arr'].size())
             for bi in range(story_size[0]):
@@ -115,7 +121,7 @@ class GLMP(tf.keras.Model):
 
     @tf.function
     def train_batch(self, data, clip, reset=0):
-        # TODO: model training process.
+        # model training process
         # no need to zero gradients of optimizers in tensorflow
         # encode and decode
         with tf.GradientTape() as tape:
@@ -126,12 +132,12 @@ class GLMP(tf.keras.Model):
                                                                                                               use_teacher_forcing,
                                                                                                               False,
                                                                                                               True)
-            # TODO: loss calculation and backpropagation.
+            # loss calculation and backpropagation
             loss_g = self.criterion_bce(global_pointer, data['selector_index'])
-            loss_v = masked_cross_entropy(all_decoder_outputs_vocab,  # need to transpose ?
+            loss_v = masked_cross_entropy(tf.transpose(all_decoder_outputs_vocab, [1, 0, 2]),  # need to transpose ?
                                           data['sketch_response'],
                                           data['respose_lengths'])
-            loss_l = masked_cross_entropy(all_decoder_outputs_ptr,  # need to transpose ?
+            loss_l = masked_cross_entropy(tf.transpose(all_decoder_outputs_ptr, [1, 0, 2]),  # need to transpose ?
                                           data['ptr_index'],
                                           data['response_lengths'])
             loss = loss_g + loss_v + loss_l

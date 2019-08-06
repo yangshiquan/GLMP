@@ -37,7 +37,7 @@ class ExternalKnowledge(tf.keras.Model):
         if training:
             embedding_A = self.dropout_layer(embedding_A, training=training)
 
-        u_temp = tf.tile(tf.expand_dims(u[-1], 1), embedding_A.get_shape())  # u_temp: batch_size * memory_size * embedding_dim.
+        u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embedding_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
         prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)  # prob_logits: batch_size * memory_size
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * memory_size
 
@@ -47,7 +47,7 @@ class ExternalKnowledge(tf.keras.Model):
         if not args['ablationH']:
             embedding_C = self.add_lm_embedding(embedding_C, kb_len, conv_len, dh_outputs)
 
-        prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), embedding_C.get_shape())  # prob_soft_temp: batch_size * memory_size * embedding_dim.
+        prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])  # prob_soft_temp: batch_size * memory_size * embedding_dim.
         u_k = u[-1] + tf.math.reduce_sum((embedding_C * prob_soft_temp), 1)
         u.append(u_k)
         self.m_story.append(embedding_A)
@@ -58,17 +58,17 @@ class ExternalKnowledge(tf.keras.Model):
         u = [query_vector]  # query_vector: batch_size * embedding_dim.
         embed_A = self.m_story[0]  # embed_A: batch_size * memory_size * embedding_dim.
         if not args['ablationG']:
-            embed_A = embed_A * tf.tile(tf.expand_dims(global_pointer, 2), embed_A.get_shape())
+            embed_A = embed_A * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_A.shape[2]])
 
-        u_temp = tf.tile(tf.expand_dims(u[-1], 1), embed_A.get_shape())  # u_temp: batch_size * memory_size * embedding_dim.
+        u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embed_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
         prob_logits = tf.math.reduce_sum((embed_A * u_temp), 2)  # prob_logits: batch_size * memory_size.
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * memory_size.
 
         embed_C = self.m_story[1]  # embed_C: batch_size * memory_size * embedding_dim.
         if not args['ablationG']:
-            embed_C = embed_C * tf.tile(tf.expand_dims(global_pointer, 2), embed_C.get_shape())
+            embed_C = embed_C * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_C.shape[2]])
 
-        prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), embed_C.get_shape())  # prob_soft_temp: batch_size * memory_size * embedding_dim.
+        prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embed_C.shape[2]])  # prob_soft_temp: batch_size * memory_size * embedding_dim.
         u_k = u[-1] + tf.math.reduct_sum((embed_C * prob_soft_temp), 1)  # u_k: batch_size * embedding_dim.
         u.append(u_k)
         return prob_soft, prob_logits
