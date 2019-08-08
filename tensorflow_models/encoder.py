@@ -1,4 +1,5 @@
 import tensorflow as tf
+import pdb
 
 
 class ContextRNN(tf.keras.Model):
@@ -20,7 +21,9 @@ class ContextRNN(tf.keras.Model):
         self.W = tf.keras.layers.Dense(hidden_size)  # different: bias should be explicitly assigned.
 
     def initialize_hidden_state(self, batch_size):
-        return tf.zeros((batch_size, self.hidden_size))
+        forward_hidden = tf.zeros((batch_size, self.hidden_size))
+        backward_hidden = tf.zeros((batch_size, self.hidden_size))
+        return [forward_hidden, backward_hidden]
 
     def call(self, input_seqs, input_lengths, hidden=None, training=True):
         embedded = self.embedding(tf.reshape(input_seqs, [input_seqs.get_shape()[0], -1]))  # different: pad token embedding not masked. input_seqs: batch_size * input_length * MEM_TOKEN_SIZE.
@@ -30,10 +33,10 @@ class ContextRNN(tf.keras.Model):
         if training:
             embedded = self.dropout_layer(embedded, training=training)
         hidden = self.initialize_hidden_state(input_seqs.get_shape()[0])
-        outputs, hidden = self.gru(embedded,
+        outputs, hidden_f, hidden_b = self.gru(embedded,
                                   initial_state=hidden,
-                                  training=training)  # different: padded token not mask in forward calculation, need a flag to indicate train or test if using dropout. No pack_padded_sequence and pad_packed_sequence.
-        hidden_hat = tf.concat([hidden[0], hidden[1]], 1)
+                                  training=training)  # need to check the meaning of outpus!!! not sure!!! different: padded token not mask in forward calculation, need a flag to indicate train or test if using dropout. No pack_padded_sequence and pad_packed_sequence.
+        hidden_hat = tf.concat([hidden_f, hidden_b], 1)
         hidden = self.W(hidden_hat)  # different: no unsqueeze(0).
         outputs = self.W(outputs)  # different: no need to transpose(0, 1) because the first dimension is already batch_size.
         return outputs, hidden

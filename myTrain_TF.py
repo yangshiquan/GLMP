@@ -1,6 +1,6 @@
 from tqdm import tqdm
 from utils.config import *
-from models.GLMP import *
+from tensorflow_models.GLMP import *
 
 
 early_stop = args['earlyStop']
@@ -21,8 +21,8 @@ else:
 # Configure models and load data
 # ===============================
 avg_best, cnt, acc = 0.0, 0, 0.0
-train, dev, test, testOOV, lang, max_response_len = prepare_data_seq((args['task'],
-                                                                      batch_size=int(args['batch'])))
+train, dev, test, testOOV, lang, max_response_len, train_length, dev_length, test_length, train_max_len, dev_max_len, test_max_len = prepare_data_seq(args['task'],
+                                                                      batch_size=int(args['batch']))
 
 # ===============================
 # Build model
@@ -41,12 +41,16 @@ model = GLMP(int(args['hidden']),
 # ================================
 for epoch in range(200):
     print("Epoch:{}".format(epoch))
-    pbar = tqdm(enumerate(train), total=len(train))
+    # pdb.set_trace()
+    pbar = tqdm(enumerate(train.take(-1)), total=(int(train_length/int(args['batch']))))
     for i, data in pbar:
-        model.train_batch(data, int(args['clip']), reset=(i==0))
+        tf.config.experimental_run_functions_eagerly(True)
+        model.train_batch(data, train_max_len, int(args['clip']), reset=(i==0))
+        tf.config.experimental_run_functions_eagerly(False)
         pbar.set_description(model.print_loss())
     if ((epoch+1) % int(args['evalp']) == 0):
-        acc = model.evaluate(dev, avg_best, early_stop)
+        len = dev_length / (int(args['batch']))
+        acc = model.evaluate(dev, dev_max_len, len, avg_best, early_stop)
 
         if (acc >= avg_best):
             avg_best = acc

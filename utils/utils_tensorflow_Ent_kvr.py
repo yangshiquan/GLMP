@@ -3,6 +3,7 @@ import ast
 import tensorflow as tf
 from utils.utils_general import *
 import numpy as np
+import pdb
 
 
 def read_langs(file_name, max_line=None):
@@ -43,7 +44,10 @@ def read_langs(file_name, max_line=None):
 
                     # Get local pointer position for each word in system response
                     ptr_index = []
+                    a = 0
+                    b = 0
                     for key in r.split():
+                        a += 1
                         index = [loc for loc, val in enumerate(context_arr) if (val[0] == key and key in ent_index)]
                         if (index):
                             index = max(index)
@@ -185,6 +189,7 @@ def text_to_sequence(pairs, lang):
     '''
     sequence_data = []
     for pair in pairs:
+        response_plain = []
         context_arr = preprocess(pair['context_arr'], lang.word2index, trg=False)
         response = preprocess(pair['response'], lang.word2index)
         ptr_index = tf.convert_to_tensor(pair['ptr_index'])
@@ -194,7 +199,7 @@ def text_to_sequence(pairs, lang):
         sketch_response = preprocess(pair['sketch_response'], lang.word2index)
         # additional plain information
         context_arr_plain = pair['context_arr']
-        response_plain = pair['response']
+        response_plain.append(pair['response'])
         kb_arr_plain = pair['kb_arr']
         sequence_data.append({
             'context_arr':context_arr,
@@ -204,9 +209,14 @@ def text_to_sequence(pairs, lang):
             'conv_arr':conv_arr,
             'kb_arr':kb_arr,
             'sketch_response':sketch_response,
-            'context_arr_plain':context_arr_plain,
-            'response_plain':response_plain,
-            'kb_arr_plain':kb_arr_plain
+            'context_arr_plain':list(context_arr_plain),
+            'response_plain':list(response_plain),
+            'kb_arr_plain':list(kb_arr_plain),
+            'ent_index':pair['ent_index'],
+            'ent_idx_cal':pair['ent_idx_cal'],
+            'ent_idx_nav':pair['ent_idx_nav'],
+            'ent_idx_wet':pair['ent_idx_wet'],
+            'ID':pair['ID']
         })
     return sequence_data
 
@@ -218,14 +228,15 @@ def padding(sequences, story_dim):
     :param story_dim:
     :return:
     '''
-    lengths = [len(seq) for seq in sequences]
-    max_len = 1 if max(lengths) == 0 else max(lengths)
+    lengths = [[len(seq)] for seq in sequences]
+    lengths_int = [len(seq) for seq in sequences]
+    max_len = 1 if max(lengths_int) == 0 else max(lengths_int)
     if (story_dim):
         # padded_seqs = torch.ones(len(sequences), max_len, MEM_TOKEN_SIZE).long()
         # padded_seqs = tf.ones([len(sequences), max_len, MEM_TOKEN_SIZE], dtype=tf.dtypes.int64)
         padded_seqs = np.ones([len(sequences), max_len, MEM_TOKEN_SIZE], dtype=np.dtype(np.int64))
         for i, seq in enumerate(sequences):
-            end = lengths[i]
+            end = lengths_int[i]
             if len(seq) != 0:
                 padded_seqs[i, :end, :] = seq[:end]
     else:
@@ -233,9 +244,9 @@ def padding(sequences, story_dim):
         # padded_seqs = tf.ones([len(sequences), max_len], dtype=tf.dtypes.int64)
         padded_seqs = np.ones([len(sequences), max_len], dtype=np.dtype(np.int64))
         for i, seq in enumerate(sequences):
-            end = lengths[i]
+            end = lengths_int[i]
             padded_seqs[i, :end] = seq[:end]
-    return tf.convert_to_tensor(padded_seqs), lengths
+    return padded_seqs, lengths
 
 
 def padding_index(sequences):
@@ -244,14 +255,47 @@ def padding_index(sequences):
     :param sequences:
     :return:
     '''
-    lengths = [len(seq) for seq in sequences]
+    lengths = [[len(seq)] for seq in sequences]
+    lengths_int = [len(seq) for seq in sequences]
     # padded_seqs = torch.zeros(len(sequences), max(lengths)).float()
     # padded_seqs = tf.zeros([len(sequences), max(lengths)], dtype=tf.dtypes.float32)
-    padded_seqs = np.zeros([len(sequences), max(lengths)], dtype=np.dtype(np.float))
+    padded_seqs = np.zeros([len(sequences), max(lengths_int)], dtype=np.dtype(np.float))
     for i, seq in enumerate(sequences):
-        end = lengths[i]
+        end = lengths_int[i]
         padded_seqs[i, :end] = seq[:end]
-    return tf.convert_to_tensor(padded_seqs), lengths
+    return padded_seqs, lengths
+
+
+def padding_text(sequences):
+    '''
+    Pad plain information
+    :param sequences:
+    :return:
+    '''
+    lengths = [[len(seq)] for seq in sequences]
+    lengths_int = [len(seq) for seq in sequences]
+    new_sequences = []
+    for i, seq in enumerate(sequences):
+        length = lengths_int[i]
+        seq = seq + [['PAD', 'PAD', 'PAD', 'PAD', 'PAD', 'PAD']] * (max(lengths_int) - length)
+        new_sequences.append(seq)
+    return new_sequences, lengths
+
+
+def padding_ent_index(sequences):
+    '''
+    Pad ent_index information.
+    :param sequences:
+    :return:
+    '''
+    lengths = [[len(seq)] for seq in sequences]
+    lengths_int = [len(seq) for seq in sequences]
+    new_sequences = []
+    for i, seq in enumerate(sequences):
+        length = lengths_int[i]
+        seq = seq + ['PAD'] * (max(lengths_int) - length)
+        new_sequences.append(seq)
+    return new_sequences, lengths
 
 
 def structure_transform(data):
@@ -269,8 +313,15 @@ def structure_transform(data):
     selector_index, _ = padding_index(data_info['selector_index'])
     ptr_index, _ = padding(data_info['ptr_index'], False)
     conv_arr, conv_arr_lengths = padding(data_info['conv_arr'], True)
-    sketch_response, _ = padding(data_info['sketch_response'], False)
+    sketch_response, sketech_response_lengths = padding(data_info['sketch_response'], False)
     kb_arr, kb_arr_lengths = padding(data_info['kb_arr'], True)
+    context_arr_plain, context_arr_plain_lengths = padding_text(data_info['context_arr_plain'])
+    kb_arr_plain, kb_arr_plain_lengths = padding_text(data_info['kb_arr_plain'])
+    ent_index, ent_index_lengths = padding_ent_index(data_info['ent_index'])
+    ent_idx_cal, ent_idx_cal_lengths = padding_ent_index(data_info['ent_idx_cal'])
+    ent_idx_nav, ent_idx_nav_lengths = padding_ent_index(data_info['ent_idx_nav'])
+    ent_idx_wet, ent_idx_wet_lengths = padding_ent_index(data_info['ent_idx_wet'])
+
 
     for key in data_info.keys():
         try:
@@ -279,12 +330,22 @@ def structure_transform(data):
             data_info_processed[key] = data_info[key]
 
     # additional plain information
-    data_info_processed['context_arr_lengths'] = context_arr_lengths
-    data_info_processed['response_lengths'] = response_lengths
-    data_info_processed['conv_arr_lengths'] = conv_arr_lengths
-    data_info_processed['kb_arr_lengths'] = kb_arr_lengths
+    # print(np.array(context_arr_lengths).shape)
+    # print(np.array(response_lengths).shape)
+    # print(np.array(conv_arr_lengths).shape)
+    # print(np.array(kb_arr_lengths).shape)
+    # data_info_processed['context_arr_plain'] = np.array(data_info_processed['context_arr_plain'])
+    # print(data_info_processed['context_arr_plain'].shape)
+    data_info_processed['context_arr_lengths'] = np.array(context_arr_lengths)
+    data_info_processed['response_lengths'] = np.array(response_lengths)
+    data_info_processed['conv_arr_lengths'] = np.array(conv_arr_lengths)
+    data_info_processed['kb_arr_lengths'] = np.array(kb_arr_lengths)
+    data_info_processed['ent_index_lengths'] = np.array(ent_index_lengths)
+    data_info_processed['ent_idx_cal_lengths'] = np.array(ent_idx_cal_lengths)
+    data_info_processed['ent_idx_nav_lengths'] = np.array(ent_idx_nav_lengths)
+    data_info_processed['ent_idx_wet_lengths'] = np.array(ent_idx_wet_lengths)
 
-    return data_info_processed
+    return data_info_processed, max(sketech_response_lengths)[0]
 
 
 def build_dataset(data_info, batch_size):
@@ -306,8 +367,18 @@ def build_dataset(data_info, batch_size):
                                                   data_info['context_arr_lengths'],
                                                   data_info['response_lengths'],
                                                   data_info['conv_arr_lengths'],
-                                                  data_info['kb_arr_lengths'])).shuffle(len(data_info['context_arr']))
-    dataset = dataset.batch(batch_size, drop_remainder=False)
+                                                  data_info['kb_arr_lengths'],
+                                                  data_info['ent_index'],
+                                                  data_info['ent_index_lengths'],
+                                                  data_info['ent_idx_cal'],
+                                                  data_info['ent_idx_nav'],
+                                                  data_info['ent_idx_wet'],
+                                                  data_info['ent_idx_cal_lengths'],
+                                                  data_info['ent_idx_nav_lengths'],
+                                                  data_info['ent_idx_wet_lengths'],
+                                                  data_info['ID']
+                                                  )).shuffle(len(data_info['context_arr']))
+    dataset = dataset.batch(batch_size, drop_remainder=True)
     return dataset
 
 
@@ -330,9 +401,9 @@ def prepare_data_seq(task, batch_size=100):
     test_seq = text_to_sequence(pair_test, lang)
 
     # extract information from seqs
-    train_info = structure_transform(train_seq)
-    dev_info = structure_transform(dev_seq)
-    test_info = structure_transform(test_seq)
+    train_info, train_max_resp_len = structure_transform(train_seq)
+    dev_info, dev_max_resp_len = structure_transform(dev_seq)
+    test_info, test_max_resp_len = structure_transform(test_seq)
 
     # build dataset
     train_samples = build_dataset(train_info, batch_size)
@@ -346,4 +417,4 @@ def prepare_data_seq(task, batch_size=100):
     print("Max. length of system response: %s " % max_resp_len)
     print("USE_CUDA={}".format(USE_CUDA))
 
-    return train_samples, dev_samples, test_samples, [], lang, max_resp_len
+    return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test), train_max_resp_len, dev_max_resp_len, test_max_resp_len

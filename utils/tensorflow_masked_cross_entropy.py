@@ -1,4 +1,5 @@
 import tensorflow as tf
+import pdb
 
 
 def sequence_mask(sequence_length, max_len=None):
@@ -46,16 +47,17 @@ def masked_cross_entropy(logits, target, length):
     Returns:
         loss: An average loss value for single timestep masked by the length.
     '''
+    # pdb.set_trace()
     logits_flat = tf.reshape(logits, [-1, logits.get_shape()[-1]])  # logits: batch_size * max_len * num_classes, logits_flat: (batch_size * max_len) * num_classes.
     log_probs_flat = tf.nn.log_softmax(logits_flat)  # log_probs_flat: (batch_size * max_len) * num_classes.
     target_flat = tf.reshape(target, [-1, 1])  # target_flat: (batch_size * max_len) * 1.
     losses_flat = -tf.gather_nd(log_probs_flat, generate_indices(target_flat))  # loss_flat: (batch_size * max_len) * 1.
     losses = tf.reshape(losses_flat, target.shape)  # losses: batch_size * max_len.
     mask = sequence_mask(sequence_length=length, max_len=target.shape[1])
-    print(losses)
-    print(mask)
+    # print(losses)
+    # print(mask)
     losses = losses * tf.cast(mask, tf.float32)
-    print(losses)
+    # print(losses)
     loss = tf.reduce_sum(losses) / tf.reduce_sum(tf.cast(length, tf.float32))
     return loss
 
