@@ -16,6 +16,8 @@ elif args['dataset'] == 'babi':
 else:
     print("[Error] You need to provide the dataset information.")
 
+print("Is there a GPU available: ", tf.test.is_gpu_available())
+
 
 # ===============================
 # Configure models and load data
@@ -49,7 +51,7 @@ for epoch in range(200):
         tf.config.experimental_run_functions_eagerly(False)
         pbar.set_description(model.print_loss())
     if ((epoch+1) % int(args['evalp']) == 0):
-        len = dev_length / (int(args['batch']))
+        len = int(dev_length / (int(args['batch'])))
         acc = model.evaluate(dev, dev_max_len, len, avg_best, early_stop)
 
         if (acc >= avg_best):
