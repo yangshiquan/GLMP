@@ -3,7 +3,7 @@ import numpy as np
 from utils.config import *
 
 
-class Dataset(tf.keras.utils.Sequence):
+class Dataset:
     def __init__(self, data_info, batch_size, shuffle=True):
         self.batch_size = batch_size
         self.data_info = {}
@@ -16,14 +16,23 @@ class Dataset(tf.keras.utils.Sequence):
         self.shuffle = shuffle
         self.on_epoch_end()
 
-    def __len__(self):
+    def len(self):
         return int(np.floor(self.data_size) / self.batch_size)
 
-    def __getitem__(self, index):
+    def get_batch(self, index):
         shuffled_indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
         batch_data = self.data_generation(shuffled_indexes)
         padded_data = self.batch_padding(batch_data)
         return padded_data
+
+    def load_batches(self, drop_last=True):
+        # TODO: drop last or not.
+        batches = []
+        if drop_last:
+            max_len = self.len()
+            for index in range(max_len):
+                batches.append(self.get_batch(index))
+        return batches
 
     def padding(self, sequences, story_dim):
         '''
