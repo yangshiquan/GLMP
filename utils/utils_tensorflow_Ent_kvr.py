@@ -3,6 +3,7 @@ import ast
 import tensorflow as tf
 from utils.utils_general import *
 import numpy as np
+from utils.tensorflow_dataset import *
 import pdb
 
 
@@ -400,15 +401,21 @@ def prepare_data_seq(task, batch_size=100):
     dev_seq = text_to_sequence(pair_dev, lang)
     test_seq = text_to_sequence(pair_test, lang)
 
-    # extract information from seqs
-    train_info, train_max_resp_len = structure_transform(train_seq)
-    dev_info, dev_max_resp_len = structure_transform(dev_seq)
-    test_info, test_max_resp_len = structure_transform(test_seq)
+    # structure transform, shuffle, batch, padding
+    train_samples = Dataset(train_seq, batch_size=int(args['batch']), shuffle=True)
+    train_samples_batch = train_samples.__getitem__(0)
+    dev_samples = Dataset(dev_seq, batch_size=int(args['batch']), shuffle=False)
+    test_samples = Dataset(test_seq, batch_size=int(args['batch']), shuffle=False)
 
-    # build dataset
-    train_samples = build_dataset(train_info, batch_size)
-    dev_samples = build_dataset(dev_info, batch_size)
-    test_samples = build_dataset(test_info, batch_size)
+    # # extract information from seqs
+    # train_info, train_max_resp_len = structure_transform(train_seq)
+    # dev_info, dev_max_resp_len = structure_transform(dev_seq)
+    # test_info, test_max_resp_len = structure_transform(test_seq)
+    #
+    # # build dataset
+    # train_samples = build_dataset(train_info, batch_size)
+    # dev_samples = build_dataset(dev_info, batch_size)
+    # test_samples = build_dataset(test_info, batch_size)
 
     print("Read %s sentence pairs train" % len(pair_train))
     print("Read %s sentence pairs dev" % len(pair_dev))
@@ -417,4 +424,5 @@ def prepare_data_seq(task, batch_size=100):
     print("Max. length of system response: %s " % max_resp_len)
     print("USE_CUDA={}".format(USE_CUDA))
 
-    return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test), train_max_resp_len, dev_max_resp_len, test_max_resp_len
+    # return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test), train_max_resp_len, dev_max_resp_len, test_max_resp_len
+    return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test)
