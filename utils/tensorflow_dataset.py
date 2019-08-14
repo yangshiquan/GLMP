@@ -104,7 +104,7 @@ class Dataset:
 
         data_info['context_arr_lengths'] = context_arr_lengths
         data_info['response_lengths'] = response_lengths
-        data_info['conv_arr_lengths'] = context_arr_lengths
+        data_info['conv_arr_lengths'] = conv_arr_lengths
         data_info['kb_arr_lengths'] = kb_arr_lengths
 
         return data_info

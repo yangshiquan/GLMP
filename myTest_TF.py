@@ -17,6 +17,7 @@ decoder = directory[1].split('-')[0]
 BSZ =  int(directory[2].split('BSZ')[1].split('DR')[0])
 DS = 'kvr' if 'kvr' in directory[1].split('-')[1].lower() else 'babi'
 
+early_stop = args['earlyStop']
 if DS=='kvr':
     from utils.utils_tensorflow_Ent_kvr import *
 elif DS=='babi':
@@ -24,7 +25,7 @@ elif DS=='babi':
 else:
     print("You need to provide the --dataset information")
 
-train, dev, test, testOOV, lang, max_resp_len, train_length, dev_length, test_length, train_max_len, dev_max_len, test_max_len = prepare_data_seq(task, batch_size=BSZ)
+train, dev, test, testOOV, lang, max_resp_len = prepare_data_seq(task, batch_size=BSZ)
 
 model = GLMP(int(HDD),
 			 lang,
@@ -35,7 +36,7 @@ model = GLMP(int(HDD),
 			 n_layers=int(L),
 			 dropout=0.0)
 
-len = int(test_length / int(BSZ))
-acc_test = model.evaluate(test, test_max_len, len, 1e7)
+# len = int(test_length / int(BSZ))
+acc_test = model.evaluate(test, 1e7)
 if testOOV!=[]:
-	acc_oov_test = model.evaluate(testOOV, 1e7)
+    acc_oov_test = model.evaluate(testOOV, 1e7)

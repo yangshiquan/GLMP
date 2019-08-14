@@ -22,26 +22,26 @@ class ExternalKnowledge(tf.keras.Model):
 
     def add_lm_embedding(self, full_memory, kb_len, conv_len, hiddens):
         output_list = []
-        # pdb.set_trace()
         for bi in range(full_memory.shape[0]):
             stack_list = []
-            kb_aligns = tf.zeros([kb_len[bi].numpy(), full_memory.shape[2]])
+            kb_aligns = tf.zeros([kb_len[bi], full_memory.shape[2]])
             null_aligns = tf.zeros([1, full_memory.shape[2]])
             # print('kb_len:', kb_len[bi].numpy())
-            if kb_len[bi].numpy() != 0:
+            if kb_len[bi] != 0:
                 kb_aligns_slices = tf.split(kb_aligns, num_or_size_splits=kb_aligns.shape[0], axis=0)
                 for tensor in kb_aligns_slices:
                     stack_list.append(tensor)
             # pdb.set_trace()
-            hiddens_slices = tf.split(hiddens[bi], num_or_size_splits=hiddens[bi].shape[0], axis=0)
+            hiddens_slices = tf.split(hiddens[bi, :conv_len[bi], :], num_or_size_splits=conv_len[bi], axis=0)
             # print('hiddens len:', hiddens[bi].shape[0])
             for tensor in hiddens_slices:
                 stack_list.append(tensor)
             # pdb.set_trace()
             stack_list.append(null_aligns)
-            pad_len = full_memory.shape[1] - kb_len[bi] - hiddens[bi].shape[0] - 1
-            if pad_len.numpy()[0] != 0:
-                pad_aligns = tf.zeros([pad_len.numpy()[0], full_memory.shape[2]])
+            pad_len = full_memory.shape[1] - kb_len[bi] - conv_len[bi] - 1
+            # pdb.set_trace()
+            if pad_len != 0:
+                pad_aligns = tf.zeros([pad_len, full_memory.shape[2]])
                 pad_aligns_slice = tf.split(pad_aligns, num_or_size_splits=pad_aligns.shape[0], axis=0)
                 for tensor in pad_aligns_slice:
                     stack_list.append(tensor)
@@ -55,7 +55,7 @@ class ExternalKnowledge(tf.keras.Model):
 
     def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs, training=True):
         u = [hidden]  # different: hidden without squeeze(0), hidden: batch_size * embedding_size.
-        story_size = story.get_shape()
+        story_size = story.shape
         self.m_story = []
         embedding_A = self.C_1(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])  # embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.

@@ -72,52 +72,54 @@ class GLMP(tf.keras.Model):
                           get_decoded_words, training):
         # build unknown mask for memory if training mode
         if args['unk_mask'] and training:  # different: training flag need to be fed from outside explicitly.
-            story_size = data[0].shape  # data[0]: context_arr.
+            story_size = data['context_arr'].shape  # data[0]: context_arr.
             rand_mask = np.ones(story_size)
             bi_mask = np.random.binomial([np.ones((story_size[0], story_size[1]))],
                                          1 - self.dropout)[0]
             rand_mask[:, :, 0] = rand_mask[:, :, 0] * bi_mask
-            conv_rand_mask = np.ones(data[3].shape)  # data[3]: conv_arr.
+            conv_rand_mask = np.ones(data['conv_arr'].shape)  # data[3]: conv_arr.
             for bi in range(story_size[0]):
-                start, end = data[13][bi], data[13][bi] + data[12][bi]  # data[13]: kb_arr_lengths, data[12]: conv_arr_lengths.
+                start, end = data['kb_arr_lengths'][bi], data['kb_arr_lengths'][bi] + data['conv_arr_lengths'][bi]  # data[13]: kb_arr_lengths, data[12]: conv_arr_lengths.
                 # conv_rand_mask[:end.numpy()[0]-start.numpy()[0], bi, :] = rand_mask[bi, start.numpy()[0]:end.numpy()[0], :]  # necessary to explictly move data to cuda ?
-                conv_rand_mask[bi, :end.numpy()[0]-start.numpy()[0], :] = rand_mask[bi, start.numpy()[0]:end.numpy()[0], :]  # story_size dimension order is different from pytorch, so the slice index is different from pytorch one. necessary to explictly move data to cuda ?
-            conv_story = data[3] * conv_rand_mask  # data[3]: conv_arr.
-            story = data[0] * rand_mask  # data[0]: context_arr.
+                conv_rand_mask[bi, :end-start, :] = rand_mask[bi, start:end, :]  # story_size dimension order is different from pytorch, so the slice index is different from pytorch one. necessary to explictly move data to cuda ?
+            conv_story = data['conv_arr'] * conv_rand_mask  # data[3]: conv_arr.
+            story = data['context_arr'] * rand_mask  # data[0]: context_arr.
         else:
-            story, conv_story = data[0], data[3]  # data[0]: context_arr, data[3]: conv_arr.
+            story, conv_story = data['context_arr'], data['conv_arr']  # data[0]: context_arr, data[3]: conv_arr.
 
         # encode dialogue history and KB to vectors
         # TODO: need to check the shape and meaning of each tensor.
-        dh_outputs, dh_hidden = self.encoder(conv_story, data[12], training=training)  # data[12]: conv_arr_lengths.
+        dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'], training=training)  # data[12]: conv_arr_lengths.
         global_pointer, kb_readout = self.extKnow.load_memory(story,
-                                                              data[13],  # data[13]: kb_arr_lengths.
-                                                              data[12],  # data[12]: conv_arr_lengths.
+                                                              data['kb_arr_lengths'],  # data[13]: kb_arr_lengths.
+                                                              data['conv_arr_lengths'],  # data[12]: conv_arr_lengths.
                                                               dh_hidden,
                                                               dh_outputs,
                                                               training=training)
         encoded_hidden = tf.concat([dh_hidden, kb_readout], 1)
 
         # get the words that can be copy from the memory
-        batch_size = len(data[10])  # data[10]: context_arr_lengths.
+        batch_size = len(data['context_arr_lengths'])  # data[10]: context_arr_lengths.
         self.copy_list = []
-        for elm in data[7]:  # data[7]: context_arr_plain.
+        # pdb.set_trace()
+        for elm in data['context_arr_plain']:  # data[7]: context_arr_plain.
             # elm_temp = [word_arr[0] for word_arr in elm]
             elm_temp = []
             for word_arr in elm:
-                elm_temp.append(word_arr[0].numpy().decode())
+                elm_temp.append(word_arr[0])
                 # if word_arr[0].numpy().decode() != 'PAD':
                 #     elm_temp.append(word_arr[0].numpy().decode())
                 # else:
                 #     self.copy_list.append(elm_temp)
                 #     break
             self.copy_list.append(elm_temp)
+        # pdb.set_trace()
         outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse = self.decoder(self.extKnow,
                                                                                 story.shape,
-                                                                                data[10],  # data[10]: context_arr_lengths.
+                                                                                data['context_arr_lengths'],  # data[10]: context_arr_lengths.
                                                                                 self.copy_list,
                                                                                 encoded_hidden,
-                                                                                data[2],  # data[2]: sketch_response.
+                                                                                data['sketch_response'],  # data[2]: sketch_response.
                                                                                 max_target_length,
                                                                                 batch_size,
                                                                                 use_teacher_forcing,
@@ -128,29 +130,30 @@ class GLMP(tf.keras.Model):
         return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer
 
     @tf.function
-    def train_batch(self, data, train_max_len_global, clip, reset=0):
+    def train_batch(self, data, clip, reset=0):
         # model training process
         # no need to zero gradients of optimizers in tensorflow
         # encode and decode
         with tf.GradientTape(persistent=True) as tape:
             # pdb.set_trace()
             use_teacher_forcing = random.random() < args['teacher_forcing_ratio']
-            # max_target_length = max(data[11])  # data[11]: response_lengths.
-            max_target_length = train_max_len_global
+            max_target_length = max(data['response_lengths'])  # data[11]: response_lengths.
+            # max_target_length = train_max_len_global
             all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer = self.encode_and_decode(data,
                                                                                                               max_target_length,
                                                                                                               use_teacher_forcing,
                                                                                                               False,
                                                                                                               True)
             # loss calculation and backpropagation
-            loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data[5])  # data[5]: selector_index.
+            # pdb.set_trace()
+            loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data['selector_index'])  # data[5]: selector_index.
             loss_g = tf.cast(tf.reduce_sum(loss_g_mat) / (loss_g_mat.shape[0] * loss_g_mat.shape[1]), dtype=tf.float32)
             loss_v = masked_cross_entropy(tf.transpose(all_decoder_outputs_vocab, [1, 0, 2]),  # need to transpose ?
-                                          data[2],
-                                          tf.cast(tf.squeeze(data[11], 1), dtype=tf.int32))  # data[2]: skectch_response, data[11]: response_lengths.
+                                          data['sketch_response'],
+                                          tf.cast(data['response_lengths'], dtype=tf.int32))  # data[2]: skectch_response, data[11]: response_lengths.
             loss_l = masked_cross_entropy(tf.transpose(all_decoder_outputs_ptr, [1, 0, 2]),  # need to transpose ?
-                                          data[4],
-                                          tf.cast(tf.squeeze(data[11], 1), dtype=tf.int32))  # data[4]: ptr_index, data[11]: response_lengths.
+                                          data['ptr_index'],
+                                          tf.cast(data['response_lengths'], dtype=tf.int32))  # data[4]: ptr_index, data[11]: response_lengths.
             loss = loss_g + loss_v + loss_l
 
         # compute gradients for encoder, decoder and external knowledge
@@ -179,7 +182,7 @@ class GLMP(tf.keras.Model):
         self.loss_v += loss_v.numpy()
         self.loss_l += loss_l.numpy()
 
-    def evaluate(self, dev, dev_max_len_global, length, matric_best, early_stop=None):
+    def evaluate(self, dev, matric_best, early_stop=None):
         print('STARTING EVALUATION:')
 
         ref, hyp = [], []
@@ -187,7 +190,7 @@ class GLMP(tf.keras.Model):
         dialog_acc_dict = {}
         F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred = 0, 0, 0, 0
         F1_count, F1_cal_count, F1_nav_count, F1_wet_count = 0, 0, 0, 0
-        pbar = tqdm(enumerate(dev.take(-1)), total=(length))
+        pbar = tqdm(enumerate(dev), total=(len(dev)))
         new_precision, new_recall, new_f1_score = 0, 0, 0
 
         if args['dataset'] == 'kvr':
@@ -201,14 +204,13 @@ class GLMP(tf.keras.Model):
                         for item in global_entity['poi']:
                             global_entity_list += [item[k].lower().replace(' ', '_') for k in item.keys()]
                 global_entity_list = list(set(global_entity_list))
-
         for j, data_dev in pbar:
             # Encode and Decode
             # pdb.set_trace()
-            # max_target_length = max(data_dev[11])  # data[11]: response_lengths.
-            max_target_length = dev_max_len_global
+            # max_target_length = max(data_dev['response_lengths'])  # data[11]: response_lengths.
+            # max_target_length = dev_max_len_global
             _, _, decoded_fine, decoded_coarse, global_pointer = self.encode_and_decode(data_dev,
-                                                                                        max_target_length,
+                                                                                        self.max_resp_len,
                                                                                         False,
                                                                                         True,
                                                                                         False)
@@ -229,31 +231,32 @@ class GLMP(tf.keras.Model):
                         st_c += e + ' '
                 pred_sent = st.lstrip().rstrip()
                 pred_sent_coarse = st_c.lstrip().rstrip()
-                gold_sent = data_dev[8][bi][0].numpy().decode().lstrip().rstrip()  # data[8]: response_plain.
+                # pdb.set_trace()
+                gold_sent = data_dev['response_plain'][bi][0].lstrip().rstrip()  # data[8]: response_plain.
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
 
                 if args['dataset'] == 'kvr':
                     # compute F1 SCORE
-                    single_f1, count = self.compute_prf(data_dev[14][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev[9][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.
+                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.9  # data[14]: ent_index, data[9]: kb_arr_plain.
                     F1_pred += single_f1
                     F1_count += count
-                    single_f1, count = self.compute_prf(data_dev[16][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev[9][bi])  # data[16]: ent_idx_cal, data[9]: kb_arr_plain.
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_cal'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[16]: ent_idx_cal, data[9]: kb_arr_plain.
                     F1_cal_pred += single_f1
                     F1_cal_count += count
-                    single_f1, count = self.compute_prf(data_dev[17][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev[9][bi])  # data[17]: ent_idx_nav, data[9]: kb_arr_plain.
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_nav'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[17]: ent_idx_nav, data[9]: kb_arr_plain.
                     F1_nav_pred += single_f1
                     F1_nav_count += count
-                    single_f1, count = self.compute_prf(data_dev[18][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev[9][bi])  # data[18]: ent_idx_wet, data[9]: kb_arr_plain.
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_wet'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[18]: ent_idx_wet, data[9]: kb_arr_plain.
                     F1_wet_pred += single_f1
                     F1_wet_count += count
                 else:
                     # compute Dialogue Accuracy Score
-                    current_id = data_dev[22][bi]
+                    current_id = data_dev['ID'][bi]
                     if current_id not in dialog_acc_dict.keys():
                         dialog_acc_dict[current_id] = []
                     if gold_sent == pred_sent:
@@ -269,6 +272,7 @@ class GLMP(tf.keras.Model):
                 if args['genSample']:
                     self.print_examples(bi, data_dev, pred_sent, pred_sent_coarse, gold_sent)
 
+        # pdb.set_trace()
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
         acc_score = acc / float(total)
         print("ACC SCORE:\t" + str(acc_score))
@@ -304,19 +308,19 @@ class GLMP(tf.keras.Model):
             return acc_score
 
     def compute_prf(self, gold, pred, global_entity_list, kb_plain):
-        local_kb_word = [k[0].numpy().decode() for k in kb_plain]
-        gold_decode = [ent.decode() for ent in gold.numpy()]
+        local_kb_word = [k[0] for k in kb_plain]
+        # gold_decode = [ent.decode() for ent in gold.numpy()]
         TP, FP, FN = 0, 0, 0
-        if len(gold_decode) != 0:
+        if len(gold) != 0:
             count = 1
-            for g in gold_decode:
+            for g in gold:
                 if g in pred:
                     TP += 1
                 else:
                     FN += 1
             for p in set(pred):
                 if p in global_entity_list or p in local_kb_word:
-                    if p not in gold_decode:
+                    if p not in gold:
                         FP += 1
             precision = TP / float(TP + FP) if (TP + FP) != 0 else 0
             recall = TP / float(TP + FN) if (TP + FN) != 0 else 0

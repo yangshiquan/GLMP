@@ -23,7 +23,7 @@ print("Is there a GPU available: ", tf.test.is_gpu_available())
 # Configure models and load data
 # ===============================
 avg_best, cnt, acc = 0.0, 0, 0.0
-train, dev, test, testOOV, lang, max_response_len, train_length, dev_length, test_length, train_max_len, dev_max_len, test_max_len = prepare_data_seq(args['task'],
+train, dev, test, testOOV, lang, max_response_len = prepare_data_seq(args['task'],
                                                                       batch_size=int(args['batch']))
 
 # ===============================
@@ -44,15 +44,15 @@ model = GLMP(int(args['hidden']),
 for epoch in range(200):
     print("Epoch:{}".format(epoch))
     # pdb.set_trace()
-    pbar = tqdm(enumerate(train.take(-1)), total=(int(train_length/int(args['batch']))))
+    pbar = tqdm(enumerate(train), total=(len(train)))
     for i, data in pbar:
         tf.config.experimental_run_functions_eagerly(True)
-        model.train_batch(data, train_max_len, int(args['clip']), reset=(i==0))
+        model.train_batch(data, int(args['clip']), reset=(i==0))
         tf.config.experimental_run_functions_eagerly(False)
         pbar.set_description(model.print_loss())
     if ((epoch+1) % int(args['evalp']) == 0):
-        len = int(dev_length / (int(args['batch'])))
-        acc = model.evaluate(dev, dev_max_len, len, avg_best, early_stop)
+        # len = int(dev_length / (int(args['batch'])))
+        acc = model.evaluate(dev, avg_best, early_stop)
 
         if (acc >= avg_best):
             avg_best = acc

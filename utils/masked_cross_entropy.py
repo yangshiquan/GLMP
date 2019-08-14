@@ -3,6 +3,7 @@ from torch.nn import functional
 from torch.autograd import Variable
 from utils.config import *
 import torch.nn as nn
+# USE_CUDA = False
 
 def sequence_mask(sequence_length, max_len=None):
     if max_len is None:
@@ -55,8 +56,11 @@ def masked_cross_entropy(logits, target, length):
     # losses: (batch, max_len)
     losses = losses_flat.view(*target.size())
     # mask: (batch, max_len)
-    mask = sequence_mask(sequence_length=length, max_len=target.size(1)) 
+    mask = sequence_mask(sequence_length=length, max_len=target.size(1))
+    # print(losses)
+    # print(mask)
     losses = losses * mask.float()
+    # print(losses)
     loss = losses.sum() / length.float().sum()
     return loss
 
@@ -151,3 +155,9 @@ def masked_cross_entropy_RL(logits, target, length, USE_CUDA=True, q=1.0):
     losses = losses * mask.float() * q
     loss = losses.sum() / length.float().sum()
     return loss
+
+
+if __name__ == '__main__':
+    ret = masked_cross_entropy(torch.Tensor([[[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.4, 0.5, 0.6]],
+                                            [[0.01, 0.02, 0.03], [0.02, 0.03, 0.04], [0.0, 0.0, 0.0]]]), torch.LongTensor([[0, 2, 1], [1, 0, 0]]), torch.LongTensor([2, 2]))
+    print(ret)

@@ -30,6 +30,7 @@ class LocalMemoryDecoder(tf.keras.Model):
     def call(self, extKnow, story_size, story_lengths, copy_list, encode_hidden,
              target_batches, max_target_length, batch_size, use_teacher_forcing,
              get_decoded_words, global_pointer, training=True):
+        # pdb.set_trace()
         # all_decoder_outputs_vocab = tf.zeros([max_target_length.numpy()[0], batch_size, self.num_vocab])  # max_target_length * batch_size * num_vocab.
         # all_decoder_outputs_ptr = tf.zeros([max_target_length.numpy()[0], batch_size, story_size[1]])  # max_target_length * batch_size * memory_size.
         # memory_mask_for_step = tf.ones([story_size[0], story_size[1]])  # batch_size * memory_size.
