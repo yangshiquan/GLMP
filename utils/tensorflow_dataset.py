@@ -19,19 +19,21 @@ class Dataset:
     def len(self):
         return int(np.floor(self.data_size) / self.batch_size)
 
-    def get_batch(self, index):
-        shuffled_indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
+    def get_batch(self, index, is_last=False):
+        if not is_last:
+            shuffled_indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
+        else:
+            shuffled_indexes = self.indexes[self.len()*self.batch_size:]
         batch_data = self.data_generation(shuffled_indexes)
         padded_data = self.batch_padding(batch_data)
         return padded_data
 
     def load_batches(self, drop_last=True):
-        # TODO: drop last or not.
         batches = []
-        if drop_last:
-            max_len = self.len()
-            for index in range(max_len):
-                batches.append(self.get_batch(index))
+        for index in range(self.len()):
+            batches.append(self.get_batch(index, False))
+        if not drop_last:
+            batches.append(self.get_batch(1e-5, True))
         return batches
 
     def padding(self, sequences, story_dim):
