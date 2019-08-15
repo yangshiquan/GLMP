@@ -25,13 +25,13 @@ class LocalMemoryDecoder(tf.keras.Model):
         self.softmax = tf.keras.layers.Softmax(1)
 
     def attend_vocab(self, seq, cond):
-        seq[PAD_token, :] = np.zeros(1, self.embedding_dim)
+        seq[PAD_token, :] = np.zeros([1, self.embedding_dim])
         scores_ = tf.matmul(cond, tf.transpose(seq))  # different: no softmax layer, need to check loss function.
         return scores_
 
     def gen_embedding_mask(self, input):
         raw_mask_array = [[1.0]] * PAD_token + [[0.0]] + [[1.0]] * (self.num_vocab - PAD_token - 1)
-        mask = embedding_ops.embedding_lookup(raw_mask_array, input)
+        mask = embedding_ops.embedding_lookup(raw_mask_array, tf.cast(input, dtype=tf.int32))
         ret_mask = tf.tile(tf.expand_dims(mask, 1), [1, self.embedding_dim])
         return ret_mask
 

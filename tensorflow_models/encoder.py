@@ -42,8 +42,8 @@ class ContextRNN(tf.keras.Model):
 
     def gen_embedding_mask(self, input):
         raw_mask_array = [[1.0]] * PAD_token + [[0.0]] + [[1.0]] * (self.input_size - PAD_token - 1)
-        mask = embedding_ops.embedding_lookup(raw_mask_array, input)
-        ret_mask = tf.tile(tf.expand_dims(mask, 1), [1, self.hidden_size])
+        mask = embedding_ops.embedding_lookup(raw_mask_array, tf.cast(input, dtype=tf.int32))
+        ret_mask = tf.tile(tf.expand_dims(mask, 2), [1, 1, self.hidden_size])
         return ret_mask
 
     def call(self, input_seqs, input_lengths, hidden=None, training=True):
