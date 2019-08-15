@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from utils.config import *
 from tensorflow_models.GLMP import *
+import datetime
 
 
 early_stop = args['earlyStop']
@@ -41,6 +42,10 @@ model = GLMP(int(args['hidden']),
 # ================================
 # Training
 # ================================
+current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
+train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+
 for epoch in range(200):
     print("Epoch:{}".format(epoch))
     # pdb.set_trace()
@@ -50,6 +55,17 @@ for epoch in range(200):
         model.train_batch(data, int(args['clip']), reset=(i==0))
         tf.config.experimental_run_functions_eagerly(False)
         pbar.set_description(model.print_loss())
+
+    with train_summary_writer.as_default():
+        tf.summary.scalar('loss', model.train_loss.result(), step=epoch)
+        tf.summary.scalar('loss_g', model.train_loss_g.result(), step=epoch)
+        tf.summary.scalar('loss_v', model.train_loss_v.result(), step=epoch)
+        tf.summary.scalar('loss_l', model.train_loss_l.result(), step=epoch)
+    model.train_loss.reset_states()
+    model.train_loss_g.reset_states()
+    model.train_loss_v.reset_states()
+    model.train_loss_l.reset_states()
+
     if ((epoch+1) % int(args['evalp']) == 0):
         # len = int(dev_length / (int(args['batch'])))
         acc = model.evaluate(dev, avg_best, early_stop)

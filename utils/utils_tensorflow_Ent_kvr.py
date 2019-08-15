@@ -403,11 +403,11 @@ def prepare_data_seq(task, batch_size=100):
 
     # structure transform, shuffle, batch, padding
     train_samples = Dataset(train_seq, batch_size, shuffle=True)
-    train_samples_batches = train_samples.load_batches(drop_last=False)
+    train_samples_batches = train_samples.load_batches(drop_last=True)
     dev_samples = Dataset(dev_seq, batch_size, shuffle=False)
-    dev_samples_batches = dev_samples.load_batches(drop_last=False)
+    dev_samples_batches = dev_samples.load_batches(drop_last=True)
     test_samples = Dataset(test_seq, batch_size, shuffle=False)
-    test_samples_batches = test_samples.load_batches(drop_last=False)
+    test_samples_batches = test_samples.load_batches(drop_last=True)
 
     # # extract information from seqs
     # train_info, train_max_resp_len = structure_transform(train_seq)

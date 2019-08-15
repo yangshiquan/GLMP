@@ -1,6 +1,7 @@
 import tensorflow as tf
 from utils.config import *
 import pdb
+from tensorflow.python.ops import embedding_ops
 
 
 class ExternalKnowledge(tf.keras.Model):
@@ -53,11 +54,19 @@ class ExternalKnowledge(tf.keras.Model):
         output = tf.stack(output_list, axis=0)
         return output
 
+    def gen_embedding_mask(self, input):
+        raw_mask_array = [[1.0]] * PAD_token + [[0.0]] + [[1.0]] * (self.vocab - PAD_token - 1)
+        mask = embedding_ops.embedding_lookup(raw_mask_array, input)
+        ret_mask = tf.tile(tf.expand_dims(mask, 1), [1, self.embedding_dim])
+        return ret_mask
+
     def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs, training=True):
         u = [hidden]  # different: hidden without squeeze(0), hidden: batch_size * embedding_size.
         story_size = story.shape
         self.m_story = []
         embedding_A = self.C_1(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
+        pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
+        embedding_A = tf.multiply(embedding_A, pad_mask)
         embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])  # embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
         if not args['ablationH']:
@@ -70,6 +79,8 @@ class ExternalKnowledge(tf.keras.Model):
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * memory_size
 
         embedding_C = self.C_2(tf.reshape(story, [story_size[0], -1]))
+        pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
+        embedding_C = tf.multiply(embedding_C, pad_mask)
         embedding_C = tf.reshape(embedding_C, [story_size[0], story_size[1], story_size[2], embedding_C.shape[-1]])
         embedding_C = tf.math.reduce_sum(embedding_C, 2)  # embedding_C: batch_size * memory_size * embedding_dim.
         if not args['ablationH']:

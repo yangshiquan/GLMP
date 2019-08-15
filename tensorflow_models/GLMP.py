@@ -41,6 +41,12 @@ class GLMP(tf.keras.Model):
         self.decoder_optimizer = tf.keras.optimizers.Adam(lr)
         # TODO: lr scheduler.
 
+        self.train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
+        self.train_loss_g = tf.keras.metrics.Mean('train_loss_global', dtype=tf.float32)
+        self.train_loss_v = tf.keras.metrics.Mean('train_loss_vocab', dtype=tf.float32)
+        self.train_loss_l = tf.keras.metrics.Mean('train_loss_local', dtype=tf.float32)
+        self.train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy('train_accuracy')
+
         # self.criterion_bce = tf.nn.sigmoid_cross_entropy_with_logits()  # need to check if this loss function actually equals pytorch criterion_bce.
 
         self.reset()
@@ -148,12 +154,15 @@ class GLMP(tf.keras.Model):
             # pdb.set_trace()
             loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data['selector_index'])  # data[5]: selector_index.
             loss_g = tf.cast(tf.reduce_sum(loss_g_mat) / (loss_g_mat.shape[0] * loss_g_mat.shape[1]), dtype=tf.float32)
+            # print("loss_g:", loss_g)
             loss_v = masked_cross_entropy(tf.transpose(all_decoder_outputs_vocab, [1, 0, 2]),  # need to transpose ?
                                           data['sketch_response'],
                                           tf.cast(data['response_lengths'], dtype=tf.int32))  # data[2]: skectch_response, data[11]: response_lengths.
+            # print("loss_v:", loss_v)
             loss_l = masked_cross_entropy(tf.transpose(all_decoder_outputs_ptr, [1, 0, 2]),  # need to transpose ?
                                           data['ptr_index'],
                                           tf.cast(data['response_lengths'], dtype=tf.int32))  # data[4]: ptr_index, data[11]: response_lengths.
+            # print("loss_l:", loss_l)
             loss = loss_g + loss_v + loss_l
 
         # compute gradients for encoder, decoder and external knowledge
@@ -181,6 +190,11 @@ class GLMP(tf.keras.Model):
         self.loss_g += loss_g.numpy()
         self.loss_v += loss_v.numpy()
         self.loss_l += loss_l.numpy()
+
+        self.train_loss(loss.numpy())
+        self.train_loss_g(loss_g.numpy())
+        self.train_loss_v(loss_v.numpy())
+        self.train_loss_l(loss_l.numpy())
 
     def evaluate(self, dev, matric_best, early_stop=None):
         print('STARTING EVALUATION:')

@@ -32,7 +32,7 @@ class Dataset:
         batches = []
         for index in range(self.len()):
             batches.append(self.get_batch(index, False))
-        if not drop_last:
+        if not drop_last and self.data_size % self.batch_size != 0:
             batches.append(self.get_batch(1e-5, True))
         return batches
 

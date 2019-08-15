@@ -2,6 +2,7 @@ import tensorflow as tf
 from utils.config import *
 import numpy as np
 import pdb
+from tensorflow.python.ops import embedding_ops
 
 
 class LocalMemoryDecoder(tf.keras.Model):
@@ -24,8 +25,15 @@ class LocalMemoryDecoder(tf.keras.Model):
         self.softmax = tf.keras.layers.Softmax(1)
 
     def attend_vocab(self, seq, cond):
+        seq[PAD_token, :] = np.zeros(1, self.embedding_dim)
         scores_ = tf.matmul(cond, tf.transpose(seq))  # different: no softmax layer, need to check loss function.
         return scores_
+
+    def gen_embedding_mask(self, input):
+        raw_mask_array = [[1.0]] * PAD_token + [[0.0]] + [[1.0]] * (self.num_vocab - PAD_token - 1)
+        mask = embedding_ops.embedding_lookup(raw_mask_array, input)
+        ret_mask = tf.tile(tf.expand_dims(mask, 1), [1, self.embedding_dim])
+        return ret_mask
 
     def call(self, extKnow, story_size, story_lengths, copy_list, encode_hidden,
              target_batches, max_target_length, batch_size, use_teacher_forcing,
@@ -44,6 +52,8 @@ class LocalMemoryDecoder(tf.keras.Model):
         all_decoder_outputs_ptr = []
         for t in range(max_target_length):
             embed_q = self.C(decoder_input)
+            pad_mask = self.gen_embedding_mask(decoder_input)
+            embed_q = tf.multiply(embed_q, pad_mask)
             if training:
                 embed_q = self.dropout_layer(embed_q, training=training)  # batch_size * embedding_dim.
             if len(embed_q.get_shape()) == 1:

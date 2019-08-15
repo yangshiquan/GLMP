@@ -1,7 +1,8 @@
 import tensorflow as tf
 import numpy as np
 import pdb
-
+from tensorflow.python.ops import embedding_ops
+from utils.config import *
 
 class ContextRNN(tf.keras.Model):
     def __init__(self, input_size, hidden_size, dropout, n_layers=1):
@@ -39,9 +40,17 @@ class ContextRNN(tf.keras.Model):
             input_mask[id, :lengths[id]] = np.ones([1, lengths[id]])
         return tf.convert_to_tensor(input_mask)
 
+    def gen_embedding_mask(self, input):
+        raw_mask_array = [[1.0]] * PAD_token + [[0.0]] + [[1.0]] * (self.input_size - PAD_token - 1)
+        mask = embedding_ops.embedding_lookup(raw_mask_array, input)
+        ret_mask = tf.tile(tf.expand_dims(mask, 1), [1, self.hidden_size])
+        return ret_mask
+
     def call(self, input_seqs, input_lengths, hidden=None, training=True):
         mask = self.gen_input_mask(input_seqs.shape[0], input_seqs.shape[1], input_lengths)
         embedded = self.embedding(tf.reshape(input_seqs, [input_seqs.get_shape()[0], -1]))  # different: pad token embedding not masked. input_seqs: batch_size * input_length * MEM_TOKEN_SIZE.
+        pad_mask = self.gen_embedding_mask(tf.reshape(input_seqs,[input_seqs.shape[0], -1]))
+        embedded = tf.multiply(embedded, pad_mask)
         embedded = tf.reshape(
             embedded, [input_seqs.get_shape()[0], input_seqs.get_shape()[1], input_seqs.get_shape()[2], embedded.get_shape()[-1]])  # embedded: batch_size * input_length * MEM_TOKEN_SIZE * embedding_dim.
         embedded = tf.math.reduce_sum(embedded, 2)  # embedded: batch_size * input_length * embedding_dim.
