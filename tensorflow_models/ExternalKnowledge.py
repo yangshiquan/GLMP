@@ -92,7 +92,7 @@ class ExternalKnowledge(tf.keras.Model):
         self.m_story.append(embedding_A)
         self.m_story.append(embedding_C)
 
-        return self.sigmoid(prob_logits), u[-1]
+        return self.sigmoid(prob_logits), u[-1], prob_logits
 
     def call(self, query_vector, global_pointer, training=True):
         u = [query_vector]  # query_vector: batch_size * embedding_dim.

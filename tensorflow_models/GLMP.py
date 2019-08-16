@@ -79,11 +79,11 @@ class GLMP(tf.keras.Model):
         # build unknown mask for memory if training mode
         if args['unk_mask'] and training:  # different: training flag need to be fed from outside explicitly.
             story_size = data['context_arr'].shape  # data[0]: context_arr.
-            rand_mask = np.ones(story_size)
-            bi_mask = np.random.binomial([np.ones((story_size[0], story_size[1]))],
+            rand_mask = np.ones(story_size, dtype=np.float32)
+            bi_mask = np.random.binomial([np.ones((story_size[0], story_size[1]), dtype=np.float32)],
                                          1 - self.dropout)[0]
             rand_mask[:, :, 0] = rand_mask[:, :, 0] * bi_mask
-            conv_rand_mask = np.ones(data['conv_arr'].shape)  # data[3]: conv_arr.
+            conv_rand_mask = np.ones(data['conv_arr'].shape, dtype=np.float32)  # data[3]: conv_arr.
             for bi in range(story_size[0]):
                 start, end = data['kb_arr_lengths'][bi], data['kb_arr_lengths'][bi] + data['conv_arr_lengths'][bi]  # data[13]: kb_arr_lengths, data[12]: conv_arr_lengths.
                 # conv_rand_mask[:end.numpy()[0]-start.numpy()[0], bi, :] = rand_mask[bi, start.numpy()[0]:end.numpy()[0], :]  # necessary to explictly move data to cuda ?
@@ -96,7 +96,7 @@ class GLMP(tf.keras.Model):
         # encode dialogue history and KB to vectors
         # TODO: need to check the shape and meaning of each tensor.
         dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'], training=training)  # data[12]: conv_arr_lengths.
-        global_pointer, kb_readout = self.extKnow.load_memory(story,
+        global_pointer, kb_readout, global_pointer_logits = self.extKnow.load_memory(story,
                                                               data['kb_arr_lengths'],  # data[13]: kb_arr_lengths.
                                                               data['conv_arr_lengths'],  # data[12]: conv_arr_lengths.
                                                               dh_hidden,
@@ -133,7 +133,7 @@ class GLMP(tf.keras.Model):
                                                                                 global_pointer,
                                                                                 training=training)
 
-        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer
+        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, global_pointer_logits
 
     @tf.function
     def train_batch(self, data, clip, reset=0):
@@ -145,15 +145,16 @@ class GLMP(tf.keras.Model):
             use_teacher_forcing = random.random() < args['teacher_forcing_ratio']
             max_target_length = max(data['response_lengths'])  # data[11]: response_lengths.
             # max_target_length = train_max_len_global
-            all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer = self.encode_and_decode(data,
+            all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, global_pointer_logits = self.encode_and_decode(data,
                                                                                                               max_target_length,
                                                                                                               use_teacher_forcing,
                                                                                                               False,
                                                                                                               True)
             # loss calculation and backpropagation
             # pdb.set_trace()
-            loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data['selector_index'])  # data[5]: selector_index.
-            loss_g = tf.cast(tf.reduce_sum(loss_g_mat) / (loss_g_mat.shape[0] * loss_g_mat.shape[1]), dtype=tf.float32)
+            loss_g = tf.cast(tf.compat.v1.losses.sigmoid_cross_entropy(data['selector_index'], tf.cast(global_pointer_logits, dtype=tf.double)), dtype=tf.float32)
+            # loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data['selector_index'])  # data[5]: selector_index.
+            # loss_g = tf.cast(tf.reduce_sum(loss_g_mat) / (loss_g_mat.shape[0] * loss_g_mat.shape[1]), dtype=tf.float32)
             # print("loss_g:", loss_g)
             loss_v = masked_cross_entropy(tf.transpose(all_decoder_outputs_vocab, [1, 0, 2]),  # need to transpose ?
                                           data['sketch_response'],
@@ -223,7 +224,7 @@ class GLMP(tf.keras.Model):
             # pdb.set_trace()
             # max_target_length = max(data_dev['response_lengths'])  # data[11]: response_lengths.
             # max_target_length = dev_max_len_global
-            _, _, decoded_fine, decoded_coarse, global_pointer = self.encode_and_decode(data_dev,
+            _, _, decoded_fine, decoded_coarse, global_pointer, global_pointer_logits = self.encode_and_decode(data_dev,
                                                                                         self.max_resp_len,
                                                                                         False,
                                                                                         True,

@@ -25,7 +25,7 @@ class LocalMemoryDecoder(tf.keras.Model):
         self.softmax = tf.keras.layers.Softmax(1)
 
     def attend_vocab(self, seq, cond):
-        seq[PAD_token, :] = np.zeros([1, self.embedding_dim])
+        seq[PAD_token, :] = np.zeros([1, self.embedding_dim], dtype=np.float32)
         scores_ = tf.matmul(cond, tf.transpose(seq))  # different: no softmax layer, need to check loss function.
         return scores_
 
@@ -42,7 +42,7 @@ class LocalMemoryDecoder(tf.keras.Model):
         # all_decoder_outputs_vocab = tf.zeros([max_target_length.numpy()[0], batch_size, self.num_vocab])  # max_target_length * batch_size * num_vocab.
         # all_decoder_outputs_ptr = tf.zeros([max_target_length.numpy()[0], batch_size, story_size[1]])  # max_target_length * batch_size * memory_size.
         # memory_mask_for_step = tf.ones([story_size[0], story_size[1]])  # batch_size * memory_size.
-        memory_mask_for_step = np.ones((story_size[0], story_size[1]))  # batch_size * memory_size.
+        memory_mask_for_step = np.ones((story_size[0], story_size[1]), dtype=np.float32)  # batch_size * memory_size.
         decoded_fine, decoded_coarse = [], []
 
         decoder_input = tf.constant([SOS_token] * batch_size)  # batch_size.

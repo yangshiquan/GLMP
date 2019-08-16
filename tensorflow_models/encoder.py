@@ -35,9 +35,9 @@ class ContextRNN(tf.keras.Model):
         return [forward_hidden, backward_hidden]
 
     def gen_input_mask(self, batch_size, max_len, lengths):
-        input_mask = np.zeros([batch_size, max_len])
+        input_mask = np.zeros([batch_size, max_len], dtype=np.float32)
         for id, len in enumerate(lengths):
-            input_mask[id, :lengths[id]] = np.ones([1, lengths[id]])
+            input_mask[id, :lengths[id]] = np.ones([1, lengths[id]], dtype=np.float32)
         return tf.convert_to_tensor(input_mask)
 
     def gen_embedding_mask(self, input):
