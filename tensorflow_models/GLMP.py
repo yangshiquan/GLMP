@@ -199,7 +199,7 @@ class GLMP(tf.keras.Model):
         self.train_loss_v(loss_v.numpy())
         self.train_loss_l(loss_l.numpy())
 
-    def evaluate(self, dev, matric_best, early_stop=None):
+    def evaluate(self, dev, dev_length, matric_best, early_stop=None):
         print('STARTING EVALUATION:')
 
         ref, hyp = [], []
@@ -207,8 +207,7 @@ class GLMP(tf.keras.Model):
         dialog_acc_dict = {}
         F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred = 0, 0, 0, 0
         F1_count, F1_cal_count, F1_nav_count, F1_wet_count = 0, 0, 0, 0
-        length = compute_dataset_length(dev)
-        pbar = tqdm(enumerate(dev), total=(length))
+        pbar = tqdm(enumerate(dev.take(-1)), total=(dev_length))
         new_precision, new_recall, new_f1_score = 0, 0, 0
 
         if args['dataset'] == 'kvr':

@@ -181,8 +181,5 @@ def get_seq(pairs, lang, batch_size, type):
     return data_loader
 
 
-def compute_dataset_length(data):
-    num_elements = 0
-    for element in data:
-        num_elements += 1
-    return num_elements
+def compute_dataset_length(data_length, batch_size):
+    return int(data_length/batch_size)

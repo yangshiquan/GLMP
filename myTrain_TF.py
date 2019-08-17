@@ -24,7 +24,7 @@ print("Is there a GPU available: ", tf.test.is_gpu_available())
 # Configure models and load data
 # ===============================
 avg_best, cnt, acc = 0.0, 0, 0.0
-train, dev, test, testOOV, lang, max_response_len = prepare_data_seq(args['task'],
+train, dev, test, testOOV, lang, max_response_len, train_length, dev_length, test_length = prepare_data_seq(args['task'],
                                                                       batch_size=int(args['batch']))
 
 # ===============================
@@ -42,34 +42,35 @@ model = GLMP(int(args['hidden']),
 # ================================
 # Training
 # ================================
-current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
-train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+# current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
+# train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
 for epoch in range(200):
     print("Epoch:{}".format(epoch))
     # pdb.set_trace()
-    train_length = compute_dataset_length(train)
-    pbar = tqdm(enumerate(train), total=(train_length))
+    train_length = compute_dataset_length(train_length, int(args['batch']))
+    pbar = tqdm(enumerate(train.take(-1)), total=(train_length))
     for i, data in pbar:
         tf.config.experimental_run_functions_eagerly(True)
         model.train_batch(data, int(args['clip']), reset=(i==0))
         tf.config.experimental_run_functions_eagerly(False)
         pbar.set_description(model.print_loss())
 
-    with train_summary_writer.as_default():
-        tf.summary.scalar('loss', model.train_loss.result(), step=epoch)
-        tf.summary.scalar('loss_g', model.train_loss_g.result(), step=epoch)
-        tf.summary.scalar('loss_v', model.train_loss_v.result(), step=epoch)
-        tf.summary.scalar('loss_l', model.train_loss_l.result(), step=epoch)
-    model.train_loss.reset_states()
-    model.train_loss_g.reset_states()
-    model.train_loss_v.reset_states()
-    model.train_loss_l.reset_states()
+    # with train_summary_writer.as_default():
+    #     tf.summary.scalar('loss', model.train_loss.result(), step=epoch)
+    #     tf.summary.scalar('loss_g', model.train_loss_g.result(), step=epoch)
+    #     tf.summary.scalar('loss_v', model.train_loss_v.result(), step=epoch)
+    #     tf.summary.scalar('loss_l', model.train_loss_l.result(), step=epoch)
+    # model.train_loss.reset_states()
+    # model.train_loss_g.reset_states()
+    # model.train_loss_v.reset_states()
+    # model.train_loss_l.reset_states()
 
     if ((epoch+1) % int(args['evalp']) == 0):
         # len = int(dev_length / (int(args['batch'])))
-        acc = model.evaluate(dev, avg_best, early_stop)
+        dev_length = compute_dataset_length(dev_length, int(args['batch']))
+        acc = model.evaluate(dev, dev_length, avg_best, early_stop)
 
         if (acc >= avg_best):
             avg_best = acc

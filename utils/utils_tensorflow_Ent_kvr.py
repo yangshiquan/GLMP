@@ -439,4 +439,4 @@ def prepare_data_seq(task, batch_size=100):
 
     # return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test), train_max_resp_len, dev_max_resp_len, test_max_resp_len
     # return train_samples_batches, dev_samples_batches, test_samples_batches, [], lang, max_resp_len
-    return train, dev, test, [], lang, max_resp_len
+    return train, dev, test, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test)
