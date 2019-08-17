@@ -4,6 +4,8 @@ from tensorflow_models.GLMP import *
 import datetime
 
 
+tf.compat.v1.enable_eager_execution()
+
 early_stop = args['earlyStop']
 if args['dataset'] == 'kvr':
     from utils.utils_tensorflow_Ent_kvr import *
