@@ -28,20 +28,20 @@ class ExternalKnowledge(tf.keras.Model):
             kb_aligns = tf.zeros([kb_len[bi]-1, full_memory.shape[2]])
             null_aligns = tf.zeros([1, full_memory.shape[2]])
             # print('kb_len:', kb_len[bi].numpy())
-            if kb_len[bi]-1 != 0:
+            if (kb_len[bi]-1).numpy().item() != 0:
                 kb_aligns_slices = tf.split(kb_aligns, num_or_size_splits=kb_aligns.shape[0], axis=0)
                 for tensor in kb_aligns_slices:
                     stack_list.append(tensor)
             # pdb.set_trace()
-            hiddens_slices = tf.split(hiddens[bi, :conv_len[bi], :], num_or_size_splits=conv_len[bi].numpy(), axis=0)
+            hiddens_slices = tf.split(hiddens[bi, :conv_len[bi], :], num_or_size_splits=conv_len[bi].numpy().item(), axis=0)
             # print('hiddens len:', hiddens[bi].shape[0])
             for tensor in hiddens_slices:
                 stack_list.append(tensor)
             # pdb.set_trace()
             stack_list.append(null_aligns)
-            pad_len = full_memory.shape[1] - kb_len[bi] - 1 - conv_len[bi] - 1
+            pad_len = full_memory.shape[1] - kb_len[bi] - conv_len[bi]
             # pdb.set_trace()
-            if pad_len != 0:
+            if pad_len.numpy().item() != 0:
                 pad_aligns = tf.zeros([pad_len, full_memory.shape[2]])
                 pad_aligns_slice = tf.split(pad_aligns, num_or_size_splits=pad_aligns.shape[0], axis=0)
                 for tensor in pad_aligns_slice:
