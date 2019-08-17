@@ -25,10 +25,10 @@ class ExternalKnowledge(tf.keras.Model):
         output_list = []
         for bi in range(full_memory.shape[0]):
             stack_list = []
-            kb_aligns = tf.zeros([kb_len[bi], full_memory.shape[2]])
+            kb_aligns = tf.zeros([kb_len[bi]-1, full_memory.shape[2]])
             null_aligns = tf.zeros([1, full_memory.shape[2]])
             # print('kb_len:', kb_len[bi].numpy())
-            if kb_len[bi] != 0:
+            if kb_len[bi]-1 != 0:
                 kb_aligns_slices = tf.split(kb_aligns, num_or_size_splits=kb_aligns.shape[0], axis=0)
                 for tensor in kb_aligns_slices:
                     stack_list.append(tensor)
@@ -39,7 +39,7 @@ class ExternalKnowledge(tf.keras.Model):
                 stack_list.append(tensor)
             # pdb.set_trace()
             stack_list.append(null_aligns)
-            pad_len = full_memory.shape[1] - kb_len[bi] - conv_len[bi] - 1
+            pad_len = full_memory.shape[1] - kb_len[bi] - 1 - conv_len[bi] - 1
             # pdb.set_trace()
             if pad_len != 0:
                 pad_aligns = tf.zeros([pad_len, full_memory.shape[2]])

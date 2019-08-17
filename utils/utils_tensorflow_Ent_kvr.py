@@ -4,6 +4,7 @@ import tensorflow as tf
 from utils.utils_general import *
 import numpy as np
 from utils.tensorflow_dataset import *
+from utils.utils_tensorflow_generator_kvr import *
 import pdb
 
 
@@ -73,7 +74,7 @@ def read_langs(file_name, max_line=None):
                         'ent_idx_nav': list(set(ent_idx_nav)),
                         'ent_idx_wet': list(set(ent_idx_wet)),
                         'conv_arr': list(conv_arr),
-                        'kb_arr': list(kb_arr),
+                        'kb_arr': list(kb_arr + [['$$$$'] * MEM_TOKEN_SIZE]),
                         'id': int(sample_counter),
                         'ID': int(cnt_lin),
                         'domain': task_type}
@@ -177,7 +178,7 @@ def preprocess(sequence, word2id, trg=True):
             for ii, word in enumerate(word_triple):
                 temp = word2id[word] if word in word2id else UNK_token
                 story[i].append(temp)
-    story = torch.Tensor(story)
+    story = tf.convert_to_tensor(story)
     return story
 
 
@@ -393,28 +394,38 @@ def prepare_data_seq(task, batch_size=100):
     pair_test, test_max_len = read_langs(file_test, max_line=None)
     max_resp_len = max(train_max_len, dev_max_len, test_max_len) + 1
 
-    # build lang
+    # build lang (1.0, 2.0, 3.0)
     lang = build_lang(pair_train, True)
 
-    # map word to ids
+    # map word to ids (1.0, 2.0, 3.0)
     train_seq = text_to_sequence(pair_train, lang)
     dev_seq = text_to_sequence(pair_dev, lang)
     test_seq = text_to_sequence(pair_test, lang)
 
-    # structure transform, shuffle, batch, padding
-    train_samples = Dataset(train_seq, batch_size, shuffle=True)
-    train_samples_batches = train_samples.load_batches(drop_last=True)
-    dev_samples = Dataset(dev_seq, batch_size, shuffle=False)
-    dev_samples_batches = dev_samples.load_batches(drop_last=True)
-    test_samples = Dataset(test_seq, batch_size, shuffle=False)
-    test_samples_batches = test_samples.load_batches(drop_last=True)
+    # generate padded batches using tf.data.Dataset.from_generator (3.0)
+    train = get_seq(train_seq, batch_size, drop_remainder=True)
+    dev = get_seq(dev_seq, batch_size, drop_remainder=True)
+    test = get_seq(test_seq, batch_size, drop_remainder=True)
 
-    # # extract information from seqs
+    # debug dataset batch result
+    context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\
+        kb_arr_plain, context_arr_lengths, response_lengths, conv_arr_lengths, kb_arr_lengths, ent_index, ent_index_lengths,\
+        ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID = next(iter(train))
+
+    # structure transform, shuffle, batch, padding (previous version 2.0, batch padding, write by myself, deprecated)
+    # train_samples = Dataset(train_seq, batch_size, shuffle=True)
+    # train_samples_batches = train_samples.load_batches(drop_last=True)
+    # dev_samples = Dataset(dev_seq, batch_size, shuffle=False)
+    # dev_samples_batches = dev_samples.load_batches(drop_last=True)
+    # test_samples = Dataset(test_seq, batch_size, shuffle=False)
+    # test_samples_batches = test_samples.load_batches(drop_last=True)
+
+    # # extract information from seqs (previous version 1.0, global padding, write by myself, deprecated)
     # train_info, train_max_resp_len = structure_transform(train_seq)
     # dev_info, dev_max_resp_len = structure_transform(dev_seq)
     # test_info, test_max_resp_len = structure_transform(test_seq)
     #
-    # # build dataset
+    # # build dataset (previous version 1.0, global padding, write by myself, deprecated)
     # train_samples = build_dataset(train_info, batch_size)
     # dev_samples = build_dataset(dev_info, batch_size)
     # test_samples = build_dataset(test_info, batch_size)
@@ -427,4 +438,5 @@ def prepare_data_seq(task, batch_size=100):
     print("USE_CUDA={}".format(USE_CUDA))
 
     # return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test), train_max_resp_len, dev_max_resp_len, test_max_resp_len
-    return train_samples_batches, dev_samples_batches, test_samples_batches, [], lang, max_resp_len
+    # return train_samples_batches, dev_samples_batches, test_samples_batches, [], lang, max_resp_len
+    return train, dev, test, [], lang, max_resp_len

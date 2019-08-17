@@ -2,6 +2,8 @@ import torch
 import torch.utils.data as data
 import torch.nn as nn
 from utils.config import *
+import tensorflow as tf
+
 
 def _cuda(x):
     if USE_CUDA:
@@ -174,5 +176,13 @@ def get_seq(pairs, lang, batch_size, type):
     data_loader = torch.utils.data.DataLoader(dataset = dataset,
                                               batch_size = batch_size,
                                               shuffle = type,
+                                              # shuffle = False,
                                               collate_fn = dataset.collate_fn)
     return data_loader
+
+
+def compute_dataset_length(data):
+    num_elements = 0
+    for element in data:
+        num_elements += 1
+    return num_elements

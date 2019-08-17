@@ -49,7 +49,8 @@ train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 for epoch in range(200):
     print("Epoch:{}".format(epoch))
     # pdb.set_trace()
-    pbar = tqdm(enumerate(train), total=(len(train)))
+    train_length = compute_dataset_length(train)
+    pbar = tqdm(enumerate(train), total=(train_length))
     for i, data in pbar:
         tf.config.experimental_run_functions_eagerly(True)
         model.train_batch(data, int(args['clip']), reset=(i==0))
