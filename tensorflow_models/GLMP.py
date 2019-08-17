@@ -86,7 +86,7 @@ class GLMP(tf.keras.Model):
             rand_mask[:, :, 0] = rand_mask[:, :, 0] * bi_mask
             conv_rand_mask = np.ones(data[3].shape, dtype=np.float32)  # data[3]: conv_arr.
             for bi in range(story_size[0]):
-                start, end = data[13][bi] - 1, data[13][bi] - 1 + data['conv_arr_lengths'][bi]  # data[13]: kb_arr_lengths, data[12]: conv_arr_lengths.
+                start, end = data[13][bi] - 1, data[13][bi] - 1 + data[12][bi]  # data[13]: kb_arr_lengths, data[12]: conv_arr_lengths.
                 # start, end = data['kb_arr_lengths'][bi], data['kb_arr_lengths'][bi] + data['conv_arr_lengths'][bi]  # data[13]: kb_arr_lengths, data[12]: conv_arr_lengths.
                 # conv_rand_mask[:end.numpy()[0]-start.numpy()[0], bi, :] = rand_mask[bi, start.numpy()[0]:end.numpy()[0], :]  # necessary to explictly move data to cuda ?
                 conv_rand_mask[bi, :end-start, :] = rand_mask[bi, start:end, :]  # story_size dimension order is different from pytorch, so the slice index is different from pytorch one. necessary to explictly move data to cuda ?
