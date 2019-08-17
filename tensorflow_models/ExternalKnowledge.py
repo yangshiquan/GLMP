@@ -33,7 +33,7 @@ class ExternalKnowledge(tf.keras.Model):
                 for tensor in kb_aligns_slices:
                     stack_list.append(tensor)
             # pdb.set_trace()
-            hiddens_slices = tf.split(hiddens[bi, :conv_len[bi], :], num_or_size_splits=conv_len[bi], axis=0)
+            hiddens_slices = tf.split(hiddens[bi, :conv_len[bi], :], num_or_size_splits=conv_len[bi].numpy(), axis=0)
             # print('hiddens len:', hiddens[bi].shape[0])
             for tensor in hiddens_slices:
                 stack_list.append(tensor)
