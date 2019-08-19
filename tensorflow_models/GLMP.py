@@ -249,7 +249,7 @@ class GLMP(tf.keras.Model):
                 pred_sent = st.lstrip().rstrip()
                 pred_sent_coarse = st_c.lstrip().rstrip()
                 # pdb.set_trace()
-                gold_sent = data_dev[8][bi][0].lstrip().rstrip()  # data[8]: response_plain.
+                gold_sent = data_dev[8][bi][0].numpy().lstrip().rstrip()  # data[8]: response_plain.
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
 
@@ -329,15 +329,15 @@ class GLMP(tf.keras.Model):
         # local_kb_word = [k[0] if k[0].decode() != '$' and k[0].decode() != 'PAD' for k in kb_plain]
         local_kb_word = []
         for k in kb_plain:
-            if k[0].decode() != '$$$$' and k[0].decode() != 'PAD':
-                local_kb_word.append(k[0].decode())
+            if k[0].numpy().decode() != '$$$$' and k[0].numpy().decode() != 'PAD':
+                local_kb_word.append(k[0].numpy().decode())
             else:
                 break
         # gold_decode = [ent.decode() if ent.decode() != 'PAD' for ent in gold]
         gold_decode = []
         for ent in gold:
-            if ent.decode() != 'PAD':
-                gold_decode.append(ent.decode())
+            if ent.numpy().decode() != 'PAD':
+                gold_decode.append(ent.numpy().decode())
             else:
                 break
         TP, FP, FN = 0, 0, 0
