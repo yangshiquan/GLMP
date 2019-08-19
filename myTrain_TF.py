@@ -2,8 +2,10 @@ from tqdm import tqdm
 from utils.config import *
 from tensorflow_models.GLMP import *
 import datetime
+import os
 
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 tf.compat.v1.enable_eager_execution()
 
 early_stop = args['earlyStop']
