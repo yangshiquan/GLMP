@@ -249,7 +249,7 @@ class GLMP(tf.keras.Model):
                 pred_sent = st.lstrip().rstrip()
                 pred_sent_coarse = st_c.lstrip().rstrip()
                 # pdb.set_trace()
-                gold_sent = data_dev[8][bi][0].numpy().lstrip().rstrip()  # data[8]: response_plain.
+                gold_sent = data_dev[8][bi][0].numpy().decode().lstrip().rstrip()  # data[8]: response_plain.
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
 
