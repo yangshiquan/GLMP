@@ -14,10 +14,10 @@ class ExternalKnowledge(tf.keras.Model):
         self.dropout_layer = tf.keras.layers.Dropout(self.dropout)
         self.C_1 = tf.keras.layers.Embedding(self.vocab,
                                           self.embedding_dim,
-                                          embeddings_initializer=tf.random_normal_initializer(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+                                          embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         self.C_2 = tf.keras.layers.Embedding(self.vocab,
                                           self.embedding_dim,
-                                          embeddings_initializer=tf.random_normal_initializer(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+                                          embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         self.softmax = tf.keras.layers.Softmax(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
 

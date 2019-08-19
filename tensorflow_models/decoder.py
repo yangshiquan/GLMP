@@ -20,6 +20,14 @@ class LocalMemoryDecoder(tf.keras.Model):
                                               dropout=dropout,
                                               return_sequences=True,
                                               return_state=True)  # different: need to set training flag if using dropout.
+        self.sketch_rnn2 = tf.keras.layers.RNN(
+               tf.keras.layers.GRUCell(embedding_dim,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(embedding_dim)),(1/tf.math.sqrt(embedding_dim))),
+                                       recurrent_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(embedding_dim)),(1/tf.math.sqrt(embedding_dim))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(embedding_dim)),(1/tf.math.sqrt(embedding_dim)))),
+               return_sequences=True,
+               return_state=True
+            )
         self.relu = tf.keras.layers.ReLU()
         self.projector = tf.keras.layers.Dense(embedding_dim)
         self.softmax = tf.keras.layers.Softmax(1)
@@ -58,9 +66,9 @@ class LocalMemoryDecoder(tf.keras.Model):
                 embed_q = self.dropout_layer(embed_q, training=training)  # batch_size * embedding_dim.
             if len(embed_q.get_shape()) == 1:
                 embed_q = tf.expand_dims(embed_q, 0)
-            _, hidden = self.sketch_rnn(tf.expand_dims(embed_q, 1),
-                                        initial_state=hidden,
-                                        training=training)  # 1 * batch_size * embedding_dim.
+            _, hidden = self.sketch_rnn2(tf.expand_dims(embed_q, 1),
+                                         initial_state=hidden,
+                                         training=training)  # 1 * batch_size * embedding_dim.
             query_vector = hidden  # need to check meaning of hidden[0], query_vector: batch_size * embedding_dim.
 
             p_vocab = self.attend_vocab(self.C.embeddings.numpy(), hidden)  # self.C.read_value: num_vocab * embedding_dim, p_vocab: batch_size * num_vocab.

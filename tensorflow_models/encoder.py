@@ -12,7 +12,7 @@ class ContextRNN(tf.keras.Model):
         self.n_layers = n_layers
         self.dropout = dropout
         self.dropout_layer = tf.keras.layers.Dropout(dropout)
-        self.embedding = tf.keras.layers.Embedding(input_size, hidden_size)  # different: pad token embedding mask.
+        self.embedding = tf.keras.layers.Embedding(input_size, hidden_size, embeddings_initializer=tf.initializers.RandomNormal(0.0, 1.0))  # different: pad token embedding mask.
         self.gru = tf.keras.layers.Bidirectional(
             tf.keras.layers.GRU(
                 hidden_size,
@@ -21,7 +21,10 @@ class ContextRNN(tf.keras.Model):
                 return_state=True))  # different: initializer, input shape.
         self.gru2 = tf.keras.layers.Bidirectional(
             tf.keras.layers.RNN(
-               tf.keras.layers.GRUCell(hidden_size, dropout=dropout),
+               tf.keras.layers.GRUCell(hidden_size,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(hidden_size)),(1/tf.math.sqrt(hidden_size))),
+                                       recurrent_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(hidden_size)),(1/tf.math.sqrt(hidden_size))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(hidden_size)),(1/tf.math.sqrt(hidden_size)))),
                return_sequences=True,
                return_state=True
             )
