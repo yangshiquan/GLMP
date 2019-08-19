@@ -22,9 +22,9 @@ class LocalMemoryDecoder(tf.keras.Model):
                                               return_state=True)  # different: need to set training flag if using dropout.
         self.sketch_rnn2 = tf.keras.layers.RNN(
                tf.keras.layers.GRUCell(embedding_dim,
-                                       kernel_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(embedding_dim)),(1/tf.math.sqrt(embedding_dim))),
-                                       recurrent_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(embedding_dim)),(1/tf.math.sqrt(embedding_dim))),
-                                       bias_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(embedding_dim)),(1/tf.math.sqrt(embedding_dim)))),
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(embedding_dim)),(1/np.sqrt(embedding_dim))),
+                                       recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(embedding_dim)),(1/np.sqrt(embedding_dim))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(embedding_dim)),(1/np.sqrt(embedding_dim)))),
                return_sequences=True,
                return_state=True
             )

@@ -22,9 +22,9 @@ class ContextRNN(tf.keras.Model):
         self.gru2 = tf.keras.layers.Bidirectional(
             tf.keras.layers.RNN(
                tf.keras.layers.GRUCell(hidden_size,
-                                       kernel_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(hidden_size)),(1/tf.math.sqrt(hidden_size))),
-                                       recurrent_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(hidden_size)),(1/tf.math.sqrt(hidden_size))),
-                                       bias_initializer=tf.initializers.RandomUniform(-(1/tf.math.sqrt(hidden_size)),(1/tf.math.sqrt(hidden_size)))),
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(hidden_size)),(1/np.sqrt(hidden_size))),
+                                       recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(hidden_size)),(1/np.sqrt(hidden_size))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(hidden_size)),(1/np.sqrt(hidden_size)))),
                return_sequences=True,
                return_state=True
             )
