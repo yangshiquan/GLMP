@@ -29,7 +29,11 @@ class LocalMemoryDecoder(tf.keras.Model):
                return_state=True
             )
         self.relu = tf.keras.layers.ReLU()
-        self.projector = tf.keras.layers.Dense(embedding_dim)
+        self.projector = tf.keras.layers.Dense(embedding_dim,
+                                               use_bias=True,
+                                               kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim))),
+                                               bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim)))
+                                               )
         self.softmax = tf.keras.layers.Softmax(1)
 
     def attend_vocab(self, seq, cond):

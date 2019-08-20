@@ -30,7 +30,11 @@ class ContextRNN(tf.keras.Model):
             )
         )
         # self.gru2 = tf.keras.layers.GRU(hidden_size, dropout=dropout, return_state=True, return_sequences=True)
-        self.W = tf.keras.layers.Dense(hidden_size)  # different: bias should be explicitly assigned.
+        self.W = tf.keras.layers.Dense(hidden_size,
+                                       use_bias=True,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size)))
+                                       )  # different: bias should be explicitly assigned.
 
     def initialize_hidden_state(self, batch_size):
         forward_hidden = tf.zeros((batch_size, self.hidden_size))
