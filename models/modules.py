@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils.config import *
 from utils.utils_general import _cuda
+import pdb
 
 
 class ContextRNN(nn.Module):
@@ -50,7 +51,10 @@ class ExternalKnowledge(nn.Module):
         self.dropout_layer = nn.Dropout(dropout) 
         for hop in range(self.max_hops+1):
             C = nn.Embedding(vocab, embedding_dim, padding_idx=PAD_token)
-            C.weight.data.normal_(0, 0.1)
+            # C.weight.data.normal_(0, 0.1)
+            t = torch.randn(vocab, embedding_dim) * 0.1
+            t[PAD_token, :] = torch.zeros(1, embedding_dim)
+            C.weight.data = t
             self.add_module("C_{}".format(hop), C)
         self.C = AttrProxy(self, "C_")
         self.softmax = nn.Softmax(dim=1)
@@ -143,7 +147,7 @@ class LocalMemoryDecoder(nn.Module):
         decoded_fine, decoded_coarse = [], []
         
         hidden = self.relu(self.projector(encode_hidden)).unsqueeze(0)
-        
+
         # Start to generate word-by-word
         for t in range(max_target_length):
             temp = self.C(decoder_input)
@@ -151,7 +155,7 @@ class LocalMemoryDecoder(nn.Module):
             if len(embed_q.size()) == 1: embed_q = embed_q.unsqueeze(0)
             _, hidden = self.sketch_rnn(embed_q.unsqueeze(0), hidden)
             query_vector = hidden[0] 
-            
+            # pdb.set_trace()
             p_vocab = self.attend_vocab(self.C.weight, hidden.squeeze(0))
             all_decoder_outputs_vocab[t] = p_vocab
             _, topvi = p_vocab.data.topk(1)
