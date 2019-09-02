@@ -128,5 +128,5 @@ class AttrProxy(object):
         self.module = module
         self.prefix = prefix
 
-    def __getiten__(self, i):
+    def __getitem__(self, i):
         return getattr(self.module, self.prefix + str(i))
