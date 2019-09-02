@@ -15,7 +15,7 @@ class ExternalKnowledge(tf.keras.Model):
         self.dropout_layer = tf.keras.layers.Dropout(self.dropout)
         # 3-hops
         self.module_list = OrderedDict()
-        for hop in (self.max_hops+1):
+        for hop in range(self.max_hops+1):
             C = tf.keras.layers.Embedding(self.vocab,
                                           self.embedding_dim,
                                           embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
