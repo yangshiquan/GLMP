@@ -37,7 +37,7 @@ model = GLMP(int(HDD),
 			 dropout=0.0)
 
 # len = int(test_length / int(BSZ))
-test_length = compute_dataset_length(test_length, int(BSZ))
-acc_test = model.evaluate(test, test_length, 1e7)
+test_length_ = compute_dataset_length(test_length, int(BSZ))
+acc_test = model.evaluate(test, test_length_, 1e7)
 if testOOV!=[]:
     acc_oov_test = model.evaluate(testOOV, 1e7)
