@@ -30,6 +30,7 @@ class ExternalKnowledge(tf.keras.Model):
                                           self.embedding_dim,
                                           embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         self.C_4 = tf.keras.layers.Embedding(self.vocab,
+                                          self.embedding_dim,
                                           embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         self.softmax = tf.keras.layers.Softmax(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
