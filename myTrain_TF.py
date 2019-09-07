@@ -11,7 +11,7 @@ tf.compat.v1.enable_eager_execution()
 early_stop = args['earlyStop']
 if args['dataset'] == 'kvr':
     from utils.utils_tensorflow_Ent_kvr import *
-    early_stop = 'BLEU'
+    early_stop = 'ENTF1'
 elif args['dataset'] == 'babi':
     from utils.utils_Ent_babi import *
     early_stop = None

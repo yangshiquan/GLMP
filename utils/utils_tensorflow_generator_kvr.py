@@ -115,7 +115,8 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                   ()  # ID
                                                   )
                                    )
-    ds_series_batch = ds_series.padded_batch(batch_size, padded_shapes=([None, MEM_TOKEN_SIZE],  # context_arr
+    print(len(data_info))
+    ds_series_batch = ds_series.shuffle(len(data_info)).padded_batch(batch_size, padded_shapes=([None, MEM_TOKEN_SIZE],  # context_arr
                                                                               [None,],  # response
                                                                               [None,],  # sketch_response
                                                                               [None, MEM_TOKEN_SIZE],  # conv_arr
