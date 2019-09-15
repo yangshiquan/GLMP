@@ -31,8 +31,8 @@ class GraphGRUCell(tf.keras.Model):
         self.input_dim = input_dim
         self.recurrent_size = recurrent_size
 
-        self.activation = activation
-        self.recurrent_activation = recurrent_activation
+        self.activation = tf.keras.layers.Activation(activation)
+        self.recurrent_activation = tf.keras.layers.Activation(recurrent_activation)
         self.use_bias = use_bias
 
         self.kernel_initializer = kernel_initializer

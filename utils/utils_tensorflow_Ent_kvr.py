@@ -408,9 +408,9 @@ def prepare_data_seq(task, batch_size=100):
     test = get_seq(test_seq, batch_size, drop_remainder=False)
 
     # debug dataset batch result
-    context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\
-        kb_arr_plain, context_arr_lengths, response_lengths, conv_arr_lengths, kb_arr_lengths, ent_index, ent_index_lengths,\
-        ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID = next(iter(train))
+    # context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\
+    #     kb_arr_plain, context_arr_lengths, response_lengths, conv_arr_lengths, kb_arr_lengths, ent_index, ent_index_lengths,\
+    #     ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID = next(iter(train))
 
     # structure transform, shuffle, batch, padding (previous version 2.0, batch padding, write by myself, deprecated)
     # train_samples = Dataset(train_seq, batch_size, shuffle=True)

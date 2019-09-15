@@ -1,11 +1,12 @@
 import tensorflow as tf
 from tensorflow.python.util import nest
-from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.ops import array_ops
 from tensorflow.python.framework import dtypes as dtypes_module
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import ops
 from tensorflow_models.Libraries.GraphGRUCell import GraphGRUCell
+from tensorflow.python.keras.utils import generic_utils
+import numpy as np
 
 
 class RNN(tf.keras.Model):
@@ -34,7 +35,12 @@ class RNN(tf.keras.Model):
         self.time_major = time_major
         self.zero_output_for_mask = zero_output_for_mask
         self.supports_masking = True
-        self.cell = GraphGRUCell(units, input_dim, recurrent_size)
+        self.cell = GraphGRUCell(units,
+                                 input_dim,
+                                 recurrent_size,
+                                 kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
+                                 recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
+                                 bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))))
 
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim
@@ -42,9 +48,6 @@ class RNN(tf.keras.Model):
              mask=None,  # mask: batch_size*max_len
              initial_states=None,  # initial_states: 4*batch_size*embedding_dim
              training=True):
-        if mask is not None:
-            mask = nest.flatten(mask)[0]
-
         timesteps = inputs.shape[0] if self.time_major else inputs.shape[1]
         if self.unroll and timesteps is None:
             raise ValueError('Cannot unroll a RNN if the time dimension is undefined.')
@@ -113,6 +116,7 @@ class RNN(tf.keras.Model):
             if mask is not None:
                 mask_list = array_ops.unstack(mask)  # mask: max_len*batch_size*1
                 if self.go_backwards:
+                    mask = tf.reverse(mask, [0])
                     mask_list.reverse()
 
                 for i in range(time_steps):
@@ -149,9 +153,21 @@ class RNN(tf.keras.Model):
                     # successive_states.append(states)
 
                     # get next timestep hidden input
-                    states[0] = return_states
+                    # states[0] = return_states
+                    states = []
+                    states.append(return_states[0])
                     for k in range(self.recurrent_size - 1):
-                        states[k + 1] = successive_states[dep_t[k]]
+                        stack_t = []
+                        for t in range(batch):
+                            dep = dep_t[t, k]
+                            if dep.numpy().decode() == '$':
+                                dep_state = array_ops.zeros([self.units])
+                            else:
+                                dep_state = successive_states[int(dep.numpy().decode())][0][t]
+                            # states[k + 1, t] = dep_state
+                            stack_t.append(dep_state)
+                        stack_t = tf.stack(stack_t, axis=0)
+                        states.append(stack_t)
 
                 last_output = successive_outputs[-1]  # last_output: batch_size*embedding_dim
                 new_states = successive_states[-1]  # new_states: batch_size*embedding_dim
@@ -180,4 +196,17 @@ class RNN(tf.keras.Model):
         if not self.time_major:
             outputs = nest.map_structure(swap_batch_timestep, outputs)  # outputs: batch_size*max_len*embedding_dim
 
-        return last_output, outputs, new_states
+        # return last_output, outputs, new_states
+        if self.return_sequences:
+            output = outputs
+        else:
+            output = last_output
+
+        if self.return_state:
+            if not isinstance(new_states, (list, tuple)):
+                states = [new_states]
+            else:
+                states = list(new_states)
+            return generic_utils.to_list(output) + states
+        else:
+            return output

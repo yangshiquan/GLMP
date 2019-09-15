@@ -1,10 +1,9 @@
 import tensorflow as tf
-from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.keras import backend as K
 from tensorflow_models.Libraries.RNN import RNN
 
 
-class Bidirectional(tf.keras.Model):
+class BidirectionalGraphGRU(tf.keras.Model):
     '''
     Bidirectional GraphGRU layer.
     '''
@@ -14,7 +13,7 @@ class Bidirectional(tf.keras.Model):
                  recurrent_size=4,
                  merge_mode='concat',
                  **kwargs):
-        super(Bidirectional, self).__init__(**kwargs)
+        super(BidirectionalGraphGRU, self).__init__(**kwargs)
         self.units = units
         self.input_dim = input_dim
         self.recurrent_size = recurrent_size
