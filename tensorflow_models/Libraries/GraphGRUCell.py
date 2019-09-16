@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.python.ops import array_ops
 from tensorflow.python.keras import backend as K
+from tensorflow.python.util import nest
 
 
 class GraphGRUCell(tf.keras.Model):
@@ -77,8 +78,11 @@ class GraphGRUCell(tf.keras.Model):
         else:
             self.bias = None
 
-    def call(self, inputs, states, training=True):  # inputs: batch_size*embedding_dim, states:4*batch_size*embedding_dim
+    def call(self, inputs, states, cell_mask, training=True):  # inputs: batch_size*embedding_dim, states:4*batch_size*embedding_dim, cell_mask: batch_size*recurrent_size
         batch_size = inputs.shape[0]
+        state_size = len(states)
+        if state_size > self.recurrent_size:
+            raise ValueError("length of states exceeds recurrent_size.")
         if self.use_bias:
             unstacked_biases = array_ops.unstack(self.bias)  # unstacked_biases: (recurrent_size+1)*embedding_dim
             input_bias, recurrent_bias = unstacked_biases[0], unstacked_biases[1:]  # input_bias: (3*embedding_dim), recurrent_bias: recurrent_size*(3*embedding_dim)
@@ -91,6 +95,15 @@ class GraphGRUCell(tf.keras.Model):
         x_z = matrix_x[:, :self.units]  # x_z: batch_size*embedding_dim
         x_r = matrix_x[:, self.units: 2 * self.units]  # x_r: batch_size*embedding_dim
         x_h = matrix_x[:, 2 * self.units:]  # x_h: batch_size*embedding_dim
+
+        def _expand_mask(mask_t, input_t, fixed_dim=1):  # mask_t: batch_size*1, input_t: batch_size*embedding_dim
+            assert not nest.is_sequence(mask_t)
+            assert not nest.is_sequence(input_t)
+            rank_diff = len(input_t.shape) - len(mask_t.shape)  # rand_diff: 0
+            for _ in range(rank_diff):
+                mask_t = array_ops.expand_dims(mask_t, -1)
+            multiples = [1] * fixed_dim + input_t.shape.as_list()[fixed_dim:]  # multiples: [1, embedding_dim]
+            return array_ops.tile(mask_t, multiples)
 
         accumulate_h = array_ops.zeros([batch_size, self.units])  # accumulate_h: batch_size*embedding_dim
         accumulate_z_h = array_ops.zeros([batch_size, self.units])  # accumulate_z_h: batch_size*embedding_dim
@@ -105,10 +118,18 @@ class GraphGRUCell(tf.keras.Model):
             z = self.recurrent_activation(x_z + recurrent_z)  # z: batch_size*embedding_dim
             r = self.recurrent_activation(x_r + recurrent_r)  # r: batch_size*embedding_dim
 
+            # mask
+            tiled_mask_t = _expand_mask(cell_mask[:, k], z)  # tiled_mask_t: batch_size*embedding_dim
+
             recurrent_h = r * matrix_inner[:, 2 * self.units:]  # recurrent_h: batch_size*embedding_dim
+            recurrent_h = array_ops.where(tiled_mask_t, recurrent_h, array_ops.zeros_like(recurrent_h))
             accumulate_h = accumulate_h + recurrent_h  # accumulate_h: batch_size*embedding_dim
 
-            accumulate_z_h = accumulate_z_h + z * states[k]  # accumulate_z_h: batch_size*embedding_dim
+            z_h = z * states[k]
+            z_h = array_ops.where(tiled_mask_t, z_h, array_ops.zeros_like(z_h))
+            accumulate_z_h = accumulate_z_h + z_h  # accumulate_z_h: batch_size*embedding_dim
+
+            z = array_ops.where(tiled_mask_t, z, array_ops.zeros_like(z))
             accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
 
         hh = self.activation(x_h + accumulate_h / self.recurrent_size)  # hh: batch_size*embedding_dim

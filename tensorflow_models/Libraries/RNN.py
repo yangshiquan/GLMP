@@ -46,14 +46,15 @@ class RNN(tf.keras.Model):
              inputs,  # inputs: batch_size*max_len*embedding_dim
              dependencies,  # dependencies: batch_size*max_len*recurrent_size
              mask=None,  # mask: batch_size*max_len
+             cell_mask=None,  # mask: batch_size*max_len*recurrent_size
              initial_states=None,  # initial_states: 4*batch_size*embedding_dim
              training=True):
         timesteps = inputs.shape[0] if self.time_major else inputs.shape[1]
         if self.unroll and timesteps is None:
             raise ValueError('Cannot unroll a RNN if the time dimension is undefined.')
 
-        def step(inputs, states, training):
-            output, new_states = self.cell(inputs, states, training)  # inputs: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
+        def step(inputs, states, cell_mask, training):
+            output, new_states = self.cell(inputs, states, cell_mask, training)  # inputs: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
             if not nest.is_sequence(new_states):
                 new_states = [new_states]
             return output, new_states
@@ -66,6 +67,7 @@ class RNN(tf.keras.Model):
         if not self.time_major:
             inputs = nest.map_structure(swap_batch_timestep, inputs)  # inputs: max_len*batch_size*embedding_dim
             dependencies = swap_batch_timestep(dependencies)  # dependencies: max_len*batch_size*recurrent_size
+            cell_mask = swap_batch_timestep(cell_mask)  # cell_mask: max_len*batch_size*recurrent_size
 
         flatted_inputs = nest.flatten(inputs)  # inputs: max_len*batch_size*embedding_dim
         time_steps = flatted_inputs[0].shape[0]
@@ -81,6 +83,10 @@ class RNN(tf.keras.Model):
                 mask = array_ops.expand_dims(mask, axis=-1)  # mask: batch_size*max_len*1
             if not self.time_major:
                 mask = swap_batch_timestep(mask)  # mask: max_len*batch_size*1
+
+        if cell_mask is not None:
+            if cell_mask.dtype != dtypes_module.bool:
+                cell_mask = math_ops.cast(cell_mask, dtypes_module.bool)
 
         def _expand_mask(mask_t, input_t, fixed_dim=1):  # mask_t: batch_size*1, input_t: batch_size*embedding_dim
             assert not nest.is_sequence(mask_t)
@@ -122,8 +128,10 @@ class RNN(tf.keras.Model):
                 for i in range(time_steps):
                     inp = _get_input_tensor(i)  # inp: batch_size*embedding_dim
                     mask_t = mask_list[i]  # mask_t: batch_size*1
-                    dep_t = dependencies[i]  # dep_t: batch_size*recurrent_size
-                    output, new_states = step(inp, tuple(states), training)  # inp: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
+                    if i < time_steps - 1:
+                        dep_t = dependencies[i+1]  # dep_t: batch_size*recurrent_size
+                    cell_mask_t = cell_mask[i]  # cell_mask_t: batch_size*recurrent_size
+                    output, new_states = step(inp, tuple(states), cell_mask_t, training)  # inp: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
                     # output: batch_size*embedding_dim, new_states:1*batch_size*embedding_dim
                     tiled_mask_t = _expand_mask(mask_t, output)  # tiled_mask_t: batch_size*embedding_dim
 
@@ -154,20 +162,21 @@ class RNN(tf.keras.Model):
 
                     # get next timestep hidden input
                     # states[0] = return_states
-                    states = []
-                    states.append(return_states[0])
-                    for k in range(self.recurrent_size - 1):
-                        stack_t = []
-                        for t in range(batch):
-                            dep = dep_t[t, k]
-                            if dep.numpy().decode() == '$':
-                                dep_state = array_ops.zeros([self.units])
-                            else:
-                                dep_state = successive_states[int(dep.numpy().decode())][0][t]
-                            # states[k + 1, t] = dep_state
-                            stack_t.append(dep_state)
-                        stack_t = tf.stack(stack_t, axis=0)
-                        states.append(stack_t)
+                    if i < time_steps - 1:
+                        states = []
+                        states.append(return_states[0])
+                        for k in range(self.recurrent_size - 1):
+                            stack_t = []
+                            for t in range(batch):
+                                dep = dep_t[t, k]
+                                if dep.numpy().decode() == '$':
+                                    dep_state = array_ops.zeros([self.units])
+                                else:
+                                    dep_state = successive_states[int(dep.numpy().decode())][0][t]
+                                # states[k + 1, t] = dep_state
+                                stack_t.append(dep_state)
+                            stack_t = tf.stack(stack_t, axis=0)
+                            states.append(stack_t)
 
                 last_output = successive_outputs[-1]  # last_output: batch_size*embedding_dim
                 new_states = successive_states[-1]  # new_states: batch_size*embedding_dim
