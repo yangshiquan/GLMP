@@ -16,6 +16,7 @@ class RNN(tf.keras.Model):
     def __init__(self,
                  units,
                  input_dim,
+                 shared_emb,
                  recurrent_size=4,
                  return_sequences=False,
                  return_state=False,
@@ -27,6 +28,7 @@ class RNN(tf.keras.Model):
         super(RNN, self).__init__(**kwargs)
         self.units = units
         self.input_dim = input_dim
+        self.edge_embeddings = shared_emb
         self.recurrent_size = recurrent_size
         self.return_sequences = return_sequences
         self.return_state = return_state
@@ -37,6 +39,7 @@ class RNN(tf.keras.Model):
         self.supports_masking = True
         self.cell = GraphGRUCell(units,
                                  input_dim,
+                                 shared_emb,
                                  recurrent_size,
                                  kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
                                  recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
@@ -45,6 +48,7 @@ class RNN(tf.keras.Model):
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim
              dependencies,  # dependencies: batch_size*max_len*recurrent_size
+             edge_types,  # edge_types: batch_size*max_len*recurrent_size
              mask=None,  # mask: batch_size*max_len
              cell_mask=None,  # mask: batch_size*max_len*recurrent_size
              initial_states=None,  # initial_states: 4*batch_size*embedding_dim
@@ -53,8 +57,8 @@ class RNN(tf.keras.Model):
         if self.unroll and timesteps is None:
             raise ValueError('Cannot unroll a RNN if the time dimension is undefined.')
 
-        def step(inputs, states, cell_mask, training):
-            output, new_states = self.cell(inputs, states, cell_mask, training)  # inputs: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
+        def step(inputs, states, edge_types, cell_mask, training):
+            output, new_states = self.cell(inputs, states, edge_types, cell_mask, training)  # inputs: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
             if not nest.is_sequence(new_states):
                 new_states = [new_states]
             return output, new_states
@@ -68,6 +72,7 @@ class RNN(tf.keras.Model):
             inputs = nest.map_structure(swap_batch_timestep, inputs)  # inputs: max_len*batch_size*embedding_dim
             dependencies = swap_batch_timestep(dependencies)  # dependencies: max_len*batch_size*recurrent_size
             cell_mask = swap_batch_timestep(cell_mask)  # cell_mask: max_len*batch_size*recurrent_size
+            edge_types = swap_batch_timestep(edge_types)  # edge_types: max_len*batch_size*recurrent_size
 
         flatted_inputs = nest.flatten(inputs)  # inputs: max_len*batch_size*embedding_dim
         time_steps = flatted_inputs[0].shape[0]
@@ -130,8 +135,9 @@ class RNN(tf.keras.Model):
                     mask_t = mask_list[i]  # mask_t: batch_size*1
                     if i < time_steps - 1:
                         dep_t = dependencies[i+1]  # dep_t: batch_size*recurrent_size
+                    edge_types_t = edge_types[i]  # edge_types_t: batch_size*recurrent_size
                     cell_mask_t = cell_mask[i]  # cell_mask_t: batch_size*recurrent_size
-                    output, new_states = step(inp, tuple(states), cell_mask_t, training)  # inp: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
+                    output, new_states = step(inp, tuple(states), edge_types_t, cell_mask_t, training)  # inp: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
                     # output: batch_size*embedding_dim, new_states:1*batch_size*embedding_dim
                     tiled_mask_t = _expand_mask(mask_t, output)  # tiled_mask_t: batch_size*embedding_dim
 

@@ -10,21 +10,28 @@ class BidirectionalGraphGRU(tf.keras.Model):
     def __init__(self,
                  units,
                  input_dim,
+                 edge_types,
                  recurrent_size=4,
                  merge_mode='concat',
                  **kwargs):
         super(BidirectionalGraphGRU, self).__init__(**kwargs)
         self.units = units
         self.input_dim = input_dim
+        self.edge_types = edge_types
         self.recurrent_size = recurrent_size
         self.merge_mode = merge_mode
+        self.edge_embeddings = tf.keras.layers.Embedding(edge_types,
+                                                         units,
+                                                         embeddings_initializer=tf.initializers.RandomNormal(0.0, 1.0))
         self.forward_layer = RNN(units,
                                  input_dim,
+                                 self.edge_embeddings,
                                  recurrent_size,
                                  return_sequences=True,
                                  return_state=True)
         self.backward_layer = RNN(units,
                                   input_dim,
+                                  self.edge_embeddings,
                                   recurrent_size,
                                   return_sequences=True,
                                   return_state=True,
@@ -35,6 +42,7 @@ class BidirectionalGraphGRU(tf.keras.Model):
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim
              dependencies,  # dependencies: 2*batch_size*max_len*recurrent_size
+             edge_types,  # edge_types: 2*batch_size*max_len*recurrent_size
              mask=None,  # mask: batch_size*max_len
              cell_mask=None,  # mask: 2*batch_size*max_len*recurrent_size
              initial_state=None,  # initial_state: 2*4*batch_size*embedding_dim
@@ -43,12 +51,13 @@ class BidirectionalGraphGRU(tf.keras.Model):
             forward_inputs, backward_inputs = inputs, inputs
             forward_state, backward_state = initial_state[0], initial_state[1]
             forward_dependencies, backward_dependencies = dependencies[0], dependencies[1]
+            forward_edge_types, backward_edge_types = edge_types[0], edge_types[1]
             forward_cell_mask, backward_cell_mask = cell_mask[0], cell_mask[1]
         else:
             raise ValueError("Please provide initial states for RNN.")
 
-        y = self.forward_layer(forward_inputs, forward_dependencies, mask, forward_cell_mask, forward_state, training)
-        y_rev = self.backward_layer(backward_inputs, backward_dependencies, mask, backward_cell_mask, backward_state, training)
+        y = self.forward_layer(forward_inputs, forward_dependencies, forward_edge_types, mask, forward_cell_mask, forward_state, training)
+        y_rev = self.backward_layer(backward_inputs, backward_dependencies, backward_edge_types, mask, backward_cell_mask, backward_state, training)
 
         if self.return_state:
             states = y[1:] + y_rev[1:]

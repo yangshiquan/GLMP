@@ -11,6 +11,7 @@ class GraphGRUCell(tf.keras.Model):
     def __init__(self,
                  units,
                  input_dim,
+                 shared_emb,
                  recurrent_size=4,
                  activation='tanh',
                  recurrent_activation='sigmoid',
@@ -30,6 +31,7 @@ class GraphGRUCell(tf.keras.Model):
         super(GraphGRUCell, self).__init__(**kwargs)
         self.units = units
         self.input_dim = input_dim
+        self.edge_embeddings = shared_emb
         self.recurrent_size = recurrent_size
 
         self.activation = tf.keras.layers.Activation(activation)
@@ -78,7 +80,7 @@ class GraphGRUCell(tf.keras.Model):
         else:
             self.bias = None
 
-    def call(self, inputs, states, cell_mask, training=True):  # inputs: batch_size*embedding_dim, states:4*batch_size*embedding_dim, cell_mask: batch_size*recurrent_size
+    def call(self, inputs, states, edge_types, cell_mask, training=True):  # inputs: batch_size*embedding_dim, states:4*batch_size*embedding_dim, cell_mask: batch_size*recurrent_size
         batch_size = inputs.shape[0]
         state_size = len(states)
         if state_size > self.recurrent_size:
@@ -109,7 +111,14 @@ class GraphGRUCell(tf.keras.Model):
         accumulate_z_h = array_ops.zeros([batch_size, self.units])  # accumulate_z_h: batch_size*embedding_dim
         accumulate_z = array_ops.zeros([batch_size, self.units])  # accumulate_z: batch_size*embedding_dim
         for k in range(self.recurrent_size):
-            matrix_inner = K.dot(states[k], self.recurrent_kernel[k])  # matrix_inner: batch_size*(3*embedding_dim), states[k]: batch_size*embedding_dim
+            # edge embedding
+            edge_embed = self.edge_embeddings(edge_types[:, k])  # edge_embed: batch_size*embedding
+            # mask
+            tiled_mask_t = _expand_mask(cell_mask[:, k], edge_embed)  # tiled_mask_t: batch_size*embedding_dim
+            edge_embed = array_ops.where(tiled_mask_t, edge_embed, array_ops.ones_like(edge_embed))  # edge_embed: batch_size*embedding_dim
+            state = states[k] * edge_embed  # state: batch_size*embedding_dim
+
+            matrix_inner = K.dot(state, self.recurrent_kernel[k])  # matrix_inner: batch_size*(3*embedding_dim), states[k]: batch_size*embedding_dim
             if self.use_bias:
                 matrix_inner = K.bias_add(matrix_inner, recurrent_bias[k])
             recurrent_z = matrix_inner[:, :self.units]  # recurrent_z: batch_size*embedding_dim
@@ -118,14 +127,11 @@ class GraphGRUCell(tf.keras.Model):
             z = self.recurrent_activation(x_z + recurrent_z)  # z: batch_size*embedding_dim
             r = self.recurrent_activation(x_r + recurrent_r)  # r: batch_size*embedding_dim
 
-            # mask
-            tiled_mask_t = _expand_mask(cell_mask[:, k], z)  # tiled_mask_t: batch_size*embedding_dim
-
             recurrent_h = r * matrix_inner[:, 2 * self.units:]  # recurrent_h: batch_size*embedding_dim
-            recurrent_h = array_ops.where(tiled_mask_t, recurrent_h, array_ops.zeros_like(recurrent_h))
+            recurrent_h = array_ops.where(tiled_mask_t, recurrent_h, array_ops.zeros_like(recurrent_h))  # recurrent_h: batch_size*embedding_dim
             accumulate_h = accumulate_h + recurrent_h  # accumulate_h: batch_size*embedding_dim
 
-            z_h = z * states[k]
+            z_h = z * state
             z_h = array_ops.where(tiled_mask_t, z_h, array_ops.zeros_like(z_h))
             accumulate_z_h = accumulate_z_h + z_h  # accumulate_z_h: batch_size*embedding_dim
 
