@@ -14,9 +14,13 @@ def _cuda(x):
 class Lang:
     def __init__(self):
         self.word2index = {}
-        self.index2word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS", UNK_token: 'UNK'}
+        self.index2word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS", UNK_token: "UNK"}
         self.n_words = len(self.index2word) # Count default tokens
         self.word2index = dict([(v, k) for k, v in self.index2word.items()])
+        self.type2index = {}
+        self.index2type = {PAD_token: "PAD", UNK_token: "UNK", 2: "PRE", 3: "NEXT"}
+        self.n_types = len(self.index2type)
+        self.type2index = dict([(v, k) for k, v in self.index2type.items()])
       
     def index_words(self, story, trg=False):
         if trg:
@@ -32,6 +36,15 @@ class Lang:
             self.word2index[word] = self.n_words
             self.index2word[self.n_words] = word
             self.n_words += 1
+
+    def index_type(self, type):
+        for direction in type:
+            for type_triple in direction:
+                for type in type_triple:
+                    if type not in self.type2index:
+                        self.type2index[type] = self.n_types
+                        self.index2type[self.n_types] = type
+                        self.n_types += 1
 
 
 class Dataset(data.Dataset):

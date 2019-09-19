@@ -61,7 +61,10 @@ def gen_samples(data, length):
               data_info['ent_idx_cal_lengths'][i],\
               data_info['ent_idx_nav_lengths'][i],\
               data_info['ent_idx_wet_lengths'][i],\
-              data_info['ID'][i]
+              data_info['ID'][i],\
+              data_info['deps'][i],\
+              data_info['deps_type'][i],\
+              data_info['cell_masks'][i]
 
 
 def get_seq(data_info, batch_size, drop_remainder):
@@ -88,7 +91,10 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                  tf.int32,  # ent_idx_cal_lengths 19
                                                  tf.int32,  # ent_idx_nav_lengths 20
                                                  tf.int32,  # ent_idx_wet_lengths 21
-                                                 tf.int32  # ID 22
+                                                 tf.int32,  # ID 22
+                                                 tf.string,  # deps 23
+                                                 tf.int32,  # deps_type 24
+                                                 tf.int32  # cell_masks 25
                                                  ),
                                    output_shapes=((None, None),  # context_arr
                                                   (None,),  # response
@@ -112,7 +118,10 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                   (),  # ent_idx_cal_lengths
                                                   (),  # ent_idx_nav_lengths
                                                   (),  # ent_idx_wet_lengths
-                                                  ()  # ID
+                                                  (),  # ID
+                                                  (None, None, None),  # deps
+                                                  (None, None, None),  # deps_type
+                                                  (None, None, None)  # cell_masks
                                                   )
                                    )
     print(len(data_info))
@@ -138,7 +147,10 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                                               [],  # ent_idx_cal_lengths
                                                                               [],  # ent_idx_nav_lengths
                                                                               [],  # ent_idx_wet_lengths
-                                                                              []  # ID
+                                                                              [],  # ID
+                                                                              [2, None, MAX_DEPENDENCIES_PER_NODE],  # deps
+                                                                              [2, None, (MAX_DEPENDENCIES_PER_NODE+1)],  # deps_type
+                                                                              [2, None, (MAX_DEPENDENCIES_PER_NODE+1)]  # cell_masks
                                                                               ),
                                                    padding_values=(PAD_token,  # context_arr
                                                                    PAD_token,  # response
@@ -162,7 +174,10 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                                    0,  # ent_idx_cal_lengths
                                                                    0,  # ent_idx_nav_lengths
                                                                    0,  # ent_idx_wet_lengths
-                                                                   0  # ID
+                                                                   0,  # ID
+                                                                   '$',  # deps
+                                                                   PAD_token,  # deps_type
+                                                                   0  # cell_masks
                                                                    ),
                                                     drop_remainder=drop_remainder
                                                    )

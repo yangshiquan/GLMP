@@ -13,7 +13,6 @@ python myTrain.py -ds= -dec= -bsz= -t= -hdd= -dr= -l= -lr=
 early_stop = args['earlyStop']
 if args['dataset']=='kvr':
     from utils.utils_Ent_kvr import *
-    # from utils.utils_tensorflow_Ent_kvr import *
     early_stop = 'BLEU'
 elif args['dataset']=='babi':
     from utils.utils_Ent_babi import *

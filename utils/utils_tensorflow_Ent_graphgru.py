@@ -4,13 +4,14 @@ import tensorflow as tf
 from utils.utils_general import *
 import numpy as np
 from utils.tensorflow_dataset import *
-from utils.utils_tensorflow_generator_kvr import *
+from utils.utils_tensorflow_generator_kvr_graphgru import *
+from utils.utils_build_document_graph import *
 import pdb
 
 
 def read_langs(file_name, max_line=None):
     print(("Reading lines from {}".format(file_name)))
-    data, context_arr, conv_arr, kb_arr = [], [], [], []
+    data, context_arr, conv_arr, kb_arr, conv_arr_plain = [], [], [], [], []
     max_resp_len = 0
 
     with open('data/KVR/kvret_entities.json') as f:
@@ -32,6 +33,7 @@ def read_langs(file_name, max_line=None):
                     gen_u = generate_memory(u, "$u", str(nid))
                     context_arr += gen_u
                     conv_arr += gen_u
+                    conv_arr_plain.append(u)
 
                     # Get gold entity for each domain
                     gold_ent = ast.literal_eval(gold_ent)
@@ -63,6 +65,20 @@ def read_langs(file_name, max_line=None):
 
                     sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
 
+                    # Get Document Graph
+                    dep_info, dep_info_hat, max_len = dependency_parsing(conv_arr_plain)
+                    dep_node_info, dep_relation_info, cell_mask = generate_subgraph(
+                        dep_info_hat,
+                        max_len,
+                        False)
+                    dep_node_info_reverse, dep_relation_info_reverse, cell_mask_reverse = generate_subgraph(
+                        dep_info_hat,
+                        max_len,
+                        True)
+                    deps = [dep_node_info, dep_node_info_reverse]
+                    deps_type = [dep_relation_info, dep_relation_info_reverse]
+                    masks = [cell_mask, cell_mask_reverse]
+
                     data_detail = {
                         'context_arr': list(context_arr + [['$$$$'] * MEM_TOKEN_SIZE]),  # $$$$ is NULL token
                         'response': r,
@@ -74,6 +90,10 @@ def read_langs(file_name, max_line=None):
                         'ent_idx_nav': list(set(ent_idx_nav)),
                         'ent_idx_wet': list(set(ent_idx_wet)),
                         'conv_arr': list(conv_arr),
+                        'conv_arr_plain': list(conv_arr_plain),
+                        'deps': list(deps),
+                        'deps_type': list(deps_type),
+                        'cell_masks': list(masks),
                         'kb_arr': list(kb_arr + [['$$$$'] * MEM_TOKEN_SIZE]),
                         'id': int(sample_counter),
                         'ID': int(cnt_lin),
@@ -83,6 +103,7 @@ def read_langs(file_name, max_line=None):
                     gen_r = generate_memory(r, "$s", str(nid))
                     context_arr += gen_r
                     conv_arr += gen_r
+                    conv_arr_plain.append(r)
                     if max_resp_len < len(r.split()):
                         max_resp_len = len(r.split())
                     sample_counter += 1
@@ -93,7 +114,7 @@ def read_langs(file_name, max_line=None):
                     kb_arr += kb_info
             else:
                 cnt_lin += 1
-                context_arr, conv_arr, kb_arr = [], [], []
+                context_arr, conv_arr, kb_arr, conv_arr_plain = [], [], [], []
                 if (max_line and cnt_lin >= max_line):
                     break
 
@@ -162,6 +183,7 @@ def build_lang(pairs, type):
             lang.index_words(pair['context_arr'])
             lang.index_words(pair['response'], trg=True)
             lang.index_words(pair['sketch_response'], trg=True)
+            lang.index_type(pair['deps_type'])
     return lang
 
 
@@ -182,6 +204,22 @@ def preprocess(sequence, word2id, trg=True):
     return story
 
 
+def preprocess_type(sequence, type2id):
+    """
+    Converts dependency types to ids.
+    """
+    deps_type = []
+    for i, direction in enumerate(sequence):
+        deps_type.append([])
+        for ii, word_triple in enumerate(direction):
+            deps_type[i].append([])
+            for iii, word in enumerate(word_triple):
+                temp = type2id[word] if word in type2id else UNK_token
+                deps_type[i][ii].append(temp)
+    deps_type = tf.convert_to_tensor(deps_type)
+    return deps_type
+
+
 def text_to_sequence(pairs, lang):
     '''
     Map texts to ids.
@@ -199,6 +237,7 @@ def text_to_sequence(pairs, lang):
         conv_arr = preprocess(pair['conv_arr'], lang.word2index, trg=False)
         kb_arr = preprocess(pair['kb_arr'], lang.word2index, trg=False)
         sketch_response = preprocess(pair['sketch_response'], lang.word2index)
+        deps_type = preprocess_type(pair['deps_type'], lang.type2index)
         # additional plain information
         context_arr_plain = pair['context_arr']
         response_plain.append(pair['response'])
@@ -218,170 +257,12 @@ def text_to_sequence(pairs, lang):
             'ent_idx_cal':pair['ent_idx_cal'],
             'ent_idx_nav':pair['ent_idx_nav'],
             'ent_idx_wet':pair['ent_idx_wet'],
-            'ID':pair['ID']
+            'ID':pair['ID'],
+            'deps': pair['deps'],
+            'deps_type': deps_type,
+            'cell_masks': pair['cell_masks']
         })
     return sequence_data
-
-
-# def padding(sequences, story_dim):
-#     '''
-#     Pad word sequences.
-#     :param sequences:
-#     :param story_dim:
-#     :return:
-#     '''
-#     lengths = [[len(seq)] for seq in sequences]
-#     lengths_int = [len(seq) for seq in sequences]
-#     max_len = 1 if max(lengths_int) == 0 else max(lengths_int)
-#     if (story_dim):
-#         # padded_seqs = torch.ones(len(sequences), max_len, MEM_TOKEN_SIZE).long()
-#         # padded_seqs = tf.ones([len(sequences), max_len, MEM_TOKEN_SIZE], dtype=tf.dtypes.int64)
-#         padded_seqs = np.ones([len(sequences), max_len, MEM_TOKEN_SIZE], dtype=np.dtype(np.int64))
-#         for i, seq in enumerate(sequences):
-#             end = lengths_int[i]
-#             if len(seq) != 0:
-#                 padded_seqs[i, :end, :] = seq[:end]
-#     else:
-#         # padded_seqs = torch.ones(len(sequences), max_len).long()
-#         # padded_seqs = tf.ones([len(sequences), max_len], dtype=tf.dtypes.int64)
-#         padded_seqs = np.ones([len(sequences), max_len], dtype=np.dtype(np.int64))
-#         for i, seq in enumerate(sequences):
-#             end = lengths_int[i]
-#             padded_seqs[i, :end] = seq[:end]
-#     return padded_seqs, lengths
-
-
-# def padding_index(sequences):
-#     '''
-#     Pad non-word sequences.
-#     :param sequences:
-#     :return:
-#     '''
-#     lengths = [[len(seq)] for seq in sequences]
-#     lengths_int = [len(seq) for seq in sequences]
-#     # padded_seqs = torch.zeros(len(sequences), max(lengths)).float()
-#     # padded_seqs = tf.zeros([len(sequences), max(lengths)], dtype=tf.dtypes.float32)
-#     padded_seqs = np.zeros([len(sequences), max(lengths_int)], dtype=np.dtype(np.float))
-#     for i, seq in enumerate(sequences):
-#         end = lengths_int[i]
-#         padded_seqs[i, :end] = seq[:end]
-#     return padded_seqs, lengths
-
-
-# def padding_text(sequences):
-#     '''
-#     Pad plain information
-#     :param sequences:
-#     :return:
-#     '''
-#     lengths = [[len(seq)] for seq in sequences]
-#     lengths_int = [len(seq) for seq in sequences]
-#     new_sequences = []
-#     for i, seq in enumerate(sequences):
-#         length = lengths_int[i]
-#         seq = seq + [['PAD', 'PAD', 'PAD', 'PAD', 'PAD', 'PAD']] * (max(lengths_int) - length)
-#         new_sequences.append(seq)
-#     return new_sequences, lengths
-
-
-# def padding_ent_index(sequences):
-#     '''
-#     Pad ent_index information.
-#     :param sequences:
-#     :return:
-#     '''
-#     lengths = [[len(seq)] for seq in sequences]
-#     lengths_int = [len(seq) for seq in sequences]
-#     new_sequences = []
-#     for i, seq in enumerate(sequences):
-#         length = lengths_int[i]
-#         seq = seq + ['PAD'] * (max(lengths_int) - length)
-#         new_sequences.append(seq)
-#     return new_sequences, lengths
-
-
-# def structure_transform(data):
-#     '''
-#     Transform data format to fit tensorflow.
-#     :param data:
-#     :return:
-#     '''
-#     data_info, data_info_processed = {}, {}
-#     for key in data[0].keys():
-#         data_info[key] = [d[key] for d in data]
-#
-#     context_arr, context_arr_lengths = padding(data_info['context_arr'], True)
-#     response, response_lengths = padding(data_info['response'], False)
-#     selector_index, _ = padding_index(data_info['selector_index'])
-#     ptr_index, _ = padding(data_info['ptr_index'], False)
-#     conv_arr, conv_arr_lengths = padding(data_info['conv_arr'], True)
-#     sketch_response, sketech_response_lengths = padding(data_info['sketch_response'], False)
-#     kb_arr, kb_arr_lengths = padding(data_info['kb_arr'], True)
-#     context_arr_plain, context_arr_plain_lengths = padding_text(data_info['context_arr_plain'])
-#     kb_arr_plain, kb_arr_plain_lengths = padding_text(data_info['kb_arr_plain'])
-#     ent_index, ent_index_lengths = padding_ent_index(data_info['ent_index'])
-#     ent_idx_cal, ent_idx_cal_lengths = padding_ent_index(data_info['ent_idx_cal'])
-#     ent_idx_nav, ent_idx_nav_lengths = padding_ent_index(data_info['ent_idx_nav'])
-#     ent_idx_wet, ent_idx_wet_lengths = padding_ent_index(data_info['ent_idx_wet'])
-#
-#
-#     for key in data_info.keys():
-#         try:
-#             data_info_processed[key] = locals()[key]
-#         except:
-#             data_info_processed[key] = data_info[key]
-#
-#     # additional plain information
-#     # print(np.array(context_arr_lengths).shape)
-#     # print(np.array(response_lengths).shape)
-#     # print(np.array(conv_arr_lengths).shape)
-#     # print(np.array(kb_arr_lengths).shape)
-#     # data_info_processed['context_arr_plain'] = np.array(data_info_processed['context_arr_plain'])
-#     # print(data_info_processed['context_arr_plain'].shape)
-#     data_info_processed['context_arr_lengths'] = np.array(context_arr_lengths)
-#     data_info_processed['response_lengths'] = np.array(response_lengths)
-#     data_info_processed['conv_arr_lengths'] = np.array(conv_arr_lengths)
-#     data_info_processed['kb_arr_lengths'] = np.array(kb_arr_lengths)
-#     data_info_processed['ent_index_lengths'] = np.array(ent_index_lengths)
-#     data_info_processed['ent_idx_cal_lengths'] = np.array(ent_idx_cal_lengths)
-#     data_info_processed['ent_idx_nav_lengths'] = np.array(ent_idx_nav_lengths)
-#     data_info_processed['ent_idx_wet_lengths'] = np.array(ent_idx_wet_lengths)
-#
-#     return data_info_processed, max(sketech_response_lengths)[0]
-
-
-# def build_dataset(data_info, batch_size):
-#     '''
-#     Build tensorflow dataset.
-#     :param data_info:
-#     :return:
-#     '''
-#     dataset = tf.data.Dataset.from_tensor_slices((data_info['context_arr'],
-#                                                   data_info['response'],
-#                                                   data_info['sketch_response'],
-#                                                   data_info['conv_arr'],
-#                                                   data_info['ptr_index'],
-#                                                   data_info['selector_index'],
-#                                                   data_info['kb_arr'],
-#                                                   data_info['context_arr_plain'],
-#                                                   data_info['response_plain'],
-#                                                   data_info['kb_arr_plain'],
-#                                                   data_info['context_arr_lengths'],
-#                                                   data_info['response_lengths'],
-#                                                   data_info['conv_arr_lengths'],
-#                                                   data_info['kb_arr_lengths'],
-#                                                   data_info['ent_index'],
-#                                                   data_info['ent_index_lengths'],
-#                                                   data_info['ent_idx_cal'],
-#                                                   data_info['ent_idx_nav'],
-#                                                   data_info['ent_idx_wet'],
-#                                                   data_info['ent_idx_cal_lengths'],
-#                                                   data_info['ent_idx_nav_lengths'],
-#                                                   data_info['ent_idx_wet_lengths'],
-#                                                   data_info['ID']
-#                                                   )).shuffle(len(data_info['context_arr']))
-#     dataset = dataset.batch(batch_size, drop_remainder=True)
-#     return dataset
 
 
 def prepare_data_seq(task, batch_size=100):
@@ -407,29 +288,6 @@ def prepare_data_seq(task, batch_size=100):
     dev = get_seq(dev_seq, batch_size, drop_remainder=False)
     test = get_seq(test_seq, batch_size, drop_remainder=False)
 
-    # debug dataset batch result
-    context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\
-        kb_arr_plain, context_arr_lengths, response_lengths, conv_arr_lengths, kb_arr_lengths, ent_index, ent_index_lengths,\
-        ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID, deps, deps_type, cell_masks = next(iter(train))
-
-    # structure transform, shuffle, batch, padding (previous version 2.0, batch padding, write by myself, deprecated)
-    # train_samples = Dataset(train_seq, batch_size, shuffle=True)
-    # train_samples_batches = train_samples.load_batches(drop_last=True)
-    # dev_samples = Dataset(dev_seq, batch_size, shuffle=False)
-    # dev_samples_batches = dev_samples.load_batches(drop_last=True)
-    # test_samples = Dataset(test_seq, batch_size, shuffle=False)
-    # test_samples_batches = test_samples.load_batches(drop_last=True)
-
-    # # extract information from seqs (previous version 1.0, global padding, write by myself, deprecated)
-    # train_info, train_max_resp_len = structure_transform(train_seq)
-    # dev_info, dev_max_resp_len = structure_transform(dev_seq)
-    # test_info, test_max_resp_len = structure_transform(test_seq)
-    #
-    # # build dataset (previous version 1.0, global padding, write by myself, deprecated)
-    # train_samples = build_dataset(train_info, batch_size)
-    # dev_samples = build_dataset(dev_info, batch_size)
-    # test_samples = build_dataset(test_info, batch_size)
-
     print("Read %s sentence pairs train" % len(pair_train))
     print("Read %s sentence pairs dev" % len(pair_dev))
     print("Read %s sentence pairs test" % len(pair_test))
@@ -437,6 +295,4 @@ def prepare_data_seq(task, batch_size=100):
     print("Max. length of system response: %s " % max_resp_len)
     print("USE_CUDA={}".format(USE_CUDA))
 
-    # return train_samples, dev_samples, test_samples, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test), train_max_resp_len, dev_max_resp_len, test_max_resp_len
-    # return train_samples_batches, dev_samples_batches, test_samples_batches, [], lang, max_resp_len
     return train, dev, test, [], lang, max_resp_len, len(pair_train), len(pair_dev), len(pair_test)

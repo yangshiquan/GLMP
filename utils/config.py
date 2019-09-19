@@ -12,6 +12,7 @@ if (os.cpu_count() > 8):
 else:
     USE_CUDA = False
 MAX_LENGTH = 10
+MAX_DEPENDENCIES_PER_NODE = 3
 
 parser = argparse.ArgumentParser(description='Seq_TO_Seq Dialogue bAbI')
 parser.add_argument('-ds','--dataset', help='dataset, babi or kvr', required=False)
