@@ -12,7 +12,6 @@ if (os.cpu_count() > 8):
 else:
     USE_CUDA = False
 MAX_LENGTH = 10
-MAX_DEPENDENCIES_PER_NODE = 3
 
 parser = argparse.ArgumentParser(description='Seq_TO_Seq Dialogue bAbI')
 parser.add_argument('-ds','--dataset', help='dataset, babi or kvr', required=False)
@@ -38,6 +37,7 @@ parser.add_argument('-abg','--ablationG', help='ablation global memory pointer',
 parser.add_argument('-abh','--ablationH', help='ablation context embedding', type=int, required=False, default=0)
 parser.add_argument('-rec','--record', help='use record function during inference', type=int, required=False, default=0)
 parser.add_argument('-revgraph', '--reverse_graph', help='change dependency relation from dependent to head', type=int, required=False, default=0)
+parser.add_argument('-maxdeps', '--max_deps', help='maximum dependencies per node', type=int, required=False, default=3)
 # parser.add_argument('-beam','--beam_search', help='use beam_search during inference, default is greedy search', type=int, required=False, default=0)
 # parser.add_argument('-viz','--vizualization', help='vizualization', type=int, required=False, default=0)
 
@@ -47,6 +47,7 @@ print("USE_CUDA: "+str(USE_CUDA))
 
 LIMIT = int(args["limit"]) 
 MEM_TOKEN_SIZE = 6 if args["dataset"] == 'kvr' else 4
+MAX_DEPENDENCIES_PER_NODE = args['max_deps']
 
 if args["ablationG"]: args["addName"] += "ABG"
 if args["ablationH"]: args["addName"] += "ABH"
