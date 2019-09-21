@@ -3,6 +3,7 @@ from spacy.tokens import Doc
 from utils.config import *
 from spacy import displacy
 from pathlib import Path
+import copy
 import numpy as np
 import pdb
 
@@ -91,6 +92,24 @@ def dependency_parsing(sents):
     return dep_info, dep_info_hat, max_len
 
 
+def reverse_graph_info(graph_info):
+    '''
+    Reverse the arc from dependent to head.
+    :param graph_info:
+    :return:
+    '''
+    for content in graph_info:
+        for entry in content['tokens']:
+            id = entry['id']
+            head = entry['head']
+            temp = id
+            id = head
+            head = temp
+            entry['id'] = id
+            entry['head'] = head
+    return graph_info
+
+
 def generate_subgraph(graph_info, node_num, reverse=False):
     '''
     Generate subgraph for forward and backward calculation of Bi-GraphLSTM.
@@ -101,6 +120,8 @@ def generate_subgraph(graph_info, node_num, reverse=False):
     '''
     dep_node_info, dep_relation_info, cell_mask = [], [], []
     all_dependency_cnt = 0
+    graph_info_r = copy.deepcopy(graph_info)
+    graph_info_r = reverse_graph_info(graph_info_r)
     for index in range(node_num):
         dependencies = []
         if not reverse:
@@ -112,7 +133,7 @@ def generate_subgraph(graph_info, node_num, reverse=False):
         if reverse:
             reversed_ids = list(reversed(range(node_num)))
 	# parse all dependencies of nodes
-        for content in graph_info:
+        for content in graph_info_r:
             for token in content['tokens']:
                 if not reverse:
                     # skip root node
