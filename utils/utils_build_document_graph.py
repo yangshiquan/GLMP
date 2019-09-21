@@ -1,6 +1,8 @@
 import spacy
 from spacy.tokens import Doc
 from utils.config import *
+from spacy import displacy
+from pathlib import Path
 import numpy as np
 
 
@@ -35,6 +37,10 @@ def dependency_parsing(sents):
         if sentence_key not in local_2_global_dict:
             local_2_global_dict[sentence_key] = {}
         doc = nlp(sentence)
+        svg = displacy.render(doc, style='dep', jupyter=False)
+        file_name = '-'.join([w.text for w in doc if not w.is_punct]) + ".svg"
+        output_path = Path("/Users/shiquan/PycharmProjects/GLMP_dev/GLMP/img/" + file_name)
+        output_path.open("w", encoding="utf-8").write(svg)
         dependency = doc.to_json()
         dep_info.append(dependency)
         for index, word in enumerate(doc):
