@@ -4,6 +4,7 @@ from utils.config import *
 from spacy import displacy
 from pathlib import Path
 import numpy as np
+import pdb
 
 
 # customize tokenizer (white-space tokenizer)
