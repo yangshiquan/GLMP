@@ -2,6 +2,7 @@ import spacy
 from spacy.tokens import Doc
 from utils.config import *
 import numpy as np
+import pdb
 
 
 # customize tokenizer (white-space tokenizer)
