@@ -94,6 +94,7 @@ def generate_subgraph(graph_info, node_num, reverse=False):
     :return: forward subgraph or backward subgraph.
     '''
     dep_node_info, dep_relation_info, cell_mask = [], [], []
+    all_dependency_cnt = 0
     for index in range(node_num):
         dependencies = []
         if not reverse:
@@ -122,6 +123,7 @@ def generate_subgraph(graph_info, node_num, reverse=False):
                         masks.append(1)
 	# TODO: prune node dependencies strategy
 	# prune node dependencies
+        all_dependency_cnt += len(dependencies)
         if len(dependencies) > MAX_DEPENDENCIES_PER_NODE:
             dependencies = dependencies[0: MAX_DEPENDENCIES_PER_NODE]
             relations = relations[0: (MAX_DEPENDENCIES_PER_NODE + 1)]
@@ -133,17 +135,17 @@ def generate_subgraph(graph_info, node_num, reverse=False):
         dep_node_info.append(dependencies)
         dep_relation_info.append(relations)
         cell_mask.append(masks)
-    return dep_node_info, dep_relation_info, cell_mask
+    return dep_node_info, dep_relation_info, cell_mask, all_dependency_cnt
 
 
 if __name__ == "__main__":
     conv_arr = ['what gas_stations are here ?', 'There is a chevron']
     dep_info, dep_info_hat, max_len = dependency_parsing(conv_arr)
-    dep_node_info, dep_relation_info, cell_mask = generate_subgraph(
+    dep_node_info, dep_relation_info, cell_mask, all_cnt = generate_subgraph(
         dep_info_hat,
         max_len,
         False)
-    dep_node_info_reverse, dep_relation_info_reverse, cell_mask_reverse = generate_subgraph(
+    dep_node_info_reverse, dep_relation_info_reverse, cell_mask_reverse, all_cnt = generate_subgraph(
         dep_info_hat,
         max_len,
         True)
