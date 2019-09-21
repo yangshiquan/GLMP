@@ -121,7 +121,8 @@ def generate_subgraph(graph_info, node_num, reverse=False):
     dep_node_info, dep_relation_info, cell_mask = [], [], []
     all_dependency_cnt = 0
     graph_info_r = copy.deepcopy(graph_info)
-    graph_info_r = reverse_graph_info(graph_info_r)
+    if args['reverse_graph']:
+        graph_info_r = reverse_graph_info(graph_info_r)
     for index in range(node_num):
         dependencies = []
         if not reverse:

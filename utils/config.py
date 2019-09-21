@@ -37,6 +37,7 @@ parser.add_argument('-es','--earlyStop', help='Early Stop Criteria, BLEU or ENTF
 parser.add_argument('-abg','--ablationG', help='ablation global memory pointer', type=int, required=False, default=0)
 parser.add_argument('-abh','--ablationH', help='ablation context embedding', type=int, required=False, default=0)
 parser.add_argument('-rec','--record', help='use record function during inference', type=int, required=False, default=0)
+parser.add_argument('-revgraph', '--reverse_graph', help='change dependency relation from dependent to head', type=int, required=False, default=0)
 # parser.add_argument('-beam','--beam_search', help='use beam_search during inference, default is greedy search', type=int, required=False, default=0)
 # parser.add_argument('-viz','--vizualization', help='vizualization', type=int, required=False, default=0)
 
