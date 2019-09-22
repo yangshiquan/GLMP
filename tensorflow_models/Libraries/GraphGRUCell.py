@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.python.ops import array_ops
 from tensorflow.python.keras import backend as K
 from tensorflow.python.util import nest
+from utils.config import *
 
 
 class GraphGRUCell(tf.keras.Model):
@@ -110,7 +111,10 @@ class GraphGRUCell(tf.keras.Model):
         accumulate_h = array_ops.zeros([batch_size, self.units])  # accumulate_h: batch_size*embedding_dim
         accumulate_z_h = array_ops.zeros([batch_size, self.units])  # accumulate_z_h: batch_size*embedding_dim
         accumulate_z = array_ops.zeros([batch_size, self.units])  # accumulate_z: batch_size*embedding_dim
-        for k in range(self.recurrent_size):
+
+        round = 1 if args['ablationD'] else self.recurrent_size
+
+        for k in range(round):
             # edge embedding
             edge_embed = self.edge_embeddings(edge_types[:, k])  # edge_embed: batch_size*embedding
             # mask
@@ -138,6 +142,6 @@ class GraphGRUCell(tf.keras.Model):
             z = array_ops.where(tiled_mask_t, z, array_ops.zeros_like(z))
             accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
 
-        hh = self.activation(x_h + accumulate_h / self.recurrent_size)  # hh: batch_size*embedding_dim
-        h = (1 - accumulate_z / self.recurrent_size) * hh + accumulate_z_h / self.recurrent_size  # h: batch_size*embedding_dim
+        hh = self.activation(x_h + accumulate_h / round)  # hh: batch_size*embedding_dim
+        h = (1 - accumulate_z / round) * hh + accumulate_z_h / round  # h: batch_size*embedding_dim
         return h, [h]
