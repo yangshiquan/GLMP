@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.python.keras import backend as K
 from tensorflow_models.Libraries.RNN import RNN
+import pdb
 
 
 class BidirectionalGraphGRU(tf.keras.Model):
@@ -25,12 +26,14 @@ class BidirectionalGraphGRU(tf.keras.Model):
                                                          embeddings_initializer=tf.initializers.RandomNormal(0.0, 1.0))
         self.forward_layer = RNN(units,
                                  input_dim,
+                                 edge_types,
                                  self.edge_embeddings,
                                  recurrent_size,
                                  return_sequences=True,
                                  return_state=True)
         self.backward_layer = RNN(units,
                                   input_dim,
+                                  edge_types,
                                   self.edge_embeddings,
                                   recurrent_size,
                                   return_sequences=True,

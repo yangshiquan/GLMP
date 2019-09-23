@@ -7,6 +7,7 @@ from tensorflow.python.framework import ops
 from tensorflow_models.Libraries.GraphGRUCell import GraphGRUCell
 from tensorflow.python.keras.utils import generic_utils
 import numpy as np
+import pdb
 
 
 class RNN(tf.keras.Model):
@@ -16,6 +17,7 @@ class RNN(tf.keras.Model):
     def __init__(self,
                  units,
                  input_dim,
+                 edge_types,
                  shared_emb,
                  recurrent_size=4,
                  return_sequences=False,
@@ -28,6 +30,7 @@ class RNN(tf.keras.Model):
         super(RNN, self).__init__(**kwargs)
         self.units = units
         self.input_dim = input_dim
+        self.edge_types = edge_types
         self.edge_embeddings = shared_emb
         self.recurrent_size = recurrent_size
         self.return_sequences = return_sequences
@@ -39,6 +42,7 @@ class RNN(tf.keras.Model):
         self.supports_masking = True
         self.cell = GraphGRUCell(units,
                                  input_dim,
+                                 edge_types,
                                  shared_emb,
                                  recurrent_size,
                                  kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
@@ -58,6 +62,7 @@ class RNN(tf.keras.Model):
             raise ValueError('Cannot unroll a RNN if the time dimension is undefined.')
 
         def step(inputs, states, edge_types, cell_mask, training):
+            # pdb.set_trace()
             output, new_states = self.cell(inputs, states, edge_types, cell_mask, training)  # inputs: batch_size*embedding_dim, states: 4*batch_size*embedding_dim
             if not nest.is_sequence(new_states):
                 new_states = [new_states]
@@ -130,6 +135,7 @@ class RNN(tf.keras.Model):
                     mask = tf.reverse(mask, [0])
                     mask_list.reverse()
 
+                # pdb.set_trace()
                 for i in range(time_steps):
                     inp = _get_input_tensor(i)  # inp: batch_size*embedding_dim
                     mask_t = mask_list[i]  # mask_t: batch_size*1
@@ -184,6 +190,7 @@ class RNN(tf.keras.Model):
                             stack_t = tf.stack(stack_t, axis=0)
                             states.append(stack_t)
 
+                # pdb.set_trace()
                 last_output = successive_outputs[-1]  # last_output: batch_size*embedding_dim
                 new_states = successive_states[-1]  # new_states: batch_size*embedding_dim
                 outputs = array_ops.stack(successive_outputs)  # outputs: max_len*batch_size*embedding_dim

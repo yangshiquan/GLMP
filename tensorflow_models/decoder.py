@@ -77,7 +77,6 @@ class LocalMemoryDecoder(tf.keras.Model):
                                          initial_state=hidden,
                                          training=training)  # 1 * batch_size * embedding_dim.
             query_vector = hidden  # need to check meaning of hidden[0], query_vector: batch_size * embedding_dim.
-
             p_vocab = self.attend_vocab(self.C.embeddings.numpy(), hidden)  # self.C.read_value: num_vocab * embedding_dim, p_vocab: batch_size * num_vocab.
             # all_decoder_outputs_vocab[t] = p_vocab
             all_decoder_outputs_vocab.append(p_vocab)
