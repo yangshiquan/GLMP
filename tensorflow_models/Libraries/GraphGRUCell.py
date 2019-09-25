@@ -190,9 +190,12 @@ class GraphGRUCell(tf.keras.Model):
             # accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
 
         # add for sum_after
-        h_hat = tf.reduce_sum(tf.stack(h_hat, axis=0), axis=0)
-        cell_mask = tf.reduce_sum(math_ops.cast(cell_mask, dtypes_module.int32), axis=1)
-        h_hat = h_hat / tf.cast(tf.tile(tf.expand_dims(cell_mask, axis=1), [1, self.units]), dtype=float)
+        if args['ablationD']:
+            o_h = h_hat[0]
+        else:
+            h_hat = tf.reduce_sum(tf.stack(h_hat, axis=0), axis=0)
+            cell_mask = tf.reduce_sum(math_ops.cast(cell_mask, dtypes_module.int32), axis=1)
+            o_h = h_hat / tf.cast(tf.tile(tf.expand_dims(cell_mask, axis=1), [1, self.units]), dtype=float)
 
         # commet for sum_after
         # hh = self.activation(x_h + accumulate_h / self.recurrent_size)  # hh: batch_size*embedding_dim
@@ -200,4 +203,4 @@ class GraphGRUCell(tf.keras.Model):
         # return h, [h]
 
         # add for sum_after
-        return h_hat, [h_hat]
+        return o_h, [o_h]
