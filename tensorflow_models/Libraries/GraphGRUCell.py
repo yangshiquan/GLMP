@@ -136,11 +136,13 @@ class GraphGRUCell(tf.keras.Model):
             multiples = [1] * fixed_dim + input_t.shape.as_list()[fixed_dim:]  # multiples: [1, embedding_dim]
             return array_ops.tile(mask_t, multiples)
         # comment for sum_after
-        # accumulate_h = array_ops.zeros([batch_size, self.units])  # accumulate_h: batch_size*embedding_dim
-        # accumulate_z_h = array_ops.zeros([batch_size, self.units])  # accumulate_z_h: batch_size*embedding_dim
-        # accumulate_z = array_ops.zeros([batch_size, self.units])  # accumulate_z: batch_size*embedding_dim
+        accumulate_h = array_ops.zeros([batch_size, self.units])  # accumulate_h: batch_size*embedding_dim
+        accumulate_z_h = array_ops.zeros([batch_size, self.units])  # accumulate_z_h: batch_size*embedding_dim
+        accumulate_z = array_ops.zeros([batch_size, self.units])  # accumulate_z: batch_size*embedding_dim
 
-        h_hat = []
+        # add for sum_after
+        # h_hat = []
+
         for k in range(self.recurrent_size):
             # edge embedding
             edge_embed = self.edge_embeddings(edge_types[:, k])  # edge_embed: batch_size*embedding
@@ -172,35 +174,35 @@ class GraphGRUCell(tf.keras.Model):
             r = self.recurrent_activation(x_r + recurrent_r)  # r: batch_size*embedding_dim
 
             # add for sum_after
-            hh = self.activation(x_h + r * matrix_inner[:, 2 * self.units:])
-            h = (1 - z) * hh + z * state
-            h = array_ops.where(tiled_mask_t, h, array_ops.zeros_like(h))
-            h_hat.append(h)
+            # hh = self.activation(x_h + r * matrix_inner[:, 2 * self.units:])
+            # h = (1 - z) * hh + z * state
+            # h = array_ops.where(tiled_mask_t, h, array_ops.zeros_like(h))
+            # h_hat.append(h)
 
             # comment for sum_after
-            # recurrent_h = r * matrix_inner[:, 2 * self.units:]  # recurrent_h: batch_size*embedding_dim
-            # recurrent_h = array_ops.where(tiled_mask_t, recurrent_h, array_ops.zeros_like(recurrent_h))  # recurrent_h: batch_size*embedding_dim
-            # accumulate_h = accumulate_h + recurrent_h  # accumulate_h: batch_size*embedding_dim
-            #
-            # z_h = z * state
-            # z_h = array_ops.where(tiled_mask_t, z_h, array_ops.zeros_like(z_h))
-            # accumulate_z_h = accumulate_z_h + z_h  # accumulate_z_h: batch_size*embedding_dim
-            #
-            # z = array_ops.where(tiled_mask_t, z, array_ops.zeros_like(z))
-            # accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
+            recurrent_h = r * matrix_inner[:, 2 * self.units:]  # recurrent_h: batch_size*embedding_dim
+            recurrent_h = array_ops.where(tiled_mask_t, recurrent_h, array_ops.zeros_like(recurrent_h))  # recurrent_h: batch_size*embedding_dim
+            accumulate_h = accumulate_h + recurrent_h  # accumulate_h: batch_size*embedding_dim
+
+            z_h = z * state
+            z_h = array_ops.where(tiled_mask_t, z_h, array_ops.zeros_like(z_h))
+            accumulate_z_h = accumulate_z_h + z_h  # accumulate_z_h: batch_size*embedding_dim
+
+            z = array_ops.where(tiled_mask_t, z, array_ops.zeros_like(z))
+            accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
 
         # add for sum_after
-        if args['ablationD']:
-            o_h = h_hat[0]
-        else:
-            h_hat = tf.reduce_sum(tf.stack(h_hat, axis=0), axis=0)
-            cell_mask = tf.reduce_sum(math_ops.cast(cell_mask, dtypes_module.int32), axis=1)
-            o_h = h_hat / tf.cast(tf.tile(tf.expand_dims(cell_mask, axis=1), [1, self.units]), dtype=float)
+        # if args['ablationD']:
+        #     o_h = h_hat[0]
+        # else:
+        #     h_hat = tf.reduce_sum(tf.stack(h_hat, axis=0), axis=0)
+        #     cell_mask = tf.reduce_sum(math_ops.cast(cell_mask, dtypes_module.int32), axis=1)
+        #     o_h = h_hat / tf.cast(tf.tile(tf.expand_dims(cell_mask, axis=1), [1, self.units]), dtype=float)
 
         # commet for sum_after
-        # hh = self.activation(x_h + accumulate_h / self.recurrent_size)  # hh: batch_size*embedding_dim
-        # h = (1 - accumulate_z / self.recurrent_size) * hh + accumulate_z_h / self.recurrent_size  # h: batch_size*embedding_dim
-        # return h, [h]
+        hh = self.activation(x_h + accumulate_h / self.recurrent_size)  # hh: batch_size*embedding_dim
+        h = (1 - accumulate_z / self.recurrent_size) * hh + accumulate_z_h / self.recurrent_size  # h: batch_size*embedding_dim
+        return h, [h]
 
         # add for sum_after
-        return o_h, [o_h]
+        # return o_h, [o_h]
