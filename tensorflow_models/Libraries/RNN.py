@@ -185,7 +185,10 @@ class RNN(tf.keras.Model):
                                 if dep.numpy().decode() == '$':
                                     dep_state = array_ops.zeros([self.units])
                                 else:
-                                    dep_state = successive_states[int(dep.numpy().decode())+(timesteps-input_lengths[t])][0][t]
+                                    if self.go_backwards:
+                                        dep_state = successive_states[int(dep.numpy().decode())+(timesteps-input_lengths[t])][0][t]
+                                    else:
+                                        dep_state = successive_states[int(dep.numpy().decode())][0][t]
                                 # states[k + 1, t] = dep_state
                                 stack_t.append(dep_state)
                             stack_t = tf.stack(stack_t, axis=0)
