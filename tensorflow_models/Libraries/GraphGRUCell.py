@@ -142,8 +142,9 @@ class GraphGRUCell(tf.keras.Model):
 
         # add for sum_after
         # h_hat = []
+        loop = 1 if args['ablationD'] else self.recurrent_size
 
-        for k in range(self.recurrent_size):
+        for k in range(loop):
             # edge embedding
             edge_embed = self.edge_embeddings(edge_types[:, k])  # edge_embed: batch_size*embedding
             # mask
