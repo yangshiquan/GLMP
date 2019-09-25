@@ -52,6 +52,7 @@ class GraphGRU(tf.keras.Model):
             embedded = self.dropout_layer(embedded, training=training)
         hidden = self.initialize_hidden_state(input_seqs.get_shape()[0])
         outputs, hidden_f, hidden_b = self.bi_graph_gru(embedded,
+                                                        input_lengths,
                                                         tf.transpose(deps, [1, 0, 2, 3]),
                                                         tf.transpose(edge_types, [1, 0, 2, 3]),
                                                         mask,

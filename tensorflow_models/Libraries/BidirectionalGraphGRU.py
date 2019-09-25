@@ -44,18 +44,43 @@ class BidirectionalGraphGRU(tf.keras.Model):
 
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim
+             input_lengths,  # input_lengths: batch_size
              dependencies,  # dependencies: 2*batch_size*max_len*recurrent_size
              edge_types,  # edge_types: 2*batch_size*max_len*recurrent_size
              mask=None,  # mask: batch_size*max_len
              cell_mask=None,  # mask: 2*batch_size*max_len*recurrent_size
              initial_state=None,  # initial_state: 2*4*batch_size*embedding_dim
              training=True):
+        def swap_pad(info, lengths):
+            batch_size = info.shape[0]
+            max_len = info.shape[1]
+            new_info = []
+            for i in range(batch_size):
+                if lengths[i].numpy() == max_len:
+                    new_info.append(info[i])
+                    continue
+                stack = []
+                sentence_info = info[i, 0:lengths[i], :]
+                pad_info = info[i, lengths[i]:, :]
+                sentence_info_slices = tf.split(sentence_info, num_or_size_splits=sentence_info.shape[0], axis=0)
+                pad_info_slices = tf.split(pad_info, num_or_size_splits=pad_info.shape[0], axis=0)
+                for tensor in pad_info_slices:
+                    stack.append(tensor)
+                for tensor in sentence_info_slices:
+                    stack.append(tensor)
+                new_info.append(tf.squeeze(tf.stack(stack, axis=0), axis=1))
+            new_info = tf.stack(new_info, axis=0)
+            return new_info
+
         if initial_state is not None:
             forward_inputs, backward_inputs = inputs, inputs
             forward_state, backward_state = initial_state[0], initial_state[1]
             forward_dependencies, backward_dependencies = dependencies[0], dependencies[1]
             forward_edge_types, backward_edge_types = edge_types[0], edge_types[1]
             forward_cell_mask, backward_cell_mask = cell_mask[0], cell_mask[1]
+            backward_dependencies = swap_pad(backward_dependencies, input_lengths)
+            backward_edge_types = swap_pad(backward_edge_types, input_lengths)
+            backward_cell_mask = swap_pad(backward_cell_mask, input_lengths)
         else:
             raise ValueError("Please provide initial states for RNN.")
 
