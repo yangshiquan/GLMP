@@ -68,46 +68,46 @@ class GraphGRUCell(tf.keras.Model):
         )
 
         # create sharing kernels for all edge types
-        # self.recurrent_kernel = self.add_weight(  # self.recurrent_kernel: recurrent_size*embedding_dim*(3*embedding_dim)
-        #     name='recurrent_kernel',
-        #     shape=(recurrent_size, units, 3 * units),
-        #     initializer=recurrent_initializer,
-        #     regularizer=recurrent_regularizer,
-        #     constraint=recurrent_constraint
-        # )
-
-        # create kernels for each edge type
         self.recurrent_kernel = self.add_weight(  # self.recurrent_kernel: recurrent_size*embedding_dim*(3*embedding_dim)
             name='recurrent_kernel',
-            shape=(edge_types, units, 3 * units),
+            shape=(recurrent_size, units, 3 * units),
             initializer=recurrent_initializer,
             regularizer=recurrent_regularizer,
             constraint=recurrent_constraint
         )
 
-        # create sharing biases for all edge types
-        # if use_bias:
-        #     self.bias = self.add_weight(  # self.bias: (recurrent_size+1)*(3*embedding_dim)
-        #         name='bias',
-        #         shape=((recurrent_size + 1), 3 * units),
-        #         initializer=bias_initializer,
-        #         regularizer=bias_regularizer,
-        #         constraint=bias_constraint
-        #     )
-        # else:
-        #     self.bias = None
+        # create kernels for each edge type
+        # self.recurrent_kernel = self.add_weight(  # self.recurrent_kernel: recurrent_size*embedding_dim*(3*embedding_dim)
+        #     name='recurrent_kernel',
+        #     shape=(edge_types, units, 3 * units),
+        #     initializer=recurrent_initializer,
+        #     regularizer=recurrent_regularizer,
+        #     constraint=recurrent_constraint
+        # )
 
-        # create biases for each edge type
+        # create sharing biases for all edge types
         if use_bias:
             self.bias = self.add_weight(  # self.bias: (recurrent_size+1)*(3*embedding_dim)
                 name='bias',
-                shape=((edge_types + 1), 3 * units),
+                shape=((recurrent_size + 1), 3 * units),
                 initializer=bias_initializer,
                 regularizer=bias_regularizer,
                 constraint=bias_constraint
             )
         else:
             self.bias = None
+
+        # create biases for each edge type
+        # if use_bias:
+        #     self.bias = self.add_weight(  # self.bias: (recurrent_size+1)*(3*embedding_dim)
+        #         name='bias',
+        #         shape=((edge_types + 1), 3 * units),
+        #         initializer=bias_initializer,
+        #         regularizer=bias_regularizer,
+        #         constraint=bias_constraint
+        #     )
+        # else:
+        #     self.bias = None
 
     def call(self, inputs, states, edge_types, cell_mask, training=True):  # inputs: batch_size*embedding_dim, states:4*batch_size*embedding_dim, cell_mask: batch_size*recurrent_size
         batch_size = inputs.shape[0]
@@ -150,20 +150,20 @@ class GraphGRUCell(tf.keras.Model):
             state = states[k] * edge_embed  # state: batch_size*embedding_dim
 
             # gather recurrent kernels and biases according input edge types
-            matrix_inner = []
-            for t in range(batch_size):
-                edge_type = edge_types[t, k]
-                kernel = self.recurrent_kernel[edge_type]
-                bias = recurrent_bias[edge_type]
-                matrix_inner_t = K.dot(tf.expand_dims(state[t], axis=0), kernel)
-                if self.use_bias:
-                    matrix_inner_t = K.bias_add(matrix_inner_t, bias)
-                matrix_inner.append(tf.squeeze(matrix_inner_t, axis=0))
-            matrix_inner = tf.stack(matrix_inner, axis=0)
+            # matrix_inner = []
+            # for t in range(batch_size):
+            #     edge_type = edge_types[t, k]
+            #     kernel = self.recurrent_kernel[edge_type]
+            #     bias = recurrent_bias[edge_type]
+            #     matrix_inner_t = K.dot(tf.expand_dims(state[t], axis=0), kernel)
+            #     if self.use_bias:
+            #         matrix_inner_t = K.bias_add(matrix_inner_t, bias)
+            #     matrix_inner.append(tf.squeeze(matrix_inner_t, axis=0))
+            # matrix_inner = tf.stack(matrix_inner, axis=0)
 
-            # matrix_inner = K.dot(state, self.recurrent_kernel[k])  # matrix_inner: batch_size*(3*embedding_dim), states[k]: batch_size*embedding_dim
-            # if self.use_bias:
-            #     matrix_inner = K.bias_add(matrix_inner, recurrent_bias[k])
+            matrix_inner = K.dot(state, self.recurrent_kernel[k])  # matrix_inner: batch_size*(3*embedding_dim), states[k]: batch_size*embedding_dim
+            if self.use_bias:
+                matrix_inner = K.bias_add(matrix_inner, recurrent_bias[k])
 
             recurrent_z = matrix_inner[:, :self.units]  # recurrent_z: batch_size*embedding_dim
             recurrent_r = matrix_inner[:, self.units: 2 * self.units]  # recurrent_r: batch_size*embedding_dim
