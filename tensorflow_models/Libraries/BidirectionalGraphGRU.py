@@ -84,8 +84,8 @@ class BidirectionalGraphGRU(tf.keras.Model):
         else:
             raise ValueError("Please provide initial states for RNN.")
 
-        y = self.forward_layer(forward_inputs, forward_dependencies, forward_edge_types, mask, forward_cell_mask, forward_state, training)
-        y_rev = self.backward_layer(backward_inputs, backward_dependencies, backward_edge_types, mask, backward_cell_mask, backward_state, training)
+        y = self.forward_layer(forward_inputs, input_lengths, forward_dependencies, forward_edge_types, mask, forward_cell_mask, forward_state, training)
+        y_rev = self.backward_layer(backward_inputs, input_lengths, backward_dependencies, backward_edge_types, mask, backward_cell_mask, backward_state, training)
 
         if self.return_state:
             states = y[1:] + y_rev[1:]

@@ -51,6 +51,7 @@ class RNN(tf.keras.Model):
 
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim
+             input_lengths,  # input_lengths: batch_size
              dependencies,  # dependencies: batch_size*max_len*recurrent_size
              edge_types,  # edge_types: batch_size*max_len*recurrent_size
              mask=None,  # mask: batch_size*max_len
@@ -184,7 +185,7 @@ class RNN(tf.keras.Model):
                                 if dep.numpy().decode() == '$':
                                     dep_state = array_ops.zeros([self.units])
                                 else:
-                                    dep_state = successive_states[int(dep.numpy().decode())][0][t]
+                                    dep_state = successive_states[int(dep.numpy().decode())+(timesteps-input_lengths[t])][0][t]
                                 # states[k + 1, t] = dep_state
                                 stack_t.append(dep_state)
                             stack_t = tf.stack(stack_t, axis=0)
