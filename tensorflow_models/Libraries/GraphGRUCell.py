@@ -150,9 +150,9 @@ class GraphGRUCell(tf.keras.Model):
             # mask
             tiled_mask_t = _expand_mask(cell_mask[:, k], edge_embed)  # tiled_mask_t: batch_size*embedding_dim
             edge_embed = array_ops.where(tiled_mask_t, edge_embed, array_ops.ones_like(edge_embed))  # edge_embed: batch_size*embedding_dim
-            # state = states[k] * edge_embed  # state: batch_size*embedding_dim
+            state = states[k] + edge_embed  # state: batch_size*embedding_dim
             # add for mimic baseline
-            state = states[k]  # state: batch_size*embedding_dim
+            # state = states[k]  # state: batch_size*embedding_dim
 
             # gather recurrent kernels and biases according input edge types
             # matrix_inner = []
