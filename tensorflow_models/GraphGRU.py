@@ -69,7 +69,16 @@ class GraphGRU(tf.keras.Model):
         for i in range(args['maxhops']):
             u_temp = tf.tile(tf.expand_dims(u[-1], axis=1), [1, max_len, 1])  # u_temp: batch_size*max_len*(2*embedding_dim)
             prob_logits = tf.reduce_sum((outputs * u_temp), axis=2)  # prob_logits: batch_size*max_len
-            prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size*max_len
+            prob_soft_list = []
+            for t in range(batch_size):
+                length = input_lengths[t]
+                k = tf.expand_dims(prob_logits[t, :length], axis=0)
+                prob_soft_t = self.softmax(k)  # prob_soft_t: 1*length
+                pad_soft_t = tf.zeros([1, max_len - length])  # pad_soft_t: 1*(max_len-length)
+                prob_soft_ = tf.concat([prob_soft_t, pad_soft_t], axis=1)  # prob_soft_new: 1*max_len
+                prob_soft_list.append(prob_soft_)
+            prob_soft = tf.squeeze(tf.stack(prob_soft_list, axis=0), axis=1)  # prob_soft: batch_size*max_len
+            # prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size*max_len
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, 2 * self.hidden_size])  # prob_soft_temp: batch_size*max_len*(2*embedding_dim)
             u_k = u[-1] + tf.reduce_sum((outputs * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
             u.append(u_k)
