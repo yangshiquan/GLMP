@@ -22,7 +22,18 @@ class GraphGRU(tf.keras.Model):
                                        kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size))),
                                        bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size)))
                                        )  # different: bias should be explicitly assigned.
+        self.W1 = tf.keras.layers.Dense(2*hidden_size,
+                                       use_bias=True,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size)))
+                                       )  # different: bias should be explicitly assigned.
+        self.W2 = tf.keras.layers.Dense(4*hidden_size,
+                                       use_bias=True,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size)))
+                                       )  # different: bias should be explicitly assigned.
         self.softmax = tf.keras.layers.Softmax(1)
+        self.relu = tf.keras.layers.ReLU()
 
     def initialize_hidden_state(self, batch_size):
         forward_hidden = tf.zeros((self.recurrent_size, batch_size, self.hidden_size))
@@ -64,11 +75,12 @@ class GraphGRU(tf.keras.Model):
                                                         training)
         # must do something here!!!
         # outputs: batch_size*max_len*(2*embedding_dim)
+        outputs_temp = self.W1(self.relu(self.W2(outputs)))  # outputs_temp: batch_size*max_len*(2*embedding_dim)
         query_vector = tf.ones([batch_size, 2 * self.hidden_size])  # ones: batch_size*(2*embedding_dim)
         u = [query_vector]
         for i in range(args['maxhops']):
             u_temp = tf.tile(tf.expand_dims(u[-1], axis=1), [1, max_len, 1])  # u_temp: batch_size*max_len*(2*embedding_dim)
-            prob_logits = tf.reduce_sum((outputs * u_temp), axis=2)  # prob_logits: batch_size*max_len
+            prob_logits = tf.reduce_sum((outputs_temp * u_temp), axis=2)  # prob_logits: batch_size*max_len
             prob_soft_list = []
             for t in range(batch_size):
                 length = input_lengths[t]
@@ -80,7 +92,7 @@ class GraphGRU(tf.keras.Model):
             prob_soft = tf.squeeze(tf.stack(prob_soft_list, axis=0), axis=1)  # prob_soft: batch_size*max_len
             # prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size*max_len
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, 2 * self.hidden_size])  # prob_soft_temp: batch_size*max_len*(2*embedding_dim)
-            u_k = u[-1] + tf.reduce_sum((outputs * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
+            u_k = u[-1] + tf.reduce_sum((outputs_temp * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
             u.append(u_k)
         hidden_hat = u[-1]  # hidden_hat: batch_size*(2*embedding_dim)
         hidden = self.W(hidden_hat)  # hidden: batch_size*embedding_dim
