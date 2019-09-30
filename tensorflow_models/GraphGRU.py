@@ -32,6 +32,11 @@ class GraphGRU(tf.keras.Model):
                                        kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size))),
                                        bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size)))
                                        )  # different: bias should be explicitly assigned.
+        self.W3 = tf.keras.layers.Dense(hidden_size,
+                                       use_bias=True,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*hidden_size)),(1/np.sqrt(2*hidden_size)))
+                                       )  # different: bias should be explicitly assigned.
         self.softmax = tf.keras.layers.Softmax(1)
         self.relu = tf.keras.layers.ReLU()
 
@@ -95,7 +100,7 @@ class GraphGRU(tf.keras.Model):
             u_k = u[-1] + tf.reduce_sum((outputs_temp * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
             u.append(u_k)
         hidden_hat = tf.concat([hidden_f, hidden_b, u[-1]], 1)  # hidden_hat: batch_size*(2*embedding_dim)
-        hidden = self.W(hidden_hat)  # hidden: batch_size*embedding_dim
+        hidden = self.W3(hidden_hat)  # hidden: batch_size*embedding_dim
         outputs = self.W(outputs)  # outputs: batch_size*max_len*embedding_dim
 
         # hidden_hat = tf.concat([hidden_f, hidden_b], 1)
