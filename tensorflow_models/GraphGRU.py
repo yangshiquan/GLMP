@@ -94,7 +94,7 @@ class GraphGRU(tf.keras.Model):
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, 2 * self.hidden_size])  # prob_soft_temp: batch_size*max_len*(2*embedding_dim)
             u_k = u[-1] + tf.reduce_sum((outputs_temp * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
             u.append(u_k)
-        hidden_hat = u[-1]  # hidden_hat: batch_size*(2*embedding_dim)
+        hidden_hat = tf.concat([hidden_f, hidden_b, u[-1]], 1)  # hidden_hat: batch_size*(2*embedding_dim)
         hidden = self.W(hidden_hat)  # hidden: batch_size*embedding_dim
         outputs = self.W(outputs)  # outputs: batch_size*max_len*embedding_dim
 
