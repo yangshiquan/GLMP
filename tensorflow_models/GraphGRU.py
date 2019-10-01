@@ -58,8 +58,8 @@ class GraphGRU(tf.keras.Model):
         return ret_mask
 
     def call(self, input_seqs, input_lengths, deps, edge_types, cell_mask, hidden=None, training=True):
-        batch_size = input_seqs.shape[0]
-        max_len = input_seqs.shape[1]
+        # batch_size = input_seqs.shape[0]
+        # max_len = input_seqs.shape[1]
         mask = self.gen_input_mask(input_seqs.shape[0], input_seqs.shape[1], input_lengths)
         embedded = self.embedding(tf.reshape(input_seqs, [input_seqs.get_shape()[0], -1]))  # different: pad token embedding not masked. input_seqs: batch_size * input_length * MEM_TOKEN_SIZE.
         pad_mask = self.gen_embedding_mask(tf.reshape(input_seqs,[input_seqs.shape[0], -1]))
@@ -80,30 +80,30 @@ class GraphGRU(tf.keras.Model):
                                                         training)
         # must do something here!!!
         # outputs: batch_size*max_len*(2*embedding_dim)
-        outputs_temp = self.W1(self.relu(self.W2(outputs)))  # outputs_temp: batch_size*max_len*(2*embedding_dim)
-        query_vector = tf.ones([batch_size, 2 * self.hidden_size])  # ones: batch_size*(2*embedding_dim)
-        u = [query_vector]
-        for i in range(args['maxhops']):
-            u_temp = tf.tile(tf.expand_dims(u[-1], axis=1), [1, max_len, 1])  # u_temp: batch_size*max_len*(2*embedding_dim)
-            prob_logits = tf.reduce_sum((outputs_temp * u_temp), axis=2)  # prob_logits: batch_size*max_len
-            prob_soft_list = []
-            for t in range(batch_size):
-                length = input_lengths[t]
-                k = tf.expand_dims(prob_logits[t, :length], axis=0)
-                prob_soft_t = self.softmax(k)  # prob_soft_t: 1*length
-                pad_soft_t = tf.zeros([1, max_len - length])  # pad_soft_t: 1*(max_len-length)
-                prob_soft_ = tf.concat([prob_soft_t, pad_soft_t], axis=1)  # prob_soft_new: 1*max_len
-                prob_soft_list.append(prob_soft_)
-            prob_soft = tf.squeeze(tf.stack(prob_soft_list, axis=0), axis=1)  # prob_soft: batch_size*max_len
-            # prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size*max_len
-            prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, 2 * self.hidden_size])  # prob_soft_temp: batch_size*max_len*(2*embedding_dim)
-            u_k = u[-1] + tf.reduce_sum((outputs_temp * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
-            u.append(u_k)
-        hidden_hat = tf.concat([hidden_f, hidden_b, u[-1]], 1)  # hidden_hat: batch_size*(2*embedding_dim)
-        hidden = self.W3(hidden_hat)  # hidden: batch_size*embedding_dim
-        outputs = self.W(outputs)  # outputs: batch_size*max_len*embedding_dim
+        # outputs_temp = self.W1(self.relu(self.W2(outputs)))  # outputs_temp: batch_size*max_len*(2*embedding_dim)
+        # query_vector = tf.ones([batch_size, 2 * self.hidden_size])  # ones: batch_size*(2*embedding_dim)
+        # u = [query_vector]
+        # for i in range(args['maxhops']):
+        #     u_temp = tf.tile(tf.expand_dims(u[-1], axis=1), [1, max_len, 1])  # u_temp: batch_size*max_len*(2*embedding_dim)
+        #     prob_logits = tf.reduce_sum((outputs_temp * u_temp), axis=2)  # prob_logits: batch_size*max_len
+        #     prob_soft_list = []
+        #     for t in range(batch_size):
+        #         length = input_lengths[t]
+        #         k = tf.expand_dims(prob_logits[t, :length], axis=0)
+        #         prob_soft_t = self.softmax(k)  # prob_soft_t: 1*length
+        #         pad_soft_t = tf.zeros([1, max_len - length])  # pad_soft_t: 1*(max_len-length)
+        #         prob_soft_ = tf.concat([prob_soft_t, pad_soft_t], axis=1)  # prob_soft_new: 1*max_len
+        #         prob_soft_list.append(prob_soft_)
+        #     prob_soft = tf.squeeze(tf.stack(prob_soft_list, axis=0), axis=1)  # prob_soft: batch_size*max_len
+        #     # prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size*max_len
+        #     prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, 2 * self.hidden_size])  # prob_soft_temp: batch_size*max_len*(2*embedding_dim)
+        #     u_k = u[-1] + tf.reduce_sum((outputs_temp * prob_soft_temp), axis=1)  # u_k: batch_size*(2*embedding_dim)
+        #     u.append(u_k)
+        # hidden_hat = tf.concat([hidden_f, hidden_b, u[-1]], 1)  # hidden_hat: batch_size*(2*embedding_dim)
+        # hidden = self.W3(hidden_hat)  # hidden: batch_size*embedding_dim
+        # outputs = self.W(outputs)  # outputs: batch_size*max_len*embedding_dim
 
-        # hidden_hat = tf.concat([hidden_f, hidden_b], 1)
-        # hidden = self.W(hidden_hat)  # different: no unsqueeze(0).
-        # outputs = self.W(outputs)  # different: no need to transpose(0, 1) because the first dimension is already batch_size.
+        hidden_hat = tf.concat([hidden_f, hidden_b], 1)
+        hidden = self.W(hidden_hat)  # different: no unsqueeze(0).
+        outputs = self.W(outputs)  # different: no need to transpose(0, 1) because the first dimension is already batch_size.
         return outputs, hidden

@@ -103,8 +103,8 @@ class GLMPGraph(tf.keras.Model):
                                                               dh_hidden,
                                                               dh_outputs,
                                                               training=training)
-        # encoded_hidden = tf.concat([dh_hidden, kb_readout], 1)
-        encoded_hidden = dh_hidden
+        encoded_hidden = tf.concat([dh_hidden, kb_readout], 1)
+        # encoded_hidden = dh_hidden
 
         # get the words that can be copy from the memory
         batch_size = len(data[10])  # data[10]: context_arr_lengths.
