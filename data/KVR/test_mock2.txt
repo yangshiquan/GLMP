@@ -1,0 +1,41 @@
+#navigate#
+0 3_miles moderate_traffic shopping_center poi town_and_country
+0 town_and_country distance 3_miles
+0 town_and_country traffic_info moderate_traffic
+0 town_and_country poi_type shopping_center
+0 town_and_country address 383_university_ave
+0 5_miles heavy_traffic shopping_center poi midtown_shopping_center
+0 midtown_shopping_center distance 5_miles
+0 midtown_shopping_center traffic_info heavy_traffic
+0 midtown_shopping_center poi_type shopping_center
+0 midtown_shopping_center address 338_alester_ave
+0 6_miles no_traffic shopping_center poi ravenswood_shopping_center
+0 ravenswood_shopping_center distance 6_miles
+0 ravenswood_shopping_center traffic_info no_traffic
+0 ravenswood_shopping_center poi_type shopping_center
+0 ravenswood_shopping_center address 434_arastradero_rd
+0 4_miles no_traffic coffee_or_tea_place poi teavana
+0 teavana distance 4_miles
+0 teavana traffic_info no_traffic
+0 teavana poi_type coffee_or_tea_place
+0 teavana address 145_amherst_st
+0 5_miles moderate_traffic coffee_or_tea_place poi cafe_venetia
+0 cafe_venetia distance 5_miles
+0 cafe_venetia traffic_info moderate_traffic
+0 cafe_venetia poi_type coffee_or_tea_place
+0 cafe_venetia address 269_alger_dr
+0 1_miles heavy_traffic parking_garage poi dish_parking
+0 dish_parking distance 1_miles
+0 dish_parking traffic_info heavy_traffic
+0 dish_parking poi_type parking_garage
+0 dish_parking address 550_alester_ave
+0 3_miles no_traffic hospital poi palo_alto_medical_foundation
+0 palo_alto_medical_foundation distance 3_miles
+0 palo_alto_medical_foundation traffic_info no_traffic
+0 palo_alto_medical_foundation poi_type hospital
+0 palo_alto_medical_foundation address 611_ames_ave
+1 where can i get tea ?	there is 2 tea shops near you ; teavana is 4_miles away and cafe_venetia is 5_miles away which one do you want ?	['5_miles', 'cafe_venetia', 'teavana', '4_miles']
+2 which one is the quickest , is there any traffic ?	teavana is the fastest journey , because there is no_traffic on the way there cafe_venetia has moderate_traffic should we go to teavana ?	['cafe_venetia', 'teavana', 'moderate_traffic', 'no_traffic']
+3 yes teavana please	i sent on your screen its position and the fastest route to get there	[]
+4 ok can you tell me the address please ?	teavana is located at 145_amherst_st	['145_amherst_st', 'teavana']
+5 thanks for all the help	you are welcome , glad i could be of assistance	[]
