@@ -13,7 +13,8 @@ import json
 from utils.measures import wer, moses_multi_bleu
 from utils.masked_cross_entropy import *
 from utils.config import *
-from models.modules import *
+# from models.modules import *
+from models.bert import *
 
 
 class GLMP(nn.Module):

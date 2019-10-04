@@ -2,7 +2,7 @@ import torch
 import torch.utils.data as data
 import torch.nn as nn
 from utils.config import *
-import tensorflow as tf
+from transformers import BertTokenizer
 
 
 def _cuda(x):
@@ -17,7 +17,7 @@ class Lang:
         self.index2word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS", UNK_token: 'UNK'}
         self.n_words = len(self.index2word) # Count default tokens
         self.word2index = dict([(v, k) for k, v in self.index2word.items()])
-      
+
     def index_words(self, story, trg=False):
         if trg:
             for word in story.split(' '):
@@ -45,6 +45,7 @@ class Dataset(data.Dataset):
         self.num_total_seqs = len(data_info['context_arr'])
         self.src_word2id = src_word2id
         self.trg_word2id = trg_word2id
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     
     def __getitem__(self, index):
         """Returns one data pair (source and target)."""
@@ -55,7 +56,7 @@ class Dataset(data.Dataset):
         ptr_index = torch.Tensor(self.data_info['ptr_index'][index])
         selector_index = torch.Tensor(self.data_info['selector_index'][index])
         conv_arr = self.data_info['conv_arr'][index]
-        conv_arr = self.preprocess(conv_arr, self.src_word2id, trg=False)
+        conv_arr = self.preprocess_conv_arr(conv_arr)
         kb_arr = self.data_info['kb_arr'][index]
         kb_arr = self.preprocess(kb_arr, self.src_word2id, trg=False)
         sketch_response = self.data_info['sketch_response'][index]
@@ -78,6 +79,16 @@ class Dataset(data.Dataset):
 
     def __len__(self):
         return self.num_total_seqs
+
+    def preprocess_conv_arr(self, sequence):
+        story = []
+        for i, word_triple in enumerate(sequence):
+            story.append([])
+            for ii, word in enumerate(word_triple):
+                temp = self.tokenizer._convert_token_to_id(word)
+                story[i].append(temp)
+        story = torch.Tensor(story)
+        return story
     
     def preprocess(self, sequence, word2id, trg=True):
         """Converts words to ids."""
