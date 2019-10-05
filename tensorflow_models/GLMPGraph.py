@@ -207,6 +207,8 @@ class GLMPGraph(tf.keras.Model):
     def evaluate(self, dev, dev_length, matric_best, early_stop=None):
         print('STARTING EVALUATION:')
 
+        fd = open('test_result_{}.txt'.format(args['dataset']), 'a')
+
         ref, hyp = [], []
         acc, total = 0, 0
         dialog_acc_dict = {}
@@ -258,6 +260,10 @@ class GLMPGraph(tf.keras.Model):
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
 
+                fd.write("predict response: " + pred_sent + "\n")
+                fd.write("golden  response: " + gold_sent + "\n")
+                fd.write("\n")
+
                 if args['dataset'] == 'kvr':
                     # compute F1 SCORE
                     single_f1, count = self.compute_prf(data_dev[14][bi], pred_sent.split(),
@@ -293,6 +299,8 @@ class GLMPGraph(tf.keras.Model):
 
                 if args['genSample']:
                     self.print_examples(bi, data_dev, pred_sent, pred_sent_coarse, gold_sent)
+
+        fd.close()
 
         # pdb.set_trace()
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
