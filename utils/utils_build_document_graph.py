@@ -142,12 +142,22 @@ def generate_subgraph(graph_info, node_num, reverse=False):
                         dependencies.append(str(token['head']))
                         relations.append(token['dep'])
                         masks.append(1)
+                    # add bi-directional graph
+                    if token['id'] < index and token['head'] == index:
+                        dependencies.append(str(token['id']))
+                        relations.append(token['dep'] + '_reverse')
+                        masks.append(1)
                 else:
                     # skip root node
                     if token['id'] == (node_num - index - 1) and token['id'] < token['head']:
                         # map head-id to forward style
                         dependencies.append(str(reversed_ids.index(token['head'])))
                         relations.append(token['dep'])
+                        masks.append(1)
+                    # add bi-directional graph
+                    if token['id'] > (node_num - index - 1) and token['head'] == (node_num - index - 1):
+                        dependencies.append(str(reversed_ids.index(token['id'])))
+                        relations.append(token['dep'] + '_reverse')
                         masks.append(1)
 	# TODO: prune node dependencies strategy
 	# prune node dependencies
