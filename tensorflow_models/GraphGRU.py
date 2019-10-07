@@ -79,8 +79,8 @@ class GraphGRU(tf.keras.Model):
                                                         hidden,
                                                         training)  # outputs: batch_size*max_len*(2*embedding_dim)
         # must do something here!!!
-        outputs_sum = tf.reduce_sum(outputs, axis=1)  # outputs_sum: batch_size*(2*embedding_dim)
-        outputs_avg = outputs_sum / tf.cast(tf.expand_dims(input_lengths, axis=1), dtype=tf.float32)  # outputs: batch_size*(2*embedding_dim)
+        # outputs_sum = tf.reduce_sum(outputs, axis=1)  # outputs_sum: batch_size*(2*embedding_dim)
+        # outputs_avg = outputs_sum / tf.cast(tf.expand_dims(input_lengths, axis=1), dtype=tf.float32)  # outputs: batch_size*(2*embedding_dim)
         # outputs: batch_size*max_len*(2*embedding_dim)
         # outputs_temp = self.W1(self.relu(self.W2(outputs)))  # outputs_temp: batch_size*max_len*(2*embedding_dim)
         # query_vector = tf.ones([batch_size, 2 * self.hidden_size])  # ones: batch_size*(2*embedding_dim)
@@ -105,8 +105,8 @@ class GraphGRU(tf.keras.Model):
         # hidden = self.W3(hidden_hat)  # hidden: batch_size*embedding_dim
         # outputs = self.W(outputs)  # outputs: batch_size*max_len*embedding_dim
 
-        # hidden_hat = tf.concat([hidden_f, hidden_b], 1)
-        # hidden = self.W(hidden_hat)  # different: no unsqueeze(0).
-        hidden = self.W(outputs_avg)
+        hidden_hat = tf.concat([hidden_f, hidden_b], 1)
+        hidden = self.W(hidden_hat)  # different: no unsqueeze(0).
+        # hidden = self.W(outputs_avg)
         outputs = self.W(outputs)  # different: no need to transpose(0, 1) because the first dimension is already batch_size.
         return outputs, hidden

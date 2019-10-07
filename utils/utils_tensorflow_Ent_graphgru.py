@@ -282,6 +282,13 @@ def prepare_data_seq(task, batch_size=100):
     # build lang (1.0, 2.0, 3.0)
     lang = build_lang(pair_train, True)
 
+    # output edge-type dict
+    # edge_type_cnt = lang.type2cnt
+    # sorted_dict = sorted(edge_type_cnt.items(), key=lambda item: item[1], reverse=True)
+    # with open('/Users/shiquan/PycharmProjects/GLMP_dev/GLMP/edge_type_stats_maxdeps_7.txt', 'w') as f:
+    #     for key in sorted_dict:
+    #         f.write("%s\t%s\n"%(key[0], key[1]))
+
     # map word to ids (1.0, 2.0, 3.0)
     train_seq = text_to_sequence(pair_train, lang)
     dev_seq = text_to_sequence(pair_dev, lang)

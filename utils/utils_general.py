@@ -21,6 +21,7 @@ class Lang:
         self.index2type = {PAD_token: "PAD", UNK_token: "UNK", 2: "PRE", 3: "NEXT"}
         self.n_types = len(self.index2type)
         self.type2index = dict([(v, k) for k, v in self.index2type.items()])
+        self.type2cnt = {}
       
     def index_words(self, story, trg=False):
         if trg:
@@ -45,6 +46,10 @@ class Lang:
                         self.type2index[type] = self.n_types
                         self.index2type[self.n_types] = type
                         self.n_types += 1
+                    if type not in self.type2cnt:
+                        self.type2cnt[type] = 1
+                    else:
+                        self.type2cnt[type] += 1
 
 
 class Dataset(data.Dataset):
