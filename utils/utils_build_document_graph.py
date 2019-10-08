@@ -118,13 +118,14 @@ def generate_subgraph(graph_info, node_num, reverse=False):
     :param reverse: forward or backward.
     :return: forward subgraph or backward subgraph.
     '''
-    dep_node_info, dep_relation_info, cell_mask = [], [], []
+    dep_node_info, dep_relation_info, cell_mask, path_len_info = [], [], [], []
     all_dependency_cnt = 0
     graph_info_r = copy.deepcopy(graph_info)
     if args['reverse_graph']:
         graph_info_r = reverse_graph_info(graph_info_r)
     for index in range(node_num):
         dependencies = []
+        path_len = []
         if not reverse:
             relations = ['NEXT']
         else:
@@ -142,11 +143,13 @@ def generate_subgraph(graph_info, node_num, reverse=False):
                         dependencies.append(str(token['head']))
                         relations.append(token['dep'])
                         masks.append(1)
+                        path_len.append(abs(token['id'] - token['head']))
                     # add bi-directional graph
                     if token['id'] < index and token['head'] == index:
                         dependencies.append(str(token['id']))
                         relations.append(token['dep'] + '_reverse')
                         masks.append(1)
+                        path_len.append(abs(token['id'] - token['head']))
                 else:
                     # skip root node
                     if token['id'] == (node_num - index - 1) and token['id'] < token['head']:
@@ -154,11 +157,13 @@ def generate_subgraph(graph_info, node_num, reverse=False):
                         dependencies.append(str(reversed_ids.index(token['head'])))
                         relations.append(token['dep'])
                         masks.append(1)
+                        path_len.append(abs(token['id'] - token['head']))
                     # add bi-directional graph
                     if token['id'] > (node_num - index - 1) and token['head'] == (node_num - index - 1):
                         dependencies.append(str(reversed_ids.index(token['id'])))
                         relations.append(token['dep'] + '_reverse')
                         masks.append(1)
+                        path_len.append(abs(token['id'] - token['head']))
 	# TODO: prune node dependencies strategy
 	# prune node dependencies
         all_dependency_cnt += len(dependencies)
@@ -166,14 +171,17 @@ def generate_subgraph(graph_info, node_num, reverse=False):
             dependencies = dependencies[0: MAX_DEPENDENCIES_PER_NODE]
             relations = relations[0: (MAX_DEPENDENCIES_PER_NODE + 1)]
             masks = masks[0: (MAX_DEPENDENCIES_PER_NODE + 1)]
+            path_len = path_len[0: MAX_DEPENDENCIES_PER_NODE]
         else:
             dependencies = dependencies + ['$'] * (MAX_DEPENDENCIES_PER_NODE - len(dependencies))
             relations = relations + ['$'] * (MAX_DEPENDENCIES_PER_NODE - len(relations) + 1)
             masks = masks + [0] * (MAX_DEPENDENCIES_PER_NODE - len(masks) + 1)
+            path_len = path_len + [0] * (MAX_DEPENDENCIES_PER_NODE - len(path_len))
         dep_node_info.append(dependencies)
         dep_relation_info.append(relations)
         cell_mask.append(masks)
-    return dep_node_info, dep_relation_info, cell_mask, all_dependency_cnt
+        path_len_info.append(path_len)
+    return dep_node_info, dep_relation_info, cell_mask, all_dependency_cnt, path_len_info
 
 
 if __name__ == "__main__":

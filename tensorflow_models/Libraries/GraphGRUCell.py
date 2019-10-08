@@ -58,6 +58,7 @@ class GraphGRUCell(tf.keras.Model):
 
         self.dropout = min(1., max(0., dropout))
         self.recurrent_dropout = min(1., max(0., recurrent_dropout))
+        self.softmax = tf.keras.layers.Softmax(1)
 
         self.kernel = self.add_weight(  # self.kernel: input_dim*(3*embedding_dim)
             name='kernel',
@@ -144,6 +145,7 @@ class GraphGRUCell(tf.keras.Model):
         # h_hat = []
         loop = 1 if args['ablationD'] else self.recurrent_size
 
+        z_list = []
         for k in range(loop):
             # edge embedding
             edge_embed = self.edge_embeddings(edge_types[:, k])  # edge_embed: batch_size*embedding
@@ -173,6 +175,9 @@ class GraphGRUCell(tf.keras.Model):
             recurrent_z = matrix_inner[:, :self.units]  # recurrent_z: batch_size*embedding_dim
             recurrent_r = matrix_inner[:, self.units: 2 * self.units]  # recurrent_r: batch_size*embedding_dim
 
+            # add for softmax attention
+            z_list.append(recurrent_z)
+
             z = self.recurrent_activation(x_z + recurrent_z)  # z: batch_size*embedding_dim
             r = self.recurrent_activation(x_r + recurrent_r)  # r: batch_size*embedding_dim
 
@@ -187,12 +192,14 @@ class GraphGRUCell(tf.keras.Model):
             recurrent_h = array_ops.where(tiled_mask_t, recurrent_h, array_ops.zeros_like(recurrent_h))  # recurrent_h: batch_size*embedding_dim
             accumulate_h = accumulate_h + recurrent_h  # accumulate_h: batch_size*embedding_dim
 
-            z_h = z * state
-            z_h = array_ops.where(tiled_mask_t, z_h, array_ops.zeros_like(z_h))
-            accumulate_z_h = accumulate_z_h + z_h  # accumulate_z_h: batch_size*embedding_dim
+            # comment for softmax attention
+            # z_h = z * state
+            # z_h = array_ops.where(tiled_mask_t, z_h, array_ops.zeros_like(z_h))
+            # accumulate_z_h = accumulate_z_h + z_h  # accumulate_z_h: batch_size*embedding_dim
 
-            z = array_ops.where(tiled_mask_t, z, array_ops.zeros_like(z))
-            accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
+            # comment for softmax attention
+            # z = array_ops.where(tiled_mask_t, z, array_ops.zeros_like(z))
+            # accumulate_z = accumulate_z + z  # accumulate_z: batch_size*embedding_dim
 
         # add for sum_after
         # if args['ablationD']:
@@ -203,8 +210,20 @@ class GraphGRUCell(tf.keras.Model):
         #     o_h = h_hat / tf.cast(tf.tile(tf.expand_dims(cell_mask, axis=1), [1, self.units]), dtype=float)
 
         # commet for sum_after
+        # actual_num = tf.cast(tf.reduce_sum(math_ops.cast(cell_mask, dtypes_module.int32), axis=1, keepdims=True), dtype=float)  # actual_num: batch_size
         hh = self.activation(x_h + accumulate_h / loop)  # hh: batch_size*embedding_dim
-        h = (1 - accumulate_z / loop) * hh + accumulate_z_h / loop  # h: batch_size*embedding_dim
+        z_list.append(hh)
+
+        # add for softmax attention
+        hidden_bank = tf.transpose(tf.stack(z_list, axis=0), [1, 0, 2])  # hidden_memory: batch_size * (recurrent_size + 1) * embedding_dim
+        x_z_temp = tf.tile(tf.expand_dims(x_z, axis=1), [1, hidden_bank.shape[1], 1])  # x_z_temp = batch_size * (recurrent_size + 1) * embedding_dim
+        prob_logits = tf.reduce_sum(hidden_bank * x_z_temp, axis=2)  # prob_logits: batch_size * (recurrent_size + 1)
+        prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * (recurrent_size + 1)
+        prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, hidden_bank.shape[2]])  # prob_soft_temp: batch_size * (recurrent_size + 1) * embedding_dim
+        h = tf.reduce_sum((hidden_bank * prob_soft_temp), axis=1)  # h: batch_size * embedding_dim
+
+        # comment for softmax attention
+        # h = (1 - accumulate_z / loop) * hh + accumulate_z_h / loop  # h: batch_size*embedding_dim
         return h, [h]
 
         # add for sum_after

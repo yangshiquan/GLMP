@@ -12,6 +12,7 @@ import pdb
 def read_langs(file_name, max_line=None):
     print(("Reading lines from {}".format(file_name)))
     data, context_arr, conv_arr, kb_arr, conv_arr_plain = [], [], [], [], []
+    # path_len_dict = {}
     max_resp_len = 0
     total_node_cnt, total_dep_cnt = 0, 0
 
@@ -68,11 +69,11 @@ def read_langs(file_name, max_line=None):
 
                     # Get Document Graph
                     dep_info, dep_info_hat, max_len = dependency_parsing(conv_arr_plain)
-                    dep_node_info, dep_relation_info, cell_mask, all_cnt = generate_subgraph(
+                    dep_node_info, dep_relation_info, cell_mask, all_cnt, path_len_info = generate_subgraph(
                         dep_info_hat,
                         max_len,
                         False)
-                    dep_node_info_reverse, dep_relation_info_reverse, cell_mask_reverse, all_cnt_reverse = generate_subgraph(
+                    dep_node_info_reverse, dep_relation_info_reverse, cell_mask_reverse, all_cnt_reverse, path_len_info_reverse = generate_subgraph(
                         dep_info_hat,
                         max_len,
                         True)
@@ -81,6 +82,26 @@ def read_langs(file_name, max_line=None):
                     masks = [cell_mask, cell_mask_reverse]
                     total_node_cnt = total_node_cnt + max_len
                     total_dep_cnt = total_dep_cnt + all_cnt + all_cnt_reverse
+                    # analysis path length information
+                    # for ts in path_len_info:
+                    #     for ele in ts:
+                    #         if ele == 0:
+                    #             continue
+                    #         else:
+                    #             if ele not in path_len_dict.keys():
+                    #                 path_len_dict[ele] = 1
+                    #             else:
+                    #                 path_len_dict[ele] += 1
+                    # for ts in path_len_info_reverse:
+                    #     for ele in ts:
+                    #         if ele == 0:
+                    #             continue
+                    #         else:
+                    #             if ele not in path_len_dict.keys():
+                    #                 path_len_dict[ele] = 1
+                    #             else:
+                    #                 path_len_dict[ele] += 1
+
 
                     data_detail = {
                         'context_arr': list(context_arr + [['$$$$'] * MEM_TOKEN_SIZE]),  # $$$$ is NULL token
