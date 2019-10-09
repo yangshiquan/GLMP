@@ -111,6 +111,15 @@ class GraphGRUCell(tf.keras.Model):
         # else:
         #     self.bias = None
 
+        # add for additive attention
+        self.v = self.add_weight(
+            name='v',
+            shape=(self.units, 1),
+            initializer=bias_initializer,
+            regularizer=bias_regularizer,
+            constraint=bias_constraint
+        )
+
     def call(self, inputs, states, edge_types, cell_mask, training=True):  # inputs: batch_size*embedding_dim, states:4*batch_size*embedding_dim, cell_mask: batch_size*recurrent_size
         batch_size = inputs.shape[0]
         state_size = len(states)
@@ -221,7 +230,11 @@ class GraphGRUCell(tf.keras.Model):
         # add for softmax attention
         hidden_bank = tf.transpose(tf.stack(z_list, axis=0), [1, 0, 2])  # hidden_memory: batch_size * (recurrent_size + 1) * embedding_dim
         x_z_temp = tf.tile(tf.expand_dims(x_z, axis=1), [1, hidden_bank.shape[1], 1])  # x_z_temp = batch_size * (recurrent_size + 1) * embedding_dim
-        prob_logits = tf.reduce_sum(hidden_bank * x_z_temp, axis=2)  # prob_logits: batch_size * (recurrent_size + 1)
+        # add for additive attention
+        prob_logits = tf.matmul(tf.tile(tf.expand_dims(tf.transpose(self.v, [1, 0]), axis=0), [batch_size, 1, 1]), tf.transpose(self.activation(x_z_temp + hidden_bank), [0, 2, 1]))
+        prob_logits = tf.squeeze(tf.transpose(prob_logits, [0, 2, 1]), axis=2)
+        # comment for additive attention
+        # prob_logits = tf.reduce_sum(hidden_bank * x_z_temp, axis=2)  # prob_logits: batch_size * (recurrent_size + 1)
         # add for masked softmax
         mask_list = []
         cell_mask_slices = tf.split(cell_mask, num_or_size_splits=cell_mask.shape[1], axis=1)
