@@ -224,31 +224,30 @@ class GraphGRUCell(tf.keras.Model):
         # commet for sum_after
         # actual_num = tf.cast(tf.reduce_sum(math_ops.cast(cell_mask, dtypes_module.int32), axis=1, keepdims=True), dtype=float)  # actual_num: batch_size
         hh = self.activation(x_h + accumulate_h / loop)  # hh: batch_size*embedding_dim
-        # h_list.append(hh)  # h_list: input_hidden without linear
-        # z_list.append(hh)  # z_list: input_hidden after linear
-        #
-        # # add for softmax attention
-        # hidden_bank = tf.transpose(tf.stack(z_list, axis=0), [1, 0, 2])  # hidden_memory: batch_size * (recurrent_size + 1) * embedding_dim
-        # x_z_temp = tf.tile(tf.expand_dims(x_z, axis=1), [1, hidden_bank.shape[1], 1])  # x_z_temp = batch_size * (recurrent_size + 1) * embedding_dim
-        # # add for additive attention
-        # prob_logits = tf.matmul(tf.tile(tf.expand_dims(tf.transpose(self.v, [1, 0]), axis=0), [batch_size, 1, 1]), tf.transpose(self.activation(x_z_temp + hidden_bank), [0, 2, 1]))
-        # prob_logits = tf.squeeze(tf.transpose(prob_logits, [0, 2, 1]), axis=2)
-        # # comment for additive attention
-        # # prob_logits = tf.reduce_sum(hidden_bank * x_z_temp, axis=2)  # prob_logits: batch_size * (recurrent_size + 1)
-        # # add for masked softmax
-        # mask_list = []
-        # cell_mask_slices = tf.split(cell_mask, num_or_size_splits=cell_mask.shape[1], axis=1)
-        # for tensor in cell_mask_slices:
-        #     mask_list.append(tensor)
-        # hh_mask = tf.ones([batch_size, 1], dtype=tf.bool)  # hh_mask: batch_size * 1
-        # mask_list.append(hh_mask)
-        # new_mask = tf.squeeze(tf.stack(mask_list, axis=1), axis=2)  # new_mask: batch_size * (recurrent_size + 1)
-        # prob_logits_temp = array_ops.where(new_mask, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))
-        # prob_soft = self.softmax(prob_logits_temp)  # prob_soft: batch_size * (recurrent_size + 1)
-        # prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, hidden_bank.shape[2]])  # prob_soft_temp: batch_size * (recurrent_size + 1) * embedding_dim
-        # output_hidden_bank = tf.transpose(tf.stack(h_list, axis=0), [1, 0, 2])  # output_hidden_bank: batch_size * (recurrent_size + 1) * embedding_dim
-        # h = tf.reduce_sum((output_hidden_bank * prob_soft_temp), axis=1)  # h: batch_size * embedding_dim
-        h = hh
+        h_list.append(hh)  # h_list: input_hidden without linear
+        z_list.append(hh)  # z_list: input_hidden after linear
+
+        # add for softmax attention
+        hidden_bank = tf.transpose(tf.stack(z_list, axis=0), [1, 0, 2])  # hidden_memory: batch_size * (recurrent_size + 1) * embedding_dim
+        x_z_temp = tf.tile(tf.expand_dims(x_z, axis=1), [1, hidden_bank.shape[1], 1])  # x_z_temp = batch_size * (recurrent_size + 1) * embedding_dim
+        # add for additive attention
+        prob_logits = tf.matmul(tf.tile(tf.expand_dims(tf.transpose(self.v, [1, 0]), axis=0), [batch_size, 1, 1]), tf.transpose(self.activation(x_z_temp + hidden_bank), [0, 2, 1]))
+        prob_logits = tf.squeeze(tf.transpose(prob_logits, [0, 2, 1]), axis=2)
+        # comment for additive attention
+        # prob_logits = tf.reduce_sum(hidden_bank * x_z_temp, axis=2)  # prob_logits: batch_size * (recurrent_size + 1)
+        # add for masked softmax
+        mask_list = []
+        cell_mask_slices = tf.split(cell_mask, num_or_size_splits=cell_mask.shape[1], axis=1)
+        for tensor in cell_mask_slices:
+            mask_list.append(tensor)
+        hh_mask = tf.ones([batch_size, 1], dtype=tf.bool)  # hh_mask: batch_size * 1
+        mask_list.append(hh_mask)
+        new_mask = tf.squeeze(tf.stack(mask_list, axis=1), axis=2)  # new_mask: batch_size * (recurrent_size + 1)
+        prob_logits_temp = array_ops.where(new_mask, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))
+        prob_soft = self.softmax(prob_logits_temp)  # prob_soft: batch_size * (recurrent_size + 1)
+        prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, axis=2), [1, 1, hidden_bank.shape[2]])  # prob_soft_temp: batch_size * (recurrent_size + 1) * embedding_dim
+        output_hidden_bank = tf.transpose(tf.stack(h_list, axis=0), [1, 0, 2])  # output_hidden_bank: batch_size * (recurrent_size + 1) * embedding_dim
+        h = tf.reduce_sum((output_hidden_bank * prob_soft_temp), axis=1)  # h: batch_size * embedding_dim
 
         # comment for softmax attention
         # h = (1 - accumulate_z / loop) * hh + accumulate_z_h / loop  # h: batch_size*embedding_dim
