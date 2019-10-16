@@ -224,7 +224,7 @@ class ExternalKnowledge(tf.keras.Model):
             embed_C = embed_C * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_C.shape[2]])
 
         prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embed_C.shape[2]])  # prob_soft_temp: batch_size * memory_size * embedding_dim.
-        u_k = u[-1] + tf.math.reduce_sum((embed_C * prob_soft_temp), 1)   # u_k: batch_size * embedding_dim.
+        u_k = u[-1] + tf.math.reduce_sum((embed_C * prob_soft_temp), 1)  # u_k: batch_size * embedding_dim.
         u.append(u_k)
 
         return prob_soft, prob_logits
