@@ -10,7 +10,6 @@ python myTrain.py -ds= -dec= -bsz= -t= -hdd= -dr= -l= -lr=
 
 '''
 
-testtesttest
 
 early_stop = args['earlyStop']
 if args['dataset']=='kvr':
