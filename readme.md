@@ -1,4 +1,4 @@
-asfdafasa## Global-to-local Memory Pointer Networks for Task-Oriented Dialogue
+## Global-to-local Memory Pointer Networks for Task-Oriented Dialogue
 <img src="img/pytorch-logo-dark.png" width="10%"> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 This is the PyTorch implementation of the paper:
