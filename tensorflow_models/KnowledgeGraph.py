@@ -74,7 +74,7 @@ class KnowledgeGraph(tf.keras.Model):
         batch_size = adj.shape[0]
         max_len = adj.shape[1]
         adj_array = adj.numpy()
-        for i in batch_size:
+        for i in range(batch_size):
             kb_len_i = kb_len[i]
             conv_len_i = conv_len[i]
             context_len_i = kb_len_i + conv_len_i + 1
