@@ -70,6 +70,19 @@ class KnowledgeGraph(tf.keras.Model):
         ret_mask = tf.tile(tf.expand_dims(mask, 2), [1, 1, self.embedding_dim])
         return ret_mask
 
+    def update_pad_token_adj(self, adj, kb_len, conv_len):
+        batch_size = adj.shape[0]
+        max_len = adj.shape[1]
+        adj_array = adj.numpy()
+        for i in batch_size:
+            kb_len_i = kb_len[i]
+            conv_len_i = conv_len[i]
+            context_len_i = kb_len_i + conv_len_i + 1
+            for k in range(context_len_i, max_len):
+                adj_array[k, k] = 1
+        ret_adj = tf.convert_to_tensor(adj_array)
+        return ret_adj
+
     def load_graph(self, story, kb_len, conv_len, hidden, dh_outputs, adj, training=True):
         u = [hidden]  # different: hidden without squeeze(0), hidden: batch_size * embedding_size.
         story_size = story.shape
@@ -85,6 +98,7 @@ class KnowledgeGraph(tf.keras.Model):
         if training:
             embedding_A = self.dropout_layer(embedding_A, training=training)
 
+        adj = self.update_pad_token_adj(adj, kb_len, conv_len)
         # First Layer, GraphAttentionLayer to update word embeddings
         embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
         # Second Layer (final layer), apply output layer
