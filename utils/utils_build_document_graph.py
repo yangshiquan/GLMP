@@ -141,22 +141,22 @@ def generate_subgraph(graph_info, node_num, reverse=False):
                     # skip root node
                     if token['id'] == index and token['id'] > token['head']:
                         dependencies.append(str(token['head']))
-                        # relations.append(token['dep'])
-                        if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
-                            relations.append('BUCKET1')
-                        else:
-                            relations.append('BUCKET2')
+                        relations.append(token['dep'])
+                        # if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
+                        #     relations.append('BUCKET1')
+                        # else:
+                        #     relations.append('BUCKET2')
                         # relations.append('OTHERS')
                         masks.append(1)
                         path_len.append(abs(token['id'] - token['head']))
                     # add bi-directional graph
                     if token['id'] < index and token['head'] == index:
                         dependencies.append(str(token['id']))
-                        # relations.append(token['dep'] + '_reverse')
-                        if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
-                            relations.append('BUCKET1_reverse')
-                        else:
-                            relations.append('BUCKET2_reverse')
+                        relations.append(token['dep'] + '_reverse')
+                        # if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
+                        #     relations.append('BUCKET1_reverse')
+                        # else:
+                        #     relations.append('BUCKET2_reverse')
                         # relations.append('OTHERS')
                         masks.append(1)
                         path_len.append(abs(token['id'] - token['head']))
@@ -165,22 +165,22 @@ def generate_subgraph(graph_info, node_num, reverse=False):
                     if token['id'] == (node_num - index - 1) and token['id'] < token['head']:
                         # map head-id to forward style
                         dependencies.append(str(reversed_ids.index(token['head'])))
-                        # relations.append(token['dep'])
-                        if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
-                            relations.append('BUCKET1')
-                        else:
-                            relations.append('BUCKET2')
+                        relations.append(token['dep'])
+                        # if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
+                        #     relations.append('BUCKET1')
+                        # else:
+                        #     relations.append('BUCKET2')
                         # relations.append('OTHERS')
                         masks.append(1)
                         path_len.append(abs(token['id'] - token['head']))
                     # add bi-directional graph
                     if token['id'] > (node_num - index - 1) and token['head'] == (node_num - index - 1):
                         dependencies.append(str(reversed_ids.index(token['id'])))
-                        # relations.append(token['dep'] + '_reverse')
-                        if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
-                            relations.append('BUCKET1_reverse')
-                        else:
-                            relations.append('BUCKET2_reverse')
+                        relations.append(token['dep'] + '_reverse')
+                        # if token['dep'] in ('prep', 'det', 'pobj', 'nsubj'):
+                        #     relations.append('BUCKET1_reverse')
+                        # else:
+                        #     relations.append('BUCKET2_reverse')
                         # relations.append('OTHERS')
                         masks.append(1)
                         path_len.append(abs(token['id'] - token['head']))
