@@ -40,6 +40,9 @@ parser.add_argument('-revgraph', '--reverse_graph', help='change dependency rela
 parser.add_argument('-maxdeps', '--max_deps', help='maximum dependencies per node', type=int, required=False, default=3)
 parser.add_argument('-abd', '--ablationD', help='ablation dependecy relations', type=int, required=False, default=0)
 parser.add_argument('-maxhops', '--maxhops', help='maximium hops in encoder', type=int, required=False, default=3)
+parser.add_argument('-graphhdd', '--graphhdd', help='hidden size in Graph layer', type=int, required=False, default=8)
+parser.add_argument('-nheads', '--nheads', help='head number in Graph layer', type=int, required=False, default=8)
+parser.add_argument('-alpha', '--alpha', help='leakyrelu hyperparameter in Graph layer', type=float, required=False, default=0.2)
 # parser.add_argument('-beam','--beam_search', help='use beam_search during inference, default is greedy search', type=int, required=False, default=0)
 # parser.add_argument('-viz','--vizualization', help='vizualization', type=int, required=False, default=0)
 

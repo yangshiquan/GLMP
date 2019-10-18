@@ -11,7 +11,8 @@ tf.compat.v1.enable_eager_execution()
 
 early_stop = args['earlyStop']
 if args['dataset'] == 'kvr':
-    from utils.utils_tensorflow_Ent_graphgru import *
+    from utils.utils_tensorflow_Ent_knowledge_graph import *
+    # from utils.utils_tensorflow_Ent_graphgru import *
     early_stop = 'ENTF1'
 elif args['dataset'] == 'babi':
     from utils.utils_Ent_babi import *
@@ -42,6 +43,9 @@ model = GLMPGraph(int(args['hidden']),
                   args['task'],
                   lr=float(args['learn']),
                   n_layers=int(args['layer']),
+                  graph_hidden_size=int(args['graphhdd']),
+                  nheads=int(args['nheads']),
+                  alpha=float(args['alpha']),
                   dropout=float(args['drop']))
 
 # ================================

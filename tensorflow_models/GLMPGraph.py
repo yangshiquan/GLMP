@@ -3,6 +3,7 @@ from utils.config import *
 from tensorflow_models.encoder import ContextRNN
 from tensorflow_models.GraphGRU import GraphGRU
 from tensorflow_models.ExternalKnowledge import ExternalKnowledge
+from tensorflow_models.KnowledgeGraph import KnowledgeGraph
 from tensorflow_models.decoder import LocalMemoryDecoder
 import random
 import numpy as np
@@ -14,7 +15,7 @@ from utils.utils_general import *
 import pdb
 
 class GLMPGraph(tf.keras.Model):
-    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, dropout):
+    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, graph_hidden_size, nheads, alpha, dropout):
         super(GLMPGraph, self).__init__()
         # self.name = 'GLMP'
         self.task = task
@@ -24,12 +25,15 @@ class GLMPGraph(tf.keras.Model):
         self.lang = lang
         self.lr = lr
         self.n_layers = n_layers
+        self.graph_hidden_size = graph_hidden_size  # 8
+        self.nheads = nheads  # 8
+        self.alpha = alpha  # 0.2
         self.dropout = dropout
         self.max_resp_len = max_resp_len
         self.decoder_hop = n_layers
         self.softmax = tf.keras.layers.Softmax(0)
         self.encoder = GraphGRU(lang.n_words, hidden_size, dropout, lang, (MAX_DEPENDENCIES_PER_NODE+1))
-        self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
+        self.extKnow = KnowledgeGraph(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, dropout)
         self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang,
                                           hidden_size, self.decoder_hop, dropout)
         self.checkpoint = tf.train.Checkpoint(encoder=self.encoder,
@@ -97,14 +101,15 @@ class GLMPGraph(tf.keras.Model):
         # encode dialogue history and KB to vectors
         # TODO: need to check the shape and meaning of each tensor.
         dh_outputs, dh_hidden = self.encoder(conv_story, data[12], data[23], data[24], data[25], training=training)  # data[12]: conv_arr_lengths, data[23]: deps, data[24]: deps_type, data[25]: cell_masks.
-        global_pointer, kb_readout, global_pointer_logits = self.extKnow.load_memory(story,
-                                                              data[13],  # data[13]: kb_arr_lengths.
-                                                              data[12],  # data[12]: conv_arr_lengths.
-                                                              dh_hidden,
-                                                              dh_outputs,
-                                                              training=training)
-        encoded_hidden = tf.concat([dh_hidden, kb_readout], 1)
-        # encoded_hidden = dh_hidden
+        global_pointer, kb_readout, global_pointer_logits = self.extKnow.load_graph(story,
+                                                                                    data[13],  # data[13]: kb_arr_lengths.
+                                                                                    data[12],  # data[12]: conv_arr_lengths.
+                                                                                    dh_hidden,
+                                                                                    dh_outputs,
+                                                                                    data[26],  # data[26]: adj.
+                                                                                    training=training)
+        # encoded_hidden = tf.concat([dh_hidden, kb_readout], 1)
+        encoded_hidden = dh_hidden
 
         # get the words that can be copy from the memory
         batch_size = len(data[10])  # data[10]: context_arr_lengths.

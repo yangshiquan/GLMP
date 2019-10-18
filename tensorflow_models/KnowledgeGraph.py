@@ -1,8 +1,8 @@
 import tensorflow as tf
-from ..utils.config import *
+from utils.config import *
 import pdb
 from tensorflow.python.ops import embedding_ops
-from ..tensorflow_models.GraphAttentionLayer import GraphAttentionLayer
+from tensorflow_models.GraphAttentionLayer import GraphAttentionLayer
 
 
 class KnowledgeGraph(tf.keras.Model):
@@ -19,7 +19,7 @@ class KnowledgeGraph(tf.keras.Model):
         # input embedding layer
         self.embeddings = tf.keras.layers.Embedding(self.vocab,
                                                     self.embedding_dim,
-                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 1.0))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         # multi-head attention layer
         self.attentions = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
 
