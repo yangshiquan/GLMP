@@ -96,7 +96,7 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                  tf.string,  # deps 23
                                                  tf.int32,  # deps_type 24
                                                  tf.int32,  # cell_masks 25
-                                                 tf.float32  # adj 26
+                                                 tf.int32  # adj 26
                                                  ),
                                    output_shapes=((None, None),  # context_arr
                                                   (None,),  # response

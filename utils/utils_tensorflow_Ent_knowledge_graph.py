@@ -343,6 +343,11 @@ def prepare_data_seq(task, batch_size=100):
     dev = get_seq(dev_seq, batch_size, drop_remainder=False)
     test = get_seq(test_seq, batch_size, drop_remainder=False)
 
+    # debug dataset batch result
+    context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\
+        kb_arr_plain, context_arr_lengths, response_lengths, conv_arr_lengths, kb_arr_lengths, ent_index, ent_index_lengths,\
+        ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID, deps, deps_type, cell_masks, adj = next(iter(train))
+
     print("Read %s sentence pairs train" % len(pair_train))
     print("Read %s sentence pairs dev" % len(pair_dev))
     print("Read %s sentence pairs test" % len(pair_test))
