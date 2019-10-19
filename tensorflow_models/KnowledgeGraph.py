@@ -19,7 +19,7 @@ class KnowledgeGraph(tf.keras.Model):
         # input embedding layer
         self.embeddings = tf.keras.layers.Embedding(self.vocab,
                                                     self.embedding_dim,
-                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 1.0))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         # multi-head attention layer
         self.attentions = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
 
@@ -106,7 +106,9 @@ class KnowledgeGraph(tf.keras.Model):
         # average multi-head embeddings
         embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
         # apply non-linearity
-        embedding_A = self.elu(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # embedding_A = self.elu(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # add for mimic memory
+        embedding_A = tf.identity(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
 
         if not args['ablationH']:
             embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
