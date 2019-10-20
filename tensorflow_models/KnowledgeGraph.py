@@ -95,23 +95,25 @@ class KnowledgeGraph(tf.keras.Model):
         embedding_A = tf.multiply(embedding_A, pad_mask)
         embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])  # embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
+        if not args['ablationH']:
+            embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
         if training:
             embedding_A = self.dropout_layer(embedding_A, training=training)
 
-        adj = self.update_pad_token_adj(adj, kb_len, conv_len)
-        # First Layer, GraphAttentionLayer to update word embeddings
-        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
-        # Second Layer (final layer), apply output layer
-        embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
-        # average multi-head embeddings
-        embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
-        # apply non-linearity
-        # embedding_A = self.elu(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
-        # add for mimic memory
-        embedding_A = tf.identity(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # adj = self.update_pad_token_adj(adj, kb_len, conv_len)
+        # # First Layer, GraphAttentionLayer to update word embeddings
+        # embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
+        # # Second Layer (final layer), apply output layer
+        # embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
+        # # average multi-head embeddings
+        # embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # # apply non-linearity
+        # # embedding_A = self.elu(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # # add for mimic memory
+        # embedding_A = tf.identity(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
 
-        if not args['ablationH']:
-            embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
+        # if not args['ablationH']:
+        #     embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
 
         u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embedding_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
         prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)  # prob_logits: batch_size * memory_size
