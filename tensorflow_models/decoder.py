@@ -58,8 +58,8 @@ class LocalMemoryDecoder(tf.keras.Model):
         decoded_fine, decoded_coarse = [], []
 
         decoder_input = tf.constant([SOS_token] * batch_size)  # batch_size.
-        # hidden = self.relu(self.projector(encode_hidden))  # batch_size * embedding_dim.
-        hidden = encode_hidden  # batch_size * embedding_dim.
+        hidden = self.relu(self.projector(encode_hidden))  # batch_size * embedding_dim.
+        # hidden = encode_hidden  # batch_size * embedding_dim.
 
         all_decoder_outputs_vocab = []
         all_decoder_outputs_ptr = []
