@@ -30,8 +30,8 @@ class GraphAttentionLayer(tf.keras.Model):
 
     def call(self, input, adj, training=True):  # input: batch_size * max_len * embedding_dim, adj: batch_size * max_len * max_len.
         # add for mimic memory
-        # h = self.W(input)  # h: batch_size * max_len * output_dim.
-        h = tf.identity(input)
+        h = self.W(input)  # h: batch_size * max_len * output_dim.
+        # h = tf.identity(input)
         batch_size, N = h.shape[0], h.shape[1]  # batch_size: batch_size, N: number of nodes in graph.
         a_input = tf.reshape(tf.concat([tf.reshape(tf.tile(h, [1, 1, N]), [batch_size, N * N, -1]), tf.tile(h, [1, N, 1])], axis=1), [batch_size, N, -1, 2 * self.output_dim])  # a_input: batch_size * max_len * max_len * (2 * self.output_dim).
         prob_logits = self.leakyrelu(tf.squeeze(tf.matmul(a_input, tf.tile(tf.expand_dims(tf.tile(tf.expand_dims(self.a, axis=0), [N, 1, 1]), axis=0), [batch_size, 1, 1, 1])), axis=3))  # prob_logits: batch_size * max_len * max_len.
@@ -42,8 +42,8 @@ class GraphAttentionLayer(tf.keras.Model):
         h_prime = tf.matmul(prob_soft, h)  # h_prime: batch_size * max_len * output_dim.
 
         if self.concat:
-            # return self.elu(h_prime)
+            return self.elu(h_prime)
             # add for mimic memory
-            return h_prime
+            # return h_prime
         else:
             return h_prime
