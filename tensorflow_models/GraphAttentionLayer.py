@@ -20,7 +20,7 @@ class GraphAttentionLayer(tf.keras.Model):
         self.a = self.add_weight(
             name='a',
             shape=(self.output_dim * 2, 1),
-            initializer='zeros',
+            initializer='glorot_uniform',
             regularizer=None,
             constraint=None
         )  # self.a: (output_dim * 2) * 1
