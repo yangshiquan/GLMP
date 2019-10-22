@@ -15,7 +15,9 @@ class GraphAttentionLayer(tf.keras.Model):
             output_dim,
             use_bias=True,
             kernel_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(2 * output_dim)), (1 / np.sqrt(2 * output_dim))),
-            bias_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(2 * output_dim)), (1 / np.sqrt(2 * output_dim)))
+            bias_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(2 * output_dim)), (1 / np.sqrt(2 * output_dim))),
+            kernel_regularizer=tf.keras.regularizers.l2(0.001),
+            bias_regularizer=tf.keras.regularizers.l2(0.001)
         )  # different: bias should be explicitly assigned.
         self.a = self.add_weight(
             name='a',
