@@ -89,6 +89,7 @@ class KnowledgeGraph(tf.keras.Model):
         self.m_story = []
 
         # transform one-hot to embeddings
+        pdb.set_trace()
         embedding_A = self.embeddings(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
         # mask pad token embeddings
