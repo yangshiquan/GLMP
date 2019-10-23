@@ -101,18 +101,18 @@ class KnowledgeGraph(tf.keras.Model):
         if training:
             embedding_A = self.dropout_layer(embedding_A, training=training)
 
-        pdb.set_trace()
+        # pdb.set_trace()
         adj = self.update_pad_token_adj(adj, kb_len, conv_len)
         # First Layer, GraphAttentionLayer to update word embeddings
         embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
         # Second Layer (final layer), apply output layer
-        pdb.set_trace()
+        # pdb.set_trace()
         embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
         # average multi-head embeddings
         pdb.set_trace()
         embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
         # apply non-linearity
-        # embedding_A = self.sigmoid(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
+        embedding_A = self.sigmoid(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
         # add for mimic memory
         # embedding_A = tf.identity(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
 

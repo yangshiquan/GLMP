@@ -107,14 +107,14 @@ def read_langs(file_name, max_line=None):
 
                     # generate adjacent matrix
                     adj = np.eye(len(context_arr) + 1)
-                    # for node in neighbors_info.keys():
-                    #     neighbor = neighbors_info[node]
-                    #     neighbor_list = neighbor.lstrip('[').rstrip(']').split(',')
-                    #     neighbor = [ne.strip().strip('\'') for ne in neighbor_list]
-                    #     node_id = (-1 * node2id[node]) + node_cnt - 1
-                    #     for elm in neighbor:
-                    #         elm_id = (-1 * node2id[elm]) + node_cnt - 1
-                    #         adj[node_id, elm_id] = 1
+                    for node in neighbors_info.keys():
+                        neighbor = neighbors_info[node]
+                        neighbor_list = neighbor.lstrip('[').rstrip(']').split(',')
+                        neighbor = [ne.strip().strip('\'') for ne in neighbor_list]
+                        node_id = (-1 * node2id[node]) + node_cnt - 1
+                        for elm in neighbor:
+                            elm_id = (-1 * node2id[elm]) + node_cnt - 1
+                            adj[node_id, elm_id] = 1
 
                     data_detail = {
                         'context_arr': list(context_arr + [['$$$$'] * MEM_TOKEN_SIZE]),  # $$$$ is NULL token
