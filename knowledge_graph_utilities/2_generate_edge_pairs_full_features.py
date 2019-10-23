@@ -1,13 +1,13 @@
 import numpy as np
 
-fd = open('../data/KVR/test_edge_paris_full_features.txt', 'w')
+fd = open('../data/KVR/train_edge_paris_full_features.txt', 'w')
 
 nsample = 0
 kb_cnt = 0
 is_output = 0
 kb_info = []
 
-with open('../data/KVR/test.txt') as f:
+with open('../data/KVR/train.txt') as f:
     for line in f:
         line = line.strip()
         if line:

@@ -4,7 +4,7 @@ import pdb
 
 edge_dict = {}
 
-with open('../data/KVR/test_edge_paris_full_features.txt') as f:
+with open('../data/KVR/train_edge_paris_full_features.txt') as f:
     for line in f:
         line = line.strip()
         if line:
@@ -26,12 +26,12 @@ with open('../data/KVR/test_edge_paris_full_features.txt') as f:
             continue
 print('success.')
 
-fd = open('../data/KVR/test_transformed_full_features.txt', 'w')
+fd = open('../data/KVR/train_transformed_full_features.txt', 'w')
 
 node_list = []
 n_sample = 0
 
-with open('../data/KVR/test.txt') as f:
+with open('../data/KVR/train.txt') as f:
     for line in f:
         line = line.strip()
         if line:
