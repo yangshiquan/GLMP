@@ -42,7 +42,7 @@ class GraphAttentionLayer(tf.keras.Model):
         t3 = tf.tile(h, [1, N, 1])
         t4 = tf.concat([tf.reshape(tf.tile(h, [1, 1, N]), [batch_size, N * N, -1]), tf.tile(h, [1, N, 1])], axis=2)
         a_input = tf.reshape(tf.concat([tf.reshape(tf.tile(h, [1, 1, N]), [batch_size, N * N, -1]), tf.tile(h, [1, N, 1])], axis=2), [batch_size, N, -1, 2 * self.output_dim])  # a_input: batch_size * max_len * max_len * (2 * self.output_dim).
-        prob_logits = self.leakyrelu(tf.squeeze(tf.matmul(a_input, self.a), axis=3))  # prob_logits: batch_size * max_len * max_len.
+        prob_logits = self.leakyrelu(tf.squeeze(tf.matmul(a_input.numpy(), self.a), axis=3))  # prob_logits: batch_size * max_len * max_len.
         prob_logits = tf.where(adj > 0, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))  # prob_logits: batch_size * max_len * max_len.
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * max_len * max_len.
         # comment for mimic memory
