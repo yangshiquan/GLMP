@@ -34,7 +34,7 @@ class GraphAttentionLayer(tf.keras.Model):
     def call(self, input, adj, training=True):  # input: batch_size * max_len * embedding_dim, adj: batch_size * max_len * max_len.
         # add for mimic memory
         h = self.W(input)  # h: batch_size * max_len * output_dim.
-        # pdb.set_trace()
+        pdb.set_trace()
         # h = tf.identity(input)
         batch_size, N = h.shape[0], h.shape[1]  # batch_size: batch_size, N: number of nodes in graph.
         a_input = tf.reshape(tf.concat([tf.reshape(tf.tile(h, [1, 1, N]), [batch_size, N * N, -1]), tf.tile(h, [1, N, 1])], axis=2), [batch_size, N, -1, 2 * self.output_dim])  # a_input: batch_size * max_len * max_len * (2 * self.output_dim).
