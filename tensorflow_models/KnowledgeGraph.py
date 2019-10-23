@@ -89,7 +89,7 @@ class KnowledgeGraph(tf.keras.Model):
         self.m_story = []
 
         # transform one-hot to embeddings
-        pdb.set_trace()
+        # pdb.set_trace()
         embedding_A = self.embeddings(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         # pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
         # mask pad token embeddings
@@ -109,7 +109,7 @@ class KnowledgeGraph(tf.keras.Model):
         # pdb.set_trace()
         embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
         # average multi-head embeddings
-        pdb.set_trace()
+        # pdb.set_trace()
         embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
         # apply non-linearity
         embedding_A = self.sigmoid(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
