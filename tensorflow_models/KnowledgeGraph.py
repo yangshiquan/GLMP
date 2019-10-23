@@ -91,9 +91,9 @@ class KnowledgeGraph(tf.keras.Model):
         # transform one-hot to embeddings
         pdb.set_trace()
         embedding_A = self.embeddings(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
-        pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
+        # pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
         # mask pad token embeddings
-        embedding_A = tf.multiply(embedding_A, pad_mask)
+        # embedding_A = tf.multiply(embedding_A, pad_mask)
         embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])  # embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
         if not args['ablationH']:
