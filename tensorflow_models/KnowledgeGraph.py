@@ -26,6 +26,9 @@ class KnowledgeGraph(tf.keras.Model):
         # multi-head attention layer
         self.attentions_2 = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
 
+        # multi-head attention layer
+        self.attentions_3 = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
+
         # output layer
         self.out_layer = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
 
@@ -110,6 +113,8 @@ class KnowledgeGraph(tf.keras.Model):
         embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
         # Second Layer
         embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_2], axis=2)
+        # Third Layer
+        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_3], axis=2)
         # Output Layer
         # pdb.set_trace()
         embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
