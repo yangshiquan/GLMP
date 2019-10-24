@@ -56,7 +56,7 @@ class GraphAttentionLayer(tf.keras.Model):
         f_1 = h @ self.a1
         f_2 = h @ self.a2
         t1 = tf.tile(f_1, [1, 1, N])
-        t2 = tf.tile(tf.transpose(f_2, [1, 0]), [1, N, 1])
+        t2 = tf.tile(tf.transpose(f_2, [0, 2, 1]), [1, N, 1])
         prob_logits = self.leakyrelu(tf.tile(f_1, [1, 1, N]) + tf.tile(tf.transpose(f_2, [1, 0]), [1, N, 1]))
         prob_logits = tf.where(adj > 0, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))  # prob_logits: batch_size * max_len * max_len.
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * max_len * max_len.
