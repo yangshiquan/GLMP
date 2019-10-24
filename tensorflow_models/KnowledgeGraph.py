@@ -109,7 +109,7 @@ class KnowledgeGraph(tf.keras.Model):
         # First Layer, GraphAttentionLayer to update word embeddings
         embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
         # Second Layer
-        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_2])
+        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_2], axis=2)
         # Output Layer
         # pdb.set_trace()
         embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
