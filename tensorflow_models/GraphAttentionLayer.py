@@ -31,14 +31,14 @@ class GraphAttentionLayer(tf.keras.Model):
             name='a1',
             shape=(self.output_dim, 1),
             initializer='glorot_uniform',
-            regularizer=tf.keras.regularizers.l2(0.001),
+            regularizer=None,
             constraint=None
         )  # self.a1: (output_dim, 1)
         self.a2 = self.add_weight(
             name='a2',
             shape=(self.output_dim, 1),
             initializer='glorot_uniform',
-            regularizer=tf.keras.regularizers.l2(0.001),
+            regularizer=None,
             constraint=None
         )  # self.a2: (output_dim, 1)
         self.leakyrelu = tf.keras.layers.LeakyReLU(self.alpha)
