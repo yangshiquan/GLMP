@@ -15,7 +15,7 @@ from utils.utils_general import *
 import pdb
 
 class GLMPGraph(tf.keras.Model):
-    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, graph_hidden_size, nheads, alpha, dropout):
+    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, graph_hidden_size, nheads, alpha, dropout, graph_dr):
         super(GLMPGraph, self).__init__()
         # self.name = 'GLMP'
         self.task = task
@@ -29,11 +29,12 @@ class GLMPGraph(tf.keras.Model):
         self.nheads = nheads  # 8
         self.alpha = alpha  # 0.2
         self.dropout = dropout
+        self.graph_dr = graph_dr
         self.max_resp_len = max_resp_len
         self.decoder_hop = n_layers
         self.softmax = tf.keras.layers.Softmax(0)
         self.encoder = GraphGRU(lang.n_words, hidden_size, dropout, lang, (MAX_DEPENDENCIES_PER_NODE+1))
-        self.extKnow = KnowledgeGraph(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, dropout)
+        self.extKnow = KnowledgeGraph(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, graph_dr)
         self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang,
                                           hidden_size, self.decoder_hop, dropout)
         self.checkpoint = tf.train.Checkpoint(encoder=self.encoder,
@@ -173,8 +174,7 @@ class GLMPGraph(tf.keras.Model):
                                           data[4],
                                           tf.cast(data[11], dtype=tf.int32))  # data[4]: ptr_index, data[11]: response_lengths.
             # print("loss_l:", loss_l)
-            reg_loss = tf.compat.v1.losses.get_regularization_loss()
-            loss = loss_g + loss_v + loss_l + reg_loss
+            loss = loss_g + loss_v + loss_l
 
         # compute gradients for encoder, decoder and external knowledge
         encoder_variables = self.encoder.trainable_variables

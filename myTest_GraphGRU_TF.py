@@ -1,6 +1,9 @@
 from utils.config import *
 from tensorflow_models.GLMPGraph import *
 import pdb
+import os
+
+os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
 
 '''
 Command:
@@ -19,7 +22,8 @@ DS = 'kvr' if 'kvr' in directory[1].split('-')[1].lower() else 'babi'
 
 early_stop = args['earlyStop']
 if DS=='kvr':
-    from utils.utils_tensorflow_Ent_graphgru import *
+    # from utils.utils_tensorflow_Ent_graphgru import *
+	from utils.utils_tensorflow_Ent_knowledge_graph import *
 elif DS=='babi':
     from utils.utils_Ent_babi import *
 else:
@@ -34,7 +38,11 @@ model = GLMPGraph(int(HDD),
 			 "",
 			 lr=0.0,
 			 n_layers=int(L),
-			 dropout=0.0)
+			 graph_hidden_size=int(args['graphhdd']),
+			 nheads=int(args['nheads']),
+			 alpha=float(args['alpha']),
+			 dropout=0.0,
+			 graph_dr=float(args['graph_dr']))
 
 # len = int(test_length / int(BSZ))
 test_length_ = compute_dataset_length(test_length, int(BSZ))

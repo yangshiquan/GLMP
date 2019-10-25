@@ -6,7 +6,7 @@ import datetime
 import os
 
 
-#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 tf.compat.v1.enable_eager_execution()
 
 early_stop = args['earlyStop']
@@ -46,7 +46,8 @@ model = GLMPGraph(int(args['hidden']),
                   graph_hidden_size=int(args['graphhdd']),
                   nheads=int(args['nheads']),
                   alpha=float(args['alpha']),
-                  dropout=float(args['drop']))
+                  dropout=float(args['drop']),
+                  graph_dr=float(args['graph_dr']))
 
 # ================================
 # Training

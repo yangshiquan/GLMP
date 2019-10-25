@@ -3,6 +3,7 @@ from utils.config import *
 import pdb
 from tensorflow.python.ops import embedding_ops
 from tensorflow_models.GraphAttentionLayer import GraphAttentionLayer
+import numpy as np
 
 
 class KnowledgeGraph(tf.keras.Model):
@@ -19,19 +20,23 @@ class KnowledgeGraph(tf.keras.Model):
         # input embedding layer
         self.embeddings = tf.keras.layers.Embedding(self.vocab,
                                                     self.embedding_dim,
-                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1),
+                                                    embeddings_regularizer=tf.keras.regularizers.l2(0.001))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         # multi-head attention layer
         self.attentions = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
 
         # multi-head attention layer
-        self.attentions_2 = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
-
-        # multi-head attention layer
-        self.attentions_3 = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
+        # self.attentions_2 = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
 
         # output layer
         self.out_layer = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
 
+        self.W = tf.keras.layers.Dense(embedding_dim,
+                                       use_bias=True,
+                                       kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim))),
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim))),
+                                       kernel_regularizer=tf.keras.regularizers.l2(0.001),
+                                       bias_regularizer=tf.keras.regularizers.l2(0.001))
         self.softmax = tf.keras.layers.Softmax(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
         self.elu = tf.keras.layers.ELU()
@@ -95,7 +100,6 @@ class KnowledgeGraph(tf.keras.Model):
         self.m_story = []
 
         # transform one-hot to embeddings
-        # pdb.set_trace()
         embedding_A = self.embeddings(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
         # pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
         # mask pad token embeddings
@@ -104,22 +108,22 @@ class KnowledgeGraph(tf.keras.Model):
         embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
         if not args['ablationH']:
             embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
-        if training:
-            embedding_A = self.dropout_layer(embedding_A, training=training)
 
         # pdb.set_trace()
         adj = self.update_pad_token_adj(adj, kb_len, conv_len)
         # First Layer, GraphAttentionLayer to update word embeddings
+        if training:
+            embedding_A = self.dropout_layer(embedding_A, training=training)
         embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
         # Second Layer
-        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_2], axis=2)
-        # Third Layer
-        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_3], axis=2)
+        # if training:
+        #     embedding_A = self.dropout_layer(embedding_A, training=training)
+        # embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_2], axis=2)
         # Output Layer
-        # pdb.set_trace()
+        if training:
+            embedding_A = self.dropout_layer(embedding_A, training=training)
         embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
         # average multi-head embeddings
-        # pdb.set_trace()
         embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
         # apply non-linearity
         embedding_A = self.sigmoid(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
@@ -128,6 +132,9 @@ class KnowledgeGraph(tf.keras.Model):
 
         # if training:
         #     embedding_A = self.dropout_layer(embedding_A, training=training)
+
+        # feed-forward
+        embedding_A = self.W(embedding_A)
 
         u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embedding_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
         prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)  # prob_logits: batch_size * memory_size

@@ -43,6 +43,7 @@ parser.add_argument('-maxhops', '--maxhops', help='maximium hops in encoder', ty
 parser.add_argument('-graphhdd', '--graphhdd', help='hidden size in Graph layer', type=int, required=False, default=8)
 parser.add_argument('-nheads', '--nheads', help='head number in Graph layer', type=int, required=False, default=8)
 parser.add_argument('-alpha', '--alpha', help='leakyrelu hyperparameter in Graph layer', type=float, required=False, default=0.2)
+parser.add_argument('-graph_dr', '--graph_dr', help='graph drop out ratio', type=float, required=False, default=0.6)
 # parser.add_argument('-beam','--beam_search', help='use beam_search during inference, default is greedy search', type=int, required=False, default=0)
 # parser.add_argument('-viz','--vizualization', help='vizualization', type=int, required=False, default=0)
 
