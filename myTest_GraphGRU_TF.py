@@ -1,9 +1,12 @@
 from utils.config import *
 from tensorflow_models.GLMPGraph import *
+import tensorflow as tf
 import pdb
 import os
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
 
 '''
 Command:
