@@ -109,9 +109,9 @@ class KnowledgeGraph(tf.keras.Model):
             if not args['ablationH']:
                 embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
             # message passing stage
-            out_layer = self.out_layers[hop]
-            embedding_A = [head(embedding_A, adj, training) for head in out_layer]
-            embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            # out_layer = self.out_layers[hop]
+            # embedding_A = [head(embedding_A, adj, training) for head in out_layer]
+            # embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             # dropout
             if training:
                 embedding_A = self.dropout_layer(embedding_A, training=training)
@@ -126,9 +126,9 @@ class KnowledgeGraph(tf.keras.Model):
             if not args['ablationH']:
                 embedding_C = self.add_lm_embedding(embedding_C, kb_len, conv_len, dh_outputs)
             # message passing stage
-            out_layer_ = self.out_layers[hop+1]
-            embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
-            embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            # out_layer_ = self.out_layers[hop+1]
+            # embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
+            # embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
 
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])
             u_k = u[-1] + tf.math.reduce_sum((embedding_C * prob_soft_temp), 1)
