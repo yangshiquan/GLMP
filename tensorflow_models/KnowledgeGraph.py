@@ -18,25 +18,22 @@ class KnowledgeGraph(tf.keras.Model):
         self.dropout = dropout
         self.dropout_layer = tf.keras.layers.Dropout(self.dropout)
         # input embedding layer
-        self.embeddings = tf.keras.layers.Embedding(self.vocab,
-                                                    self.embedding_dim,
-                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1),
-                                                    embeddings_regularizer=tf.keras.regularizers.l2(0.001))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
-        # multi-head attention layer
-        self.attentions = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
+        # self.embeddings = tf.keras.layers.Embedding(self.vocab,
+        #                                             self.embedding_dim,
+        #                                             embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+        self.C = [tf.keras.layers.Embedding(self.vocab, self.embedding_dim, embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1)) for _ in range(self.max_hops+1)]
 
         # multi-head attention layer
-        # self.attentions_2 = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
+        # self.attentions = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=True) for _ in range(nheads)]
 
         # output layer
-        self.out_layer = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+        # self.out_layer = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+        self.out_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
 
         self.W = tf.keras.layers.Dense(embedding_dim,
                                        use_bias=True,
                                        kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim))),
-                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim))),
-                                       kernel_regularizer=tf.keras.regularizers.l2(0.001),
-                                       bias_regularizer=tf.keras.regularizers.l2(0.001))
+                                       bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(2*embedding_dim)),(1/np.sqrt(2*embedding_dim))))
         self.softmax = tf.keras.layers.Softmax(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
         self.elu = tf.keras.layers.ELU()
@@ -99,34 +96,72 @@ class KnowledgeGraph(tf.keras.Model):
         story_size = story.shape
         self.m_story = []
 
+        adj = self.update_pad_token_adj(adj, kb_len, conv_len)
+        pdb.set_trace()
+        t1 = self.C[0]
+        t2 = self.C[1]
+        t3 = self.C[2]
+        t4 = self.C[3]
         # transform one-hot to embeddings
-        embedding_A = self.embeddings(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
-        # pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
-        # mask pad token embeddings
-        # embedding_A = tf.multiply(embedding_A, pad_mask)
-        embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])  # embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
-        embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
-        if not args['ablationH']:
-            embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
+        for hop in range(self.max_hops):
+            # memory input stage
+            embedding_A = self.C[hop](tf.reshape(story, [story_size[0], -1]))
+            embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])
+            embedding_A = tf.math.reduce_sum(embedding_A, 2)
+            if not args['ablationH']:
+                embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
+            # message passing stage
+            embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
+            embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            # dropout
+            if training:
+                embedding_A = self.dropout_layer(embedding_A, training=training)
+
+            u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embedding_A.shape[1], 1])
+            prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)
+            prob_soft = self.softmax(prob_logits)
+
+            embedding_C = self.C[hop+1](tf.reshape(story, [story_size[0], -1]))
+            embedding_C = tf.reshape(embedding_C, [story_size[0], story_size[1], story_size[2], embedding_C.shape[-1]])
+            embedding_C = tf.math.reduce_sum(embedding_C, 2)
+            if not args['ablationH']:
+                embedding_C = self.add_lm_embedding(embedding_C, kb_len, conv_len, dh_outputs)
+            # message passing stage
+            embedding_C = [head(embedding_C, adj, training) for head in self.out_layer]
+            embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+
+            prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])
+            u_k = u[-1] + tf.math.reduce_sum((embedding_C * prob_soft_temp), 1)
+            u.append(u_k)
+            self.m_story.append(embedding_A)
+        self.m_story.append(embedding_C)
+
+        # embedding_A = self.embeddings(tf.reshape(story, [story_size[0], -1]))  # story: batch_size * seq_len * MEM_TOKEN_SIZE, embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
+        # # pad_mask = self.gen_embedding_mask(tf.reshape(story, [story_size[0], -1]))
+        # # mask pad token embeddings
+        # # embedding_A = tf.multiply(embedding_A, pad_mask)
+        # embedding_A = tf.reshape(embedding_A, [story_size[0], story_size[1], story_size[2], embedding_A.shape[-1]])  # embedding_A: batch_size * memory_size * MEM_TOKEN_SIZE * embedding_dim.
+        # embedding_A = tf.math.reduce_sum(embedding_A, 2)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # if not args['ablationH']:
+        #     embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
 
         # pdb.set_trace()
-        adj = self.update_pad_token_adj(adj, kb_len, conv_len)
         # First Layer, GraphAttentionLayer to update word embeddings
-        if training:
-            embedding_A = self.dropout_layer(embedding_A, training=training)
-        embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
+        # if training:
+        #     embedding_A = self.dropout_layer(embedding_A, training=training)
+        # embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions], axis=2)  # embedding_A: batch_size * memory_size * (nhead * embedding_dim)
         # Second Layer
         # if training:
         #     embedding_A = self.dropout_layer(embedding_A, training=training)
         # embedding_A = tf.concat([att(embedding_A, adj, training) for att in self.attentions_2], axis=2)
         # Output Layer
-        if training:
-            embedding_A = self.dropout_layer(embedding_A, training=training)
-        embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
+        # if training:
+        #     embedding_A = self.dropout_layer(embedding_A, training=training)
+        # embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
         # average multi-head embeddings
-        embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)  # embedding_A: batch_size * memory_size * embedding_dim.
         # apply non-linearity
-        embedding_A = self.sigmoid(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
+        # embedding_A = self.sigmoid(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
         # add for mimic memory
         # embedding_A = tf.identity(embedding_A)  # embedding_A: batch_size * memory_size * embedding_dim.
 
@@ -134,25 +169,42 @@ class KnowledgeGraph(tf.keras.Model):
         #     embedding_A = self.dropout_layer(embedding_A, training=training)
 
         # feed-forward
-        embedding_A = self.W(embedding_A)
+        # embedding_A = self.W(embedding_A)
 
-        u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embedding_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
-        prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)  # prob_logits: batch_size * memory_size
-
-        self.m_story.append(embedding_A)
+        # u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embedding_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
+        # prob_logits = tf.math.reduce_sum((embedding_A * u_temp), 2)  # prob_logits: batch_size * memory_size
+        #
+        # self.m_story.append(embedding_A)
 
         return self.sigmoid(prob_logits), u[-1], prob_logits
 
     def call(self, query_vector, global_pointer, training=True):
         u = [query_vector]  # query_vector: batch_size * embedding_dim.
 
-        embed_A = self.m_story[0]  # embed_A: batch_size * memory_size * embedding_dim.
-        if not args['ablationG']:
-            embed_A = embed_A * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_A.shape[2]])
+        for hop in range(self.max_hops):
+            embed_A = self.m_story[hop]
+            if not args['ablationG']:
+                embed_A = embed_A * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_A.shape[2]])
 
-        u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embed_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
-        prob_logits = tf.math.reduce_sum((embed_A * u_temp), 2)  # prob_logits: batch_size * memory_size.
-        prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * memory_size.
+            u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embed_A.shape[1], 1])
+            prob_logits = tf.math.reduce_sum((embed_A * u_temp), 2)
+            prob_soft = self.softmax(prob_logits)
+
+            embed_C = self.m_story[hop+1]
+            if not args['ablationG']:
+                embed_C = embed_C * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_C.shape[2]])
+
+            prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embed_C.shape[2]])
+            u_k = u[-1] + tf.math.reduce_sum((embed_C * prob_soft_temp), 1)
+            u.append(u_k)
+
+        # embed_A = self.m_story[0]  # embed_A: batch_size * memory_size * embedding_dim.
+        # if not args['ablationG']:
+        #     embed_A = embed_A * tf.tile(tf.expand_dims(global_pointer, 2), [1, 1, embed_A.shape[2]])
+        #
+        # u_temp = tf.tile(tf.expand_dims(u[-1], 1), [1, embed_A.shape[1], 1])  # u_temp: batch_size * memory_size * embedding_dim.
+        # prob_logits = tf.math.reduce_sum((embed_A * u_temp), 2)  # prob_logits: batch_size * memory_size.
+        # prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * memory_size.
 
         return prob_soft, prob_logits
 
