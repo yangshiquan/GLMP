@@ -18,9 +18,9 @@ class KnowledgeGraph(tf.keras.Model):
         self.dropout = dropout
         self.dropout_layer = tf.keras.layers.Dropout(self.dropout)
         # input embedding layer
-        self.embeddings = tf.keras.layers.Embedding(self.vocab,
-                                                    self.embedding_dim,
-                                                    embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
+        # self.embeddings = tf.keras.layers.Embedding(self.vocab,
+        #                                             self.embedding_dim,
+        #                                             embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1))  # different: no masking for pad token, pad token embedding does not equal zero, only support one hop.
         self.C = [tf.keras.layers.Embedding(self.vocab, self.embedding_dim, embeddings_initializer=tf.initializers.RandomNormal(0.0, 0.1)) for _ in range(self.max_hops+1)]
 
         # multi-head attention layer
@@ -97,11 +97,6 @@ class KnowledgeGraph(tf.keras.Model):
         self.m_story = []
 
         adj = self.update_pad_token_adj(adj, kb_len, conv_len)
-        pdb.set_trace()
-        t1 = self.C[0]
-        t2 = self.C[1]
-        t3 = self.C[2]
-        t4 = self.C[3]
         # transform one-hot to embeddings
         for hop in range(self.max_hops):
             # memory input stage
