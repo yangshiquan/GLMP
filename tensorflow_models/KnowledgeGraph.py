@@ -28,7 +28,10 @@ class KnowledgeGraph(tf.keras.Model):
 
         # output layer
         # self.out_layer = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
-        self.out_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+        self.out_layers = []
+        for _ in range(self.max_hops+1):
+            out_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+            self.out_layers.append(out_layer)
 
         self.W = tf.keras.layers.Dense(embedding_dim,
                                        use_bias=True,
@@ -106,7 +109,8 @@ class KnowledgeGraph(tf.keras.Model):
             if not args['ablationH']:
                 embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
             # message passing stage
-            embedding_A = [head(embedding_A, adj, training) for head in self.out_layer]
+            out_layer = self.out_layers[hop]
+            embedding_A = [head(embedding_A, adj, training) for head in out_layer]
             embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             # dropout
             if training:
@@ -122,7 +126,8 @@ class KnowledgeGraph(tf.keras.Model):
             if not args['ablationH']:
                 embedding_C = self.add_lm_embedding(embedding_C, kb_len, conv_len, dh_outputs)
             # message passing stage
-            embedding_C = [head(embedding_C, adj, training) for head in self.out_layer]
+            out_layer_ = self.out_layers[hop+1]
+            embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
             embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
 
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])
