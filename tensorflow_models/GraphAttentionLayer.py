@@ -47,8 +47,10 @@ class GraphAttentionLayer(tf.keras.Model):
         h = self.W(input)  # h: batch_size * max_len * output_dim.
         # h = tf.identity(input)
         batch_size, N = h.shape[0], h.shape[1]  # batch_size: batch_size, N: number of nodes in graph.
-        f_1 = h @ self.a1
-        f_2 = h @ self.a2
+        # f_1 = h @ self.a1
+        # f_2 = h @ self.a2
+        f_1 = tf.matmul(h, tf.tile(tf.expand_dims(self.a1, 0), [batch_size, 1, 1]))
+        f_2 = tf.matmul(h, tf.tile(tf.expand_dims(self.a2, 0), [batch_size, 1, 1]))
         prob_logits = self.leakyrelu(tf.tile(f_1, [1, 1, N]) + tf.tile(tf.transpose(f_2, [0, 2, 1]), [1, N, 1]))
         prob_logits = tf.where(adj > 0, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))  # prob_logits: batch_size * max_len * max_len.
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * max_len * max_len.
