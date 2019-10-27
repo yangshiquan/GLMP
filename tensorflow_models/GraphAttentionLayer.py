@@ -44,8 +44,8 @@ class GraphAttentionLayer(tf.keras.Model):
 
     def call(self, input, adj, training=True):  # input: batch_size * max_len * embedding_dim, adj: batch_size * max_len * max_len.
         # add for mimic memory
-        h = self.W(input)  # h: batch_size * max_len * output_dim.
-        # h = tf.identity(input)
+        # h = self.W(input)  # h: batch_size * max_len * output_dim.
+        h = tf.identity(input)
         batch_size, N = h.shape[0], h.shape[1]  # batch_size: batch_size, N: number of nodes in graph.
         # f_1 = h @ self.a1
         # f_2 = h @ self.a2
@@ -55,8 +55,8 @@ class GraphAttentionLayer(tf.keras.Model):
         prob_logits = tf.where(adj > 0, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))  # prob_logits: batch_size * max_len * max_len.
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * max_len * max_len.
         # comment for mimic memory
-        if training:
-            prob_soft = self.dropout_layer(prob_soft, training=training)  # prob_soft: batch_size * max_len * max_len.
+        # if training:
+        #     prob_soft = self.dropout_layer(prob_soft, training=training)  # prob_soft: batch_size * max_len * max_len.
         h_prime = tf.matmul(prob_soft, h)  # h_prime: batch_size * max_len * output_dim.
 
         if self.concat:
