@@ -174,7 +174,7 @@ class GLMPGraph(tf.keras.Model):
                                           data[4],
                                           tf.cast(data[11], dtype=tf.int32))  # data[4]: ptr_index, data[11]: response_lengths.
             # print("loss_l:", loss_l)
-            loss = loss_g + loss_v + loss_l
+            loss = loss_g + loss_v + 3 * loss_l
 
         # compute gradients for encoder, decoder and external knowledge
         encoder_variables = self.encoder.trainable_variables
