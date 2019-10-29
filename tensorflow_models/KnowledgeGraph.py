@@ -40,6 +40,7 @@ class KnowledgeGraph(tf.keras.Model):
         self.softmax = tf.keras.layers.Softmax(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
         self.elu = tf.keras.layers.ELU()
+        self.layer_norm = tf.keras.layers.LayerNormalization()
 
     def add_lm_embedding(self, full_memory, kb_len, conv_len, hiddens):
         output_list = []
@@ -110,8 +111,12 @@ class KnowledgeGraph(tf.keras.Model):
                 embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
             # message passing stage
             out_layer = self.out_layers[hop]
-            embedding_A = [head(embedding_A, adj, training) for head in out_layer]
-            embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            # embedding_A = [head(embedding_A, adj, training) for head in out_layer]
+            # embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            embedding_A_normalized = self.layer_norm(embedding_A)
+            embedding_A_normalized = [head(embedding_A_normalized, adj, training) for head in out_layer]
+            embedding_A_normalized = tf.reduce_sum(tf.stack(embedding_A_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            embedding_A = embedding_A + embedding_A_normalized
             # dropout
             if training:
                 embedding_A = self.dropout_layer(embedding_A, training=training)
@@ -127,8 +132,12 @@ class KnowledgeGraph(tf.keras.Model):
                 embedding_C = self.add_lm_embedding(embedding_C, kb_len, conv_len, dh_outputs)
             # message passing stage
             out_layer_ = self.out_layers[hop+1]
-            embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
-            embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            # embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
+            # embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            embedding_C_normalized = self.layer_norm(embedding_C)
+            embedding_C_normalized = [head(embedding_C_normalized, adj, training) for head in out_layer_]
+            embedding_C_normalized = tf.reduce_sum(tf.stack(embedding_C_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+            embedding_C = embedding_C + embedding_C_normalized
 
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])
             u_k = u[-1] + tf.math.reduce_sum((embedding_C * prob_soft_temp), 1)
