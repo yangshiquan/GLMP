@@ -118,14 +118,12 @@ class KnowledgeGraph(tf.keras.Model):
             # embedding_A = [head(embedding_A, adj, training) for head in out_layer]
             # embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             # add layer-normalization
-            embedding_A_normalized = self.layer_norm(embedding_A)
-            embedding_A_normalized = [head(embedding_A_normalized, adj, training) for head in out_layer]
+            embedding_A_normalized = [head(embedding_A, adj, training) for head in out_layer]
             embedding_A_normalized = tf.reduce_sum(tf.stack(embedding_A_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             embedding_A = embedding_A + embedding_A_normalized
             # second gat layer
             out_layer_2 = self.out_layers_2[hop]
-            embedding_A_normalized = self.layer_norm(embedding_A)
-            embedding_A_normalized = [head(embedding_A_normalized, adj, training) for head in out_layer_2]
+            embedding_A_normalized = [head(embedding_A, adj, training) for head in out_layer_2]
             embedding_A_normalized = tf.reduce_sum(tf.stack(embedding_A_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             embedding_A = embedding_A + embedding_A_normalized
             # dropout
@@ -146,14 +144,12 @@ class KnowledgeGraph(tf.keras.Model):
             # embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
             # embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             # add layer-normalization
-            embedding_C_normalized = self.layer_norm(embedding_C)
-            embedding_C_normalized = [head(embedding_C_normalized, adj, training) for head in out_layer_]
+            embedding_C_normalized = [head(embedding_C, adj, training) for head in out_layer_]
             embedding_C_normalized = tf.reduce_sum(tf.stack(embedding_C_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             embedding_C = embedding_C + embedding_C_normalized
             # second gat-layer
             out_layer_2 = self.out_layers_2[hop+1]
-            embedding_C_normalized = self.layer_norm(embedding_C)
-            embedding_C_normalized = [head(embedding_C_normalized, adj, training) for head in out_layer_2]
+            embedding_C_normalized = [head(embedding_C, adj, training) for head in out_layer_2]
             embedding_C_normalized = tf.reduce_sum(tf.stack(embedding_C_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
             embedding_C = embedding_C + embedding_C_normalized
 
