@@ -35,8 +35,13 @@ model = globals()[args['decoder']](
     args['path'], 
     args['task'], 
     lr=float(args['learn']), 
-    n_layers=int(args['layer']), 
-    dropout=float(args['drop']))
+    n_layers=int(args['layer']),
+    graph_hidden_size=int(args['graphhdd']),
+    nheads=int(args['nheads']),
+    alpha=float(args['alpha']),
+    dropout=float(args['drop']),
+    graph_dr=float(args['graph_dr']),
+    n_graph_layers=int(args['graph_layer']))
 
 for epoch in range(200):
     print("Epoch:{}".format(epoch))  

@@ -17,7 +17,7 @@ from models.modules import *
 
 
 class GLMP(nn.Module):
-    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, dropout):
+    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, graph_hidden_size, nheads, alpha, dropout, graph_dr, n_graph_layers):
         super(GLMP, self).__init__()
         self.name = "GLMP"
         self.task = task
@@ -45,7 +45,7 @@ class GLMP(nn.Module):
                 self.decoder = torch.load(str(path)+'/dec.th',lambda storage, loc: storage)
         else:
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
-            self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
+            self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, graph_dr, n_graph_layers)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
 
         # Initialize optimizers and criterion
@@ -147,7 +147,7 @@ class GLMP(nn.Module):
         
         # Encode dialog history and KB to vectors
         dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
-        global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs)
+        global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs, data['adj'])
         encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1) 
         
         # Get the words that can be copy from the memory

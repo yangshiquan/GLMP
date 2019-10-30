@@ -78,6 +78,7 @@ class Dataset(data.Dataset):
         kb_arr = self.preprocess(kb_arr, self.src_word2id, trg=False)
         sketch_response = self.data_info['sketch_response'][index]
         sketch_response = self.preprocess(sketch_response, self.trg_word2id)
+        adj = torch.Tensor(self.data_info['adj'][index])
         
         # processed information
         data_info = {}
@@ -135,7 +136,16 @@ class Dataset(data.Dataset):
                 end = lengths[i]
                 padded_seqs[i, :end] = seq[:end]    
             return padded_seqs, lengths
-        
+
+        def merge_adj(adj):
+            lengths = [seq.shape[0] for seq in adj]
+            max_len = 1 if max(lengths)==0 else max(lengths)
+            padded_seqs = torch.zeros(len(adj), max_len, max_len).float()
+            for i, seq in enumerate(adj):
+                end = lengths[i]
+                padded_seqs[i, :end, :end] = seq[:end, :end]
+            return padded_seqs, lengths
+
         # sort a list by sequence length (descending order) to use pack_padded_sequence
         data.sort(key=lambda x: len(x['conv_arr']), reverse=True) 
         item_info = {}
@@ -150,6 +160,7 @@ class Dataset(data.Dataset):
         conv_arr, conv_arr_lengths = merge(item_info['conv_arr'], True)
         sketch_response, _ = merge(item_info['sketch_response'], False)
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
+        adj, _ = merge_adj(item_info['adj'])
         
         # convert to contiguous and cuda
         context_arr = _cuda(context_arr.contiguous())
@@ -158,6 +169,7 @@ class Dataset(data.Dataset):
         ptr_index = _cuda(ptr_index.contiguous())
         conv_arr = _cuda(conv_arr.transpose(0,1).contiguous())
         sketch_response = _cuda(sketch_response.contiguous())
+        adj = _cuda(adj.contiguous())
         if(len(list(kb_arr.size()))>1): kb_arr = _cuda(kb_arr.transpose(0,1).contiguous())
         
         # processed information

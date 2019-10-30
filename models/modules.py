@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils.config import *
 from utils.utils_general import _cuda
+from models.GraphAttentionLayer import GraphAttentionLayer
 import pdb
 
 
@@ -43,20 +44,34 @@ class ContextRNN(nn.Module):
 
 
 class ExternalKnowledge(nn.Module):
-    def __init__(self, vocab, embedding_dim, hop, dropout):
+    def __init__(self, vocab, embedding_dim, hop, nhid, nheads, alpha, dropout, graph_layer_num):
         super(ExternalKnowledge, self).__init__()
         self.max_hops = hop
         self.embedding_dim = embedding_dim
+        self.vocab = vocab
+        self.nhid = nhid
+        self.nheads = nheads
+        self.alpha = alpha
+        self.graph_layer_num = graph_layer_num
         self.dropout = dropout
-        self.dropout_layer = nn.Dropout(dropout) 
+        self.dropout_layer = nn.Dropout(dropout)
         for hop in range(self.max_hops+1):
             C = nn.Embedding(vocab, embedding_dim, padding_idx=PAD_token)
-            # C.weight.data.normal_(0, 0.1)
-            t = torch.randn(vocab, embedding_dim) * 0.1
-            t[PAD_token, :] = torch.zeros(1, embedding_dim)
-            C.weight.data = t
+            C.weight.data.normal_(0, 0.1)
+            # t = torch.randn(vocab, embedding_dim) * 0.1
+            # t[PAD_token, :] = torch.zeros(1, embedding_dim)
+            # C.weight.data = t
             self.add_module("C_{}".format(hop), C)
         self.C = AttrProxy(self, "C_")
+
+        self.graph_layers_list = []
+        for i in range(self.graph_layer_num):
+            graph_layers = []
+            for _ in range(self.max_hops+1):
+                graph_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+                graph_layers.append(graph_layer)
+            self.graph_layers_list.append(graph_layers)
+
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
@@ -67,17 +82,36 @@ class ExternalKnowledge(nn.Module):
             full_memory[bi, start:end, :] = full_memory[bi, start:end, :] + hiddens[bi, :conv_len[bi], :]
         return full_memory
 
-    def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs):
+    def update_pad_token_adj(self, adj, kb_len, conv_len):
+        batch_size = adj.shape[0]
+        max_len = adj.shape[1]
+        adj_array = adj.numpy()
+        for i in range(batch_size):
+            kb_len_i = kb_len[i] - 1
+            conv_len_i = conv_len[i]
+            context_len_i = kb_len_i + conv_len_i + 1
+            for k in range(context_len_i, max_len):
+                adj_array[i, k, k] = 1
+        ret_adj = torch.Tensor(adj_array)
+        return ret_adj
+
+    def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs, adj):
         # Forward multiple hop mechanism
         u = [hidden.squeeze(0)]
         story_size = story.size()
         self.m_story = []
+        adj = self.update_pad_token_adj(adj, kb_len, conv_len)
         for hop in range(self.max_hops):
             embed_A = self.C[hop](story.contiguous().view(story_size[0], -1))#.long()) # b * (m * s) * e
             embed_A = embed_A.view(story_size+(embed_A.size(-1),)) # b * m * s * e
             embed_A = torch.sum(embed_A, 2).squeeze(2) # b * m * e
             if not args["ablationH"]:
                 embed_A = self.add_lm_embedding(embed_A, kb_len, conv_len, dh_outputs)
+            for layer in range(self.graph_layer_num):
+                graph_layer = self.graph_layers_list[layer][hop]
+                embed_A_t = [head(embed_A, adj) for head in graph_layer]
+                embed_A_t = torch.sum(torch.stack(embed_A_t, axis=0), axis=0) / self.nheads.type(torch.DoubleTensor)
+                embed_A = embed_A + embed_A_t
             embed_A = self.dropout_layer(embed_A)
             
             if(len(list(u[-1].size()))==1): 
@@ -91,6 +125,11 @@ class ExternalKnowledge(nn.Module):
             embed_C = torch.sum(embed_C, 2).squeeze(2)
             if not args["ablationH"]:
                 embed_C = self.add_lm_embedding(embed_C, kb_len, conv_len, dh_outputs)
+            for layer in range(self.graph_layer_num):
+                graph_layer_ = self.graph_layers_list[layer][hop+1]
+                embed_C_t = [head(embed_C, adj) for head in graph_layer_]
+                embed_C_t = torch.sum(torch.stack(embed_C_t, axis=0), axis=0) / self.nheads.type(torch.DoubleTensor)
+                embed_C = embed_C + embed_C_t
 
             prob = prob_.unsqueeze(2).expand_as(embed_C)
             o_k  = torch.sum(embed_C*prob, 1)

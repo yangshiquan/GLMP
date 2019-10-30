@@ -1,6 +1,6 @@
 import json
 import ast
-
+import numpy as np
 from utils.utils_general import *
 
 
@@ -8,6 +8,8 @@ def read_langs(file_name, max_line = None):
     print(("Reading lines from {}".format(file_name)))
     data, context_arr, conv_arr, kb_arr = [], [], [], []
     max_resp_len = 0
+    node2id, neighbors_info = {}, {}
+    node_cnt = 0
     
     with open('data/KVR/kvret_entities.json') as f:
         global_entity = json.load(f)
@@ -51,7 +53,18 @@ def read_langs(file_name, max_line = None):
                     selector_index = [1 if (word_arr[0] in ent_index or word_arr[0] in r.split()) else 0 for word_arr in context_arr] + [1]
                     
                     sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
-                    
+
+                    # generate adjacent matrix
+                    adj = np.eye(len(context_arr) + 1)
+                    for node in neighbors_info.keys():
+                        neighbor = neighbors_info[node]
+                        neighbor_list = neighbor.lstrip('[').rstrip(']').split(',')
+                        neighbor = [ne.strip().strip('\'') for ne in neighbor_list]
+                        node_id = (-1 * node2id[node]) + node_cnt - 1
+                        for elm in neighbor:
+                            elm_id = (-1 * node2id[elm]) + node_cnt - 1
+                            adj[node_id, elm_id] = 1
+
                     data_detail = {
                         'context_arr':list(context_arr+[['$$$$']*MEM_TOKEN_SIZE]), # $$$$ is NULL token
                         'response':r,
@@ -66,7 +79,8 @@ def read_langs(file_name, max_line = None):
                         'kb_arr':list(kb_arr), 
                         'id':int(sample_counter),
                         'ID':int(cnt_lin),
-                        'domain':task_type}
+                        'domain':task_type,
+                        'adj': list(adj)}
                     data.append(data_detail)
                     
                     gen_r = generate_memory(r, "$s", str(nid)) 
@@ -76,13 +90,19 @@ def read_langs(file_name, max_line = None):
                         max_resp_len = len(r.split())
                     sample_counter += 1
                 else:
-                    r = line
+                    nid, node, neighbors = line.split('|')
+                    r = node.lstrip('[').rstrip(']')
                     kb_info = generate_memory(r, "", str(nid))
                     context_arr = kb_info + context_arr
                     kb_arr += kb_info
+                    node2id[node] = node_cnt
+                    node_cnt += 1
+                    neighbors_info[node] = neighbors
             else:
                 cnt_lin += 1
                 context_arr, conv_arr, kb_arr = [], [], []
+                node2id, neighbors_info = {}, {}
+                node_cnt = 0
                 if(max_line and cnt_lin >= max_line):
                     break
 
@@ -138,9 +158,9 @@ def generate_memory(sent, speaker, time):
 
 
 def prepare_data_seq(task, batch_size=100):
-    file_train = 'data/KVR/{}train.txt'.format(task)
-    file_dev = 'data/KVR/{}dev.txt'.format(task)
-    file_test = 'data/KVR/{}test.txt'.format(task)
+    file_train = 'data/KVR/{}train_transformed_full_features.txt'.format(task)
+    file_dev = 'data/KVR/{}dev_transformed_full_features.txt'.format(task)
+    file_test = 'data/KVR/{}test_transformed_full_features.txt'.format(task)
 
     pair_train, train_max_len = read_langs(file_train, max_line=None)
     pair_dev, dev_max_len = read_langs(file_dev, max_line=None)
