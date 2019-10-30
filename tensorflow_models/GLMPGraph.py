@@ -329,19 +329,19 @@ class GLMPGraph(tf.keras.Model):
             print("Dialog Accuracy:\t" + str(dia_acc * 1.0 / len(dialog_acc_dict.keys())))
 
         if (early_stop == 'BLEU'):
-            if (bleu_score >= matric_best):
-                self.save_model('BLEU-' + str(bleu_score))
-                print("MODEL SAVED")
+            # if (bleu_score >= matric_best):
+            self.save_model('BLEU-' + str(bleu_score))
+            print("MODEL SAVED")
             return bleu_score
         elif (early_stop == 'ENTF1'):
-            if (F1_score >= matric_best):
-                self.save_model('ENTF1-{:.4f}'.format(F1_score))
-                print("MODEL SAVED")
+            # if (F1_score >= matric_best):
+            self.save_model('ENTF1-{:.4f}'.format(F1_score))
+            print("MODEL SAVED")
             return F1_score
         else:
-            if (acc_score >= matric_best):
-                self.save_model('ACC-{:.4f}'.format(acc_score))
-                print("MODEL SAVED")
+            # if (acc_score >= matric_best):
+            self.save_model('ACC-{:.4f}'.format(acc_score))
+            print("MODEL SAVED")
             return acc_score
 
     def compute_prf(self, gold, pred, global_entity_list, kb_plain):
