@@ -44,7 +44,6 @@ class KnowledgeGraph(tf.keras.Model):
         self.softmax = tf.keras.layers.Softmax(1)
         self.sigmoid = tf.keras.layers.Activation('sigmoid')
         self.elu = tf.keras.layers.ELU()
-        self.layer_norm = tf.keras.layers.LayerNormalization()
 
     def add_lm_embedding(self, full_memory, kb_len, conv_len, hiddens):
         output_list = []
