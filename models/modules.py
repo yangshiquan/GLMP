@@ -68,7 +68,7 @@ class ExternalKnowledge(nn.Module):
         for i in range(self.graph_layer_num):
             graph_layers = []
             for _ in range(self.max_hops+1):
-                graph_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+                graph_layer = GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False)
                 graph_layers.append(graph_layer)
             self.graph_layers_list.append(graph_layers)
 
@@ -109,9 +109,9 @@ class ExternalKnowledge(nn.Module):
                 embed_A = self.add_lm_embedding(embed_A, kb_len, conv_len, dh_outputs)
             for layer in range(self.graph_layer_num):
                 graph_layer = self.graph_layers_list[layer][hop]
-                embed_A_t = [head(embed_A, adj) for head in graph_layer]
-                embed_A_t = torch.sum(torch.stack(embed_A_t, axis=0), axis=0) / self.nheads
-                embed_A = embed_A + embed_A_t
+                embed_A = graph_layer(embed_A, adj)
+                # embed_A_t = graph_layer(embed_A, adj)
+                # embed_A = embed_A + embed_A_t
             embed_A = self.dropout_layer(embed_A)
             
             if(len(list(u[-1].size()))==1): 
@@ -126,10 +126,10 @@ class ExternalKnowledge(nn.Module):
             if not args["ablationH"]:
                 embed_C = self.add_lm_embedding(embed_C, kb_len, conv_len, dh_outputs)
             for layer in range(self.graph_layer_num):
-                graph_layer_ = self.graph_layers_list[layer][hop+1]
-                embed_C_t = [head(embed_C, adj) for head in graph_layer_]
-                embed_C_t = torch.sum(torch.stack(embed_C_t, axis=0), axis=0) / self.nheads
-                embed_C = embed_C + embed_C_t
+                graph_layer = self.graph_layers_list[layer][hop+1]
+                embed_C = graph_layer(embed_C, adj)
+                # embed_C_t = graph_layer(embed_C, adj)
+                # embed_C = embed_C + embed_C_t
 
             prob = prob_.unsqueeze(2).expand_as(embed_C)
             o_k  = torch.sum(embed_C*prob, 1)
