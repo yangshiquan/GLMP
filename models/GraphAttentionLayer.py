@@ -24,7 +24,7 @@ class GraphAttentionLayer(nn.Module):
         h = input
         f_1 = h @ self.a1
         f_2 = h @ self.a2
-        e = self.leakyrelu(f_1 + f_2.transpose(0,1))
+        e = self.leakyrelu(f_1 + f_2.transpose(1,2))
 
         zero_vec = -9e15*torch.ones_like(e)
         attention = torch.where(adj > 0, e, zero_vec)

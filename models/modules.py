@@ -110,7 +110,7 @@ class ExternalKnowledge(nn.Module):
             for layer in range(self.graph_layer_num):
                 graph_layer = self.graph_layers_list[layer][hop]
                 embed_A_t = [head(embed_A, adj) for head in graph_layer]
-                embed_A_t = torch.sum(torch.stack(embed_A_t, axis=0), axis=0) / self.nheads.type(torch.DoubleTensor)
+                embed_A_t = torch.sum(torch.stack(embed_A_t, axis=0), axis=0) / self.nheads
                 embed_A = embed_A + embed_A_t
             embed_A = self.dropout_layer(embed_A)
             
@@ -128,7 +128,7 @@ class ExternalKnowledge(nn.Module):
             for layer in range(self.graph_layer_num):
                 graph_layer_ = self.graph_layers_list[layer][hop+1]
                 embed_C_t = [head(embed_C, adj) for head in graph_layer_]
-                embed_C_t = torch.sum(torch.stack(embed_C_t, axis=0), axis=0) / self.nheads.type(torch.DoubleTensor)
+                embed_C_t = torch.sum(torch.stack(embed_C_t, axis=0), axis=0) / self.nheads
                 embed_C = embed_C + embed_C_t
 
             prob = prob_.unsqueeze(2).expand_as(embed_C)
