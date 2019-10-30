@@ -6,7 +6,7 @@ from utils.utils_general import *
 
 def read_langs(file_name, max_line = None):
     print(("Reading lines from {}".format(file_name)))
-    data, context_arr, conv_arr, kb_arr = [], [], [], []
+    data, context_arr, conv_arr, kb_arr, conv_arr_plain = [], [], [], [], []
     max_resp_len = 0
     node2id, neighbors_info = {}, {}
     node_cnt = 0
@@ -24,12 +24,14 @@ def read_langs(file_name, max_line = None):
                     task_type = line
                     continue
 
-                nid, line = line.split(' ', 1)
                 if '\t' in line:
+                    # deal with dialogue history
+                    nid, line = line.split(' ', 1)
                     u, r, gold_ent = line.split('\t')
-                    gen_u = generate_memory(u, "$u", str(nid)) 
+                    gen_u = generate_memory(u, "$u", str(nid))
                     context_arr += gen_u
                     conv_arr += gen_u
+                    conv_arr_plain.append(u)
                     
                     # Get gold entity for each domain
                     gold_ent = ast.literal_eval(gold_ent)
