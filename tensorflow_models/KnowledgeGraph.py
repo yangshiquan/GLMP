@@ -116,9 +116,11 @@ class KnowledgeGraph(tf.keras.Model):
             # message passing stage
             for layer in range(self.graph_layer_num):
                 graph_layer = self.graph_layers_list[layer][hop]
-                embedding_A_t = [head(embedding_A, adj, training) for head in graph_layer]
-                embedding_A_t = tf.reduce_sum(tf.stack(embedding_A_t, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-                embedding_A = embedding_A + embedding_A_t
+                embedding_A = [head(embedding_A, adj, training) for head in graph_layer]
+                embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+                # embedding_A_t = [head(embedding_A, adj, training) for head in graph_layer]
+                # embedding_A_t = tf.reduce_sum(tf.stack(embedding_A_t, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+                # embedding_A = embedding_A + embedding_A_t
             # dropout
             if training:
                 embedding_A = self.dropout_layer(embedding_A, training=training)
@@ -135,9 +137,11 @@ class KnowledgeGraph(tf.keras.Model):
             # message passing stage
             for layer in range(self.graph_layer_num):
                 graph_layer_ = self.graph_layers_list[layer][hop+1]
-                embedding_C_t = [head(embedding_C, adj, training) for head in graph_layer_]
-                embedding_C_t = tf.reduce_sum(tf.stack(embedding_C_t, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-                embedding_C = embedding_C + embedding_C_t
+                embedding_C = [head(embedding_C, adj, training) for head in graph_layer_]
+                embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+                # embedding_C_t = [head(embedding_C, adj, training) for head in graph_layer_]
+                # embedding_C_t = tf.reduce_sum(tf.stack(embedding_C_t, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+                # embedding_C = embedding_C + embedding_C_t
 
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])
             u_k = u[-1] + tf.math.reduce_sum((embedding_C * prob_soft_temp), 1)
