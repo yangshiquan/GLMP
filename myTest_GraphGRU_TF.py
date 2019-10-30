@@ -45,7 +45,8 @@ model = GLMPGraph(int(HDD),
 			 nheads=int(args['nheads']),
 			 alpha=float(args['alpha']),
 			 dropout=0.0,
-			 graph_dr=float(args['graph_dr']))
+			 graph_dr=float(args['graph_dr']),
+		     n_graph_layers=int(args['graph_layer']))
 
 # len = int(test_length / int(BSZ))
 test_length_ = compute_dataset_length(test_length, int(BSZ))

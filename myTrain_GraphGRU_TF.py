@@ -48,7 +48,8 @@ model = GLMPGraph(int(args['hidden']),
                   nheads=int(args['nheads']),
                   alpha=float(args['alpha']),
                   dropout=float(args['drop']),
-                  graph_dr=float(args['graph_dr']))
+                  graph_dr=float(args['graph_dr']),
+                  n_graph_layers=int(args['graph_layer']))
 
 # ================================
 # Training

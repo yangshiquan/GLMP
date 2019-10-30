@@ -15,7 +15,7 @@ from utils.utils_general import *
 import pdb
 
 class GLMPGraph(tf.keras.Model):
-    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, graph_hidden_size, nheads, alpha, dropout, graph_dr):
+    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, graph_hidden_size, nheads, alpha, dropout, graph_dr, n_graph_layers):
         super(GLMPGraph, self).__init__()
         # self.name = 'GLMP'
         self.task = task
@@ -30,11 +30,12 @@ class GLMPGraph(tf.keras.Model):
         self.alpha = alpha  # 0.2
         self.dropout = dropout
         self.graph_dr = graph_dr
+        self.n_graph_layers = n_graph_layers
         self.max_resp_len = max_resp_len
         self.decoder_hop = n_layers
         self.softmax = tf.keras.layers.Softmax(0)
         self.encoder = GraphGRU(lang.n_words, hidden_size, dropout, lang, (MAX_DEPENDENCIES_PER_NODE+1))
-        self.extKnow = KnowledgeGraph(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, graph_dr)
+        self.extKnow = KnowledgeGraph(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, graph_dr, n_graph_layers)
         self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang,
                                           hidden_size, self.decoder_hop, dropout)
         self.checkpoint = tf.train.Checkpoint(encoder=self.encoder,

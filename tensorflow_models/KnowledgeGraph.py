@@ -7,7 +7,7 @@ import numpy as np
 
 
 class KnowledgeGraph(tf.keras.Model):
-    def __init__(self, vocab, embedding_dim, hop, nhid, nheads, alpha, dropout):
+    def __init__(self, vocab, embedding_dim, hop, nhid, nheads, alpha, dropout, graph_layer_num):
         super(KnowledgeGraph, self).__init__()
         self.max_hops = hop
         self.embedding_dim = embedding_dim
@@ -15,6 +15,7 @@ class KnowledgeGraph(tf.keras.Model):
         self.nhid = nhid
         self.nheads = nheads
         self.alpha = alpha
+        self.graph_layer_num = graph_layer_num
         self.dropout = dropout
         self.dropout_layer = tf.keras.layers.Dropout(self.dropout)
         # input embedding layer
@@ -28,14 +29,13 @@ class KnowledgeGraph(tf.keras.Model):
 
         # output layer
         # self.out_layer = [GraphAttentionLayer(nheads * nhid, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
-        self.out_layers = []
-        for _ in range(self.max_hops+1):
-            out_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
-            self.out_layers.append(out_layer)
-        self.out_layers_2 = []
-        for _ in range(self.max_hops+1):
-            out_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
-            self.out_layers_2.append(out_layer)
+        self.graph_layers_list = []
+        for i in range(self.graph_layer_num):
+            graph_layers = []
+            for _ in range(self.max_hops+1):
+                graph_layer = [GraphAttentionLayer(embedding_dim, nhid, dropout, alpha, concat=False) for _ in range(nheads)]
+                graph_layers.append(graph_layer)
+            self.graph_layers_list.append(graph_layers)
 
         self.W = tf.keras.layers.Dense(embedding_dim,
                                        use_bias=True,
@@ -114,18 +114,11 @@ class KnowledgeGraph(tf.keras.Model):
             if not args['ablationH']:
                 embedding_A = self.add_lm_embedding(embedding_A, kb_len, conv_len, dh_outputs)
             # message passing stage
-            out_layer = self.out_layers[hop]
-            # embedding_A = [head(embedding_A, adj, training) for head in out_layer]
-            # embedding_A = tf.reduce_sum(tf.stack(embedding_A, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-            # add layer-normalization
-            embedding_A_normalized = [head(embedding_A, adj, training) for head in out_layer]
-            embedding_A_normalized = tf.reduce_sum(tf.stack(embedding_A_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-            # embedding_A = embedding_A + embedding_A_normalized
-            # second gat layer
-            out_layer_2 = self.out_layers_2[hop]
-            embedding_A_normalized = [head(embedding_A_normalized, adj, training) for head in out_layer_2]
-            embedding_A = tf.reduce_sum(tf.stack(embedding_A_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-            # embedding_A = embedding_A + embedding_A_normalized
+            for layer in range(self.graph_layer_num):
+                graph_layer = self.graph_layers_list[layer][hop]
+                embedding_A_t = [head(embedding_A, adj, training) for head in graph_layer]
+                embedding_A_t = tf.reduce_sum(tf.stack(embedding_A_t, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+                embedding_A = embedding_A + embedding_A_t
             # dropout
             if training:
                 embedding_A = self.dropout_layer(embedding_A, training=training)
@@ -140,18 +133,11 @@ class KnowledgeGraph(tf.keras.Model):
             if not args['ablationH']:
                 embedding_C = self.add_lm_embedding(embedding_C, kb_len, conv_len, dh_outputs)
             # message passing stage
-            out_layer_ = self.out_layers[hop+1]
-            # embedding_C = [head(embedding_C, adj, training) for head in out_layer_]
-            # embedding_C = tf.reduce_sum(tf.stack(embedding_C, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-            # add layer-normalization
-            embedding_C_normalized = [head(embedding_C, adj, training) for head in out_layer_]
-            embedding_C_normalized = tf.reduce_sum(tf.stack(embedding_C_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-            # embedding_C = embedding_C + embedding_C_normalized
-            # second gat-layer
-            out_layer_2 = self.out_layers_2[hop+1]
-            embedding_C_normalized = [head(embedding_C_normalized, adj, training) for head in out_layer_2]
-            embedding_C = tf.reduce_sum(tf.stack(embedding_C_normalized, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
-            # embedding_C = embedding_C + embedding_C_normalized
+            for layer in range(self.graph_layer_num):
+                graph_layer_ = self.graph_layers_list[layer][hop+1]
+                embedding_C_t = [head(embedding_C, adj, training) for head in graph_layer_]
+                embedding_C_t = tf.reduce_sum(tf.stack(embedding_C_t, axis=0), axis=0) / tf.cast(self.nheads, dtype=tf.float32)
+                embedding_C = embedding_C + embedding_C_t
 
             prob_soft_temp = tf.tile(tf.expand_dims(prob_soft, 2), [1, 1, embedding_C.shape[2]])
             u_k = u[-1] + tf.math.reduce_sum((embedding_C * prob_soft_temp), 1)
