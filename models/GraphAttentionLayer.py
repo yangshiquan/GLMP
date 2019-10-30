@@ -19,7 +19,7 @@ class GraphAttentionLayer(nn.Module):
         self.leakyrelu = nn.LeakyReLU(self.alpha)
         self.softmax = nn.Softmax(2)
 
-    def call(self, input, adj):  # input: batch_size * max_len * embedding_dim, adj: batch_size * max_len * max_len.
+    def forward(self, input, adj):  # input: batch_size * max_len * embedding_dim, adj: batch_size * max_len * max_len.
         # add for mimic memory
         h = input
         f_1 = h @ self.a1
