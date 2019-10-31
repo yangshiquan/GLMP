@@ -41,8 +41,8 @@ class LocalMemoryDecoder(tf.keras.Model):
                                                  )
         self.gate_layer2 = tf.keras.layers.Dense(3,
                                                  use_bias=True,
-                                                 kernel_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(4 * embedding_dim)), (1 / np.sqrt(4 * embedding_dim))),
-                                                 bias_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(4 * embedding_dim)), (1 / np.sqrt(4 * embedding_dim)))
+                                                 kernel_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(6)), (1 / np.sqrt(6))),
+                                                 bias_initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(6)), (1 / np.sqrt(6)))
                                                  )
         self.softmax = tf.keras.layers.Softmax(1)
 
