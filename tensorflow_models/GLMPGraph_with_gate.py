@@ -244,7 +244,7 @@ class GLMPGraph(tf.keras.Model):
             # pdb.set_trace()
             # max_target_length = max(data_dev['response_lengths'])  # data[11]: response_lengths.
             # max_target_length = dev_max_len_global
-            _, _, decoded_fine, decoded_coarse, global_pointer, global_pointer_logits = self.encode_and_decode(data_dev,
+            _, _, decoded_fine, decoded_coarse, global_pointer, global_pointer_logits, _ = self.encode_and_decode(data_dev,
                                                                                         self.max_resp_len,
                                                                                         False,
                                                                                         True,

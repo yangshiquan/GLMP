@@ -94,7 +94,7 @@ class LocalMemoryDecoder(tf.keras.Model):
             all_decoder_outputs_vocab.append(p_vocab)
             _, topvi = tf.math.top_k(p_vocab)  # topvi: batch_size * 1.
 
-            gate_signal = self.gate_layer1(query_vector)
+            gate_signal = self.relu(self.gate_layer1(query_vector))
             if training:
                 gate_signal = self.dropout_layer(gate_signal, training=training)
             gate_signal = self.gate_layer2(gate_signal)
