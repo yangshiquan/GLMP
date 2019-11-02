@@ -36,7 +36,7 @@ model = globals()[decoder](
 	graph_hidden_size=int(args['graphhdd']),
 	nheads=int(args['nheads']),
 	alpha=float(args['alpha']),
-	dropout=float(args['drop']),
+	dropout=0.0,
 	graph_dr=float(args['graph_dr']),
 	n_graph_layers=int(args['graph_layer']))
 
