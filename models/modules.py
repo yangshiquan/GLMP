@@ -75,6 +75,8 @@ class ExternalKnowledge(nn.Module):
 
         self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.W1 = nn.Linear(2 * embedding_dim, 4 * embedding_dim)
+        self.W2 = nn.Linear(4 * embedding_dim, 1)
 
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
@@ -143,8 +145,10 @@ class ExternalKnowledge(nn.Module):
             self.m_story.append(embed_A)
         self.m_story.append(embed_C)
         # additive attention: embed_A, u_temp
-        global_pointer = self.tanh(embed_A + u_temp) @ self.a1
-        head_pointer = self.tanh(embed_A + u_temp) @ self.a2
+        # global_pointer = self.tanh(embed_A + u_temp) @ self.a1
+        # head_pointer = self.tanh(embed_A + u_temp) @ self.a2
+        global_pointer = self.W2(self.tanh(self.W1(torch.cat([embed_A, u_temp], 2))))
+        head_pointer = self.W2(self.tanh(self.W1(torch.cat([embed_A, u_temp], 2))))
 
         return self.sigmoid(global_pointer.squeeze()), u[-1], self.sigmoid(head_pointer.squeeze())
         # return self.sigmoid(prob_logit), u[-1]
@@ -167,7 +171,7 @@ class ExternalKnowledge(nn.Module):
 
         # global_pointer = global_pointer + gate_signal_new
 
-        global_pointer = global_pointer + 0.05 * head_pointer
+        global_pointer = global_pointer + 0.1 * head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
