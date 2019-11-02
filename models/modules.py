@@ -73,8 +73,8 @@ class ExternalKnowledge(nn.Module):
                 graph_layers.append(graph_layer)
             self.graph_layers_list.append(graph_layers)
 
-        self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
-        self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
 
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()

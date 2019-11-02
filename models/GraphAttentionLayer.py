@@ -14,8 +14,8 @@ class GraphAttentionLayer(nn.Module):
         self.alpha = alpha
         self.concat = concat
         self.dropout_layer = nn.Dropout(dropout)
-        self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(output_dim, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
-        self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(output_dim, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(output_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(output_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.leakyrelu = nn.LeakyReLU(self.alpha)
         self.softmax = nn.Softmax(2)
 
