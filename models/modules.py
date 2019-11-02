@@ -77,6 +77,7 @@ class ExternalKnowledge(nn.Module):
         self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.W1 = nn.Linear(2 * embedding_dim, 4 * embedding_dim)
         self.W2 = nn.Linear(4 * embedding_dim, 1)
+        self.W3 = nn.Linear
         self.a3 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
         self.a4 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
         self.a5 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
@@ -174,25 +175,25 @@ class ExternalKnowledge(nn.Module):
 
         # global_pointer = global_pointer + gate_signal_new
 
-        # global_pointer = self.a3 * global_pointer + self.a4 * head_pointer
+        global_pointer = self.a3 * global_pointer * head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
-            # if not args["ablationG"]:
-            #     m_A = m_A * global_pointer.unsqueeze(2).expand_as(m_A)
-            if(len(list(u[-1].size()))==1): 
+            if not args["ablationG"]:
+                m_A = m_A * global_pointer.unsqueeze(2).expand_as(m_A)
+            if(len(list(u[-1].size()))==1):
                 u[-1] = u[-1].unsqueeze(0) ## used for bsz = 1.
             u_temp = u[-1].unsqueeze(1).expand_as(m_A)
             prob_logits = torch.sum(m_A*u_temp, 2)
             prob_soft   = self.softmax(prob_logits)
             m_C = self.m_story[hop+1] 
-            # if not args["ablationG"]:
-            #     m_C = m_C * global_pointer.unsqueeze(2).expand_as(m_C)
+            if not args["ablationG"]:
+                m_C = m_C * global_pointer.unsqueeze(2).expand_as(m_C)
             prob = prob_soft.unsqueeze(2).expand_as(m_C)
             o_k  = torch.sum(m_C*prob, 1)
             u_k = u[-1] + o_k
             u.append(u_k)
-        prob_logits = self.a3 * prob_logits + self.a4 * global_pointer + self.a5 * head_pointer
+        # prob_logits = self.a3 * prob_logits + self.a4 * global_pointer + self.a5 * head_pointer
         return prob_soft, prob_logits
 
 
