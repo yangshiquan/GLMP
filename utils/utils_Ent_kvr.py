@@ -56,6 +56,20 @@ def read_langs(file_name, max_line = None):
                     
                     sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
 
+                    gate_label = []
+                    for key in r.split():
+                        is_dialogue_history = 0
+                        if key not in ent_index:
+                            gate_label.append(2)
+                        else:
+                            for loc, val in enumerate(conv_arr):
+                                if val[0] == key:
+                                    gate_label.append(1)
+                                    is_dialogue_history = 1
+                                    break
+                            if is_dialogue_history == 0:
+                                gate_label.append(0)
+
                     # generate adjacent matrix
                     adj = np.eye(len(context_arr) + 1)
                     for node in neighbors_info.keys():
@@ -82,7 +96,8 @@ def read_langs(file_name, max_line = None):
                         'id':int(sample_counter),
                         'ID':int(cnt_lin),
                         'domain':task_type,
-                        'adj': list(adj)}
+                        'adj': list(adj),
+                        'gate_label': gate_label+[2]}
                     data.append(data_detail)
                     
                     gen_r = generate_memory(r, "$s", str(nid)) 

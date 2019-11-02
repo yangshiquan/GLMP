@@ -139,8 +139,24 @@ class ExternalKnowledge(nn.Module):
         self.m_story.append(embed_C)
         return self.sigmoid(prob_logit), u[-1]
 
-    def forward(self, query_vector, global_pointer):
+    def forward(self, query_vector, global_pointer, gate_signal, kb_len, conv_len):
         u = [query_vector]
+
+        max_len = global_pointer.shape[1]  # global_pointer: batch_size * max_len.
+        batch_size = global_pointer.shape[0]
+        gate_signal_new = torch.zeros([batch_size, max_len])
+        for bi in range(gate_signal.shape[0]):
+            kb_len_t = kb_len[bi]
+            conv_len_t = conv_len[bi]
+            kb_signal_t = gate_signal[bi, 0].unsqueeze(0).expand([kb_len_t])
+            conv_signal_t = gate_signal[bi, 1].unsqueeze(0).expand([conv_len_t])
+            null_signal_t = gate_signal[bi, 2].unsqueeze(0)
+            pad_signal_t = torch.zeros([max_len - kb_len_t - conv_len_t - 1])
+            gate_signal_t = torch.cat([kb_signal_t, conv_signal_t, null_signal_t, pad_signal_t], 0)
+            gate_signal_new[bi, :] = gate_signal_t
+
+        global_pointer = global_pointer + gate_signal_new
+
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
             if not args["ablationG"]:
@@ -174,13 +190,16 @@ class LocalMemoryDecoder(nn.Module):
         self.sketch_rnn = nn.GRU(embedding_dim, embedding_dim, dropout=dropout)
         self.relu = nn.ReLU()
         self.projector = nn.Linear(2*embedding_dim, embedding_dim)
+        self.W1 = nn.Linear(embedding_dim, 2*embedding_dim)
+        self.W2 = nn.Linear(2*embedding_dim, 3)
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
 
-    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer):
+    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer, kb_len, conv_len):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
+        all_decoder_outputs_gate_signal = _cuda(torch.zeros(max_target_length, batch_size, 3))
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
         memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
         decoded_fine, decoded_coarse = [], []
@@ -198,9 +217,15 @@ class LocalMemoryDecoder(nn.Module):
             p_vocab = self.attend_vocab(self.C.weight, hidden.squeeze(0))
             all_decoder_outputs_vocab[t] = p_vocab
             _, topvi = p_vocab.data.topk(1)
-            
+
+            gate_signal = self.relu(self.W1(query_vector))
+            gate_signal = self.dropout_layer(gate_signal)
+            gate_signal = self.W2(gate_signal)
+            gate_signal = self.softmax(gate_signal)
+            all_decoder_outputs_gate_signal[t] = gate_signal
+
             # query the external konwledge using the hidden state of sketch RNN
-            prob_soft, prob_logits = extKnow(query_vector, global_pointer)
+            prob_soft, prob_logits = extKnow(query_vector, global_pointer, gate_signal, kb_len, conv_len)
             all_decoder_outputs_ptr[t] = prob_logits
 
             if use_teacher_forcing:
@@ -235,7 +260,7 @@ class LocalMemoryDecoder(nn.Module):
                 decoded_fine.append(temp_f)
                 decoded_coarse.append(temp_c)
 
-        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse
+        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_gate_signal
 
     def attend_vocab(self, seq, cond):
         scores_ = cond.matmul(seq.transpose(1,0))
