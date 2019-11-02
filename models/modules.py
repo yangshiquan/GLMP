@@ -77,6 +77,8 @@ class ExternalKnowledge(nn.Module):
         self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.W1 = nn.Linear(2 * embedding_dim, 4 * embedding_dim)
         self.W2 = nn.Linear(4 * embedding_dim, 1)
+        self.a3 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
+        self.a4 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
 
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
@@ -171,7 +173,7 @@ class ExternalKnowledge(nn.Module):
 
         # global_pointer = global_pointer + gate_signal_new
 
-        global_pointer = global_pointer + 0.1 * head_pointer
+        global_pointer = self.a3 * global_pointer + self.a4 * head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
