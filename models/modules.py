@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from utils.config import *
 from utils.utils_general import _cuda
 from models.GraphAttentionLayer import GraphAttentionLayer
+import numpy as np
 import pdb
 
 
@@ -72,8 +73,12 @@ class ExternalKnowledge(nn.Module):
                 graph_layers.append(graph_layer)
             self.graph_layers_list.append(graph_layers)
 
+        self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+        self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
+
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
 
     def add_lm_embedding(self, full_memory, kb_len, conv_len, hiddens):
@@ -137,25 +142,32 @@ class ExternalKnowledge(nn.Module):
             u.append(u_k)
             self.m_story.append(embed_A)
         self.m_story.append(embed_C)
-        return self.sigmoid(prob_logit), u[-1]
+        # additive attention: embed_A, u_temp
+        global_pointer = self.tanh(embed_A + u_temp) @ self.a1
+        head_pointer = self.tanh(embed_A + u_temp) @ self.a2
 
-    def forward(self, query_vector, global_pointer, gate_signal, kb_len, conv_len):
+        return self.sigmoid(global_pointer.squeeze()), u[-1], self.sigmoid(head_pointer.squeeze())
+        # return self.sigmoid(prob_logit), u[-1]
+
+    def forward(self, query_vector, global_pointer, gate_signal, kb_len, conv_len, head_pointer):
         u = [query_vector]
 
-        max_len = global_pointer.shape[1]  # global_pointer: batch_size * max_len.
-        batch_size = global_pointer.shape[0]
-        gate_signal_new = torch.zeros([batch_size, max_len])
-        for bi in range(gate_signal.shape[0]):
-            kb_len_t = kb_len[bi]
-            conv_len_t = conv_len[bi]
-            kb_signal_t = gate_signal[bi, 0].unsqueeze(0).expand([kb_len_t])
-            conv_signal_t = gate_signal[bi, 1].unsqueeze(0).expand([conv_len_t])
-            null_signal_t = gate_signal[bi, 2].unsqueeze(0)
-            pad_signal_t = torch.zeros([max_len - kb_len_t - conv_len_t - 1])
-            gate_signal_t = torch.cat([kb_signal_t, conv_signal_t, null_signal_t, pad_signal_t], 0)
-            gate_signal_new[bi, :] = gate_signal_t
+        # max_len = global_pointer.shape[1]  # global_pointer: batch_size * max_len.
+        # batch_size = global_pointer.shape[0]
+        # gate_signal_new = torch.zeros([batch_size, max_len])
+        # for bi in range(gate_signal.shape[0]):
+        #     kb_len_t = kb_len[bi]
+        #     conv_len_t = conv_len[bi]
+        #     kb_signal_t = gate_signal[bi, 0].unsqueeze(0).expand([kb_len_t])
+        #     conv_signal_t = gate_signal[bi, 1].unsqueeze(0).expand([conv_len_t])
+        #     null_signal_t = gate_signal[bi, 2].unsqueeze(0)
+        #     pad_signal_t = torch.zeros([max_len - kb_len_t - conv_len_t - 1])
+        #     gate_signal_t = torch.cat([kb_signal_t, conv_signal_t, null_signal_t, pad_signal_t], 0)
+        #     gate_signal_new[bi, :] = gate_signal_t
 
-        global_pointer = global_pointer + gate_signal_new
+        # global_pointer = global_pointer + gate_signal_new
+
+        global_pointer = global_pointer + 0.2 * head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
@@ -195,7 +207,7 @@ class LocalMemoryDecoder(nn.Module):
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
 
-    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer, kb_len, conv_len):
+    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer, kb_len, conv_len, head_pointer):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
@@ -225,7 +237,7 @@ class LocalMemoryDecoder(nn.Module):
             all_decoder_outputs_gate_signal[t] = gate_signal
 
             # query the external konwledge using the hidden state of sketch RNN
-            prob_soft, prob_logits = extKnow(query_vector, global_pointer, gate_signal, kb_len, conv_len)
+            prob_soft, prob_logits = extKnow(query_vector, global_pointer, gate_signal, kb_len, conv_len, head_pointer)
             all_decoder_outputs_ptr[t] = prob_logits
 
             if use_teacher_forcing:

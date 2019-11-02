@@ -66,9 +66,10 @@ class GLMP(nn.Module):
         print_loss_g = self.loss_g / self.print_every
         print_loss_v = self.loss_v / self.print_every
         print_loss_l = self.loss_l / self.print_every
-        print_loss_m = self.loss_m / self.print_every
-        self.print_every += 1     
-        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f},LM:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l, print_loss_m)
+        # print_loss_m = self.loss_m / self.print_every
+        print_loss_h = self.loss_h / self.print_every
+        self.print_every += 1
+        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f},LH:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l, print_loss_h)
     
     def save_model(self, dec_type):
         name_data = "KVR/" if self.task=='' else "BABI/"
@@ -81,7 +82,7 @@ class GLMP(nn.Module):
         torch.save(self.decoder, directory + '/dec.th')
 
     def reset(self):
-        self.loss, self.print_every, self.loss_g, self.loss_v, self.loss_l, self.loss_m = 0, 1, 0, 0, 0, 0
+        self.loss, self.print_every, self.loss_g, self.loss_v, self.loss_l, self.loss_h = 0, 1, 0, 0, 0, 0
     
     def _cuda(self, x):
         if USE_CUDA:
@@ -99,7 +100,7 @@ class GLMP(nn.Module):
         # Encode and Decode
         use_teacher_forcing = random.random() < args['teacher_forcing_ratio'] 
         max_target_length = max(data['response_lengths'])
-        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, all_decoder_outputs_gate_signal = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
+        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, all_decoder_outputs_gate_signal, head_pointer = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
         
         # Loss calculation and backpropagation
         loss_g = self.criterion_bce(global_pointer, data['selector_index'])
@@ -111,11 +112,12 @@ class GLMP(nn.Module):
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(), 
             data['ptr_index'].contiguous(), 
             data['response_lengths'])
-        loss_m = masked_cross_entropy(
-            all_decoder_outputs_gate_signal.transpose(0, 1).contiguous(),
-            data['gate_label'].contiguous(),
-            data['response_lengths'])
-        loss = loss_g + loss_v + loss_l + loss_m
+        # loss_m = masked_cross_entropy(
+        #     all_decoder_outputs_gate_signal.transpose(0, 1).contiguous(),
+        #     data['gate_label'].contiguous(),
+        #     data['response_lengths'])
+        loss_h = self.criterion_bce(head_pointer, data['head_pointer'])
+        loss = loss_g + loss_v + loss_l + loss_h
         loss.backward()
 
         # Clip gradient norms
@@ -131,7 +133,8 @@ class GLMP(nn.Module):
         self.loss_g += loss_g.item()
         self.loss_v += loss_v.item()
         self.loss_l += loss_l.item()
-        self.loss_m += loss_m.item()
+        # self.loss_m += loss_m.item()
+        self.loss_h += loss_h.item()
     
     def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words):
         # Build unknown mask for memory
@@ -153,7 +156,7 @@ class GLMP(nn.Module):
         
         # Encode dialog history and KB to vectors
         dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
-        global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs, data['adj'])
+        global_pointer, kb_readout, head_pointer = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs, data['adj'])
         encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1)
         
         # Get the words that can be copy from the memory
@@ -176,9 +179,10 @@ class GLMP(nn.Module):
             get_decoded_words, 
             global_pointer,
             data['kb_arr_lengths'],
-            data['conv_arr_lengths'])
+            data['conv_arr_lengths'],
+            head_pointer)
 
-        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_gate_signal
+        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_gate_signal, head_pointer
 
     def evaluate(self, dev, matric_best, early_stop=None):
         print("STARTING EVALUATION")
@@ -209,7 +213,7 @@ class GLMP(nn.Module):
 
         for j, data_dev in pbar: 
             # Encode and Decode
-            _, _, decoded_fine, decoded_coarse, global_pointer, _ = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
+            _, _, decoded_fine, decoded_coarse, global_pointer, _, _ = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
             decoded_fine = np.transpose(decoded_fine)
             for bi, row in enumerate(decoded_fine):

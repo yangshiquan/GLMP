@@ -32,8 +32,13 @@ model = globals()[decoder](
 	args['path'], 
 	"", 
 	lr=0.0, 
-	n_layers=int(L), 
-	dropout=0.0)
+	n_layers=int(L),
+	graph_hidden_size=int(args['graphhdd']),
+	nheads=int(args['nheads']),
+	alpha=float(args['alpha']),
+	dropout=float(args['drop']),
+	graph_dr=float(args['graph_dr']),
+	n_graph_layers=int(args['graph_layer']))
 
 acc_test = model.evaluate(test, 1e7) 
 if testOOV!=[]: 

@@ -80,6 +80,7 @@ class Dataset(data.Dataset):
         sketch_response = self.preprocess(sketch_response, self.trg_word2id)
         adj = torch.Tensor(self.data_info['adj'][index])
         gate_label = torch.Tensor(self.data_info['gate_label'][index])
+        head_pointer = torch.Tensor(self.data_info['head_pointer'][index])
         
         # processed information
         data_info = {}
@@ -163,6 +164,7 @@ class Dataset(data.Dataset):
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
         adj, _ = merge_adj(item_info['adj'])
         gate_label, _ = merge(item_info['gate_label'], False)
+        head_pointer, _ = merge_index(item_info['head_pointer'])
         
         # convert to contiguous and cuda
         context_arr = _cuda(context_arr.contiguous())
@@ -173,6 +175,7 @@ class Dataset(data.Dataset):
         sketch_response = _cuda(sketch_response.contiguous())
         adj = _cuda(adj.contiguous())
         gate_label = _cuda(gate_label.contiguous())
+        head_pointer = _cuda(head_pointer.contiguous())
         if(len(list(kb_arr.size()))>1): kb_arr = _cuda(kb_arr.transpose(0,1).contiguous())
         
         # processed information
