@@ -76,8 +76,11 @@ class ExternalKnowledge(nn.Module):
         self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.W1 = nn.Linear(2 * embedding_dim, 4 * embedding_dim)
-        self.W2 = nn.Linear(4 * embedding_dim, 1)
-        self.W3 = nn.Linear
+        self.W2 = nn.Linear(4 * embedding_dim, 4 * embedding_dim)
+        self.W3 = nn.Linear(4 * embedding_dim, 2 * embedding_dim)
+        self.W4 = nn.Linear(2 * embedding_dim, 1)
+        self.W5 = nn.Linear(4 * embedding_dim, 2 * embedding_dim)
+        self.W6 = nn.Linear(2 * embedding_dim, 1)
         self.a3 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
         self.a4 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
         self.a5 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
@@ -151,8 +154,8 @@ class ExternalKnowledge(nn.Module):
         # additive attention: embed_A, u_temp
         # global_pointer = self.tanh(embed_A + u_temp) @ self.a1
         # head_pointer = self.tanh(embed_A + u_temp) @ self.a2
-        global_pointer = self.W2(self.tanh(self.W1(torch.cat([embed_A, u_temp], 2))))
-        head_pointer = self.W2(self.tanh(self.W1(torch.cat([embed_A, u_temp], 2))))
+        global_pointer = self.W4(self.tanh(self.W3(self.tanh(self.W2(self.tanh(self.W1(torch.cat([embed_A, u_temp], 2))))))))
+        head_pointer = self.W6(self.tanh(self.W5(self.tanh(self.W2(self.tanh(self.W1(torch.cat([embed_A, u_temp], 2))))))))
 
         return self.sigmoid(global_pointer.squeeze()), u[-1], self.sigmoid(head_pointer.squeeze())
         # return self.sigmoid(prob_logit), u[-1]
