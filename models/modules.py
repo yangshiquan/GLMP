@@ -178,7 +178,8 @@ class ExternalKnowledge(nn.Module):
 
         # global_pointer = global_pointer + gate_signal_new
 
-        global_pointer = self.a3 * global_pointer + self.a4 * head_pointer
+        # global_pointer = self.a3 * global_pointer + self.a4 * head_pointer
+        global_pointer = global_pointer + 0.1 * head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
