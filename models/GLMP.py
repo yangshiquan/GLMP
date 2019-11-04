@@ -72,9 +72,9 @@ class GLMP(nn.Module):
         print_loss_v = self.loss_v / self.print_every
         print_loss_l = self.loss_l / self.print_every
         # print_loss_m = self.loss_m / self.print_every
-        # print_loss_h = self.loss_h / self.print_every
+        print_loss_h = self.loss_h / self.print_every
         self.print_every += 1
-        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l)
+        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f},LH:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l, print_loss_h)
     
     def save_model(self, dec_type):
         name_data = "KVR/" if self.task=='' else "BABI/"
@@ -143,7 +143,7 @@ class GLMP(nn.Module):
         self.loss_v += loss_v.item()
         self.loss_l += loss_l.item()
         # self.loss_m += loss_m.item()
-        # self.loss_h += loss_h.item()
+        self.loss_h += loss_h.item()
     
     def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words):
         # Build unknown mask for memory
