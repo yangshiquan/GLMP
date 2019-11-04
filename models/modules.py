@@ -46,7 +46,7 @@ class ContextRNN(nn.Module):
 
 class ExternalKnowledge4Head(nn.Module):
     def __init__(self, vocab, embedding_dim, hop, nhid, nheads, alpha, dropout, graph_layer_num):
-        super(ExternalKnowledge, self).__init__()
+        super(ExternalKnowledge4Head, self).__init__()
         self.max_hops = hop
         self.embedding_dim = embedding_dim
         self.vocab = vocab
