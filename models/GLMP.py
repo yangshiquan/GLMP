@@ -37,15 +37,15 @@ class GLMP(nn.Module):
                 print("MODEL {} LOADED".format(str(path)))
                 self.encoder = torch.load(str(path)+'/enc.th')
                 self.extKnow = torch.load(str(path)+'/enc_kb.th')
-                # self.extKnow4Head = torch.load(str(path) + '/enc_kb4h.th')
-                self.extKnow4Head = torch.load('/home/student.unimelb.edu.au/shiquan/pytorch_graph_memory_with_head_pointer_change_data_label/GLMP/save/GLMP-KVR/HDD128BSZ32DR0.2L3lr0.001ENTF1-0.5218enc_kb4h.th')
+                self.extKnow4Head = torch.load(str(path) + '/enc_kb4h.th')
+                # self.extKnow4Head = torch.load('/home/student.unimelb.edu.au/shiquan/pytorch_graph_memory_with_head_pointer_change_data_label/GLMP/save/GLMP-KVR/HDD128BSZ32DR0.2L3lr0.001ENTF1-0.5218enc_kb4h.th')
                 self.decoder = torch.load(str(path)+'/dec.th')
             else:
                 print("MODEL {} LOADED".format(str(path)))
                 self.encoder = torch.load(str(path)+'/enc.th',lambda storage, loc: storage)
                 self.extKnow = torch.load(str(path)+'/enc_kb.th',lambda storage, loc: storage)
-                # self.extKnow4Head = torch.load(str(path)+'/enc_kb4h.th',lambda storage, loc: storage)
-                self.extKnow4Head = torch.load('/home/student.unimelb.edu.au/shiquan/pytorch_graph_memory_with_head_pointer_change_data_label/GLMP/save/GLMP-KVR/HDD128BSZ32DR0.2L3lr0.001ENTF1-0.5218enc_kb4h.th',lambda storage, loc: storage)
+                self.extKnow4Head = torch.load(str(path)+'/enc_kb4h.th',lambda storage, loc: storage)
+                # self.extKnow4Head = torch.load('/home/student.unimelb.edu.au/shiquan/pytorch_graph_memory_with_head_pointer_change_data_label/GLMP/save/GLMP-KVR/HDD128BSZ32DR0.2L3lr0.001ENTF1-0.5218enc_kb4h.th',lambda storage, loc: storage)
                 self.decoder = torch.load(str(path)+'/dec.th',lambda storage, loc: storage)
         else:
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
@@ -86,7 +86,7 @@ class GLMP(nn.Module):
             os.makedirs(directory)
         torch.save(self.encoder, directory + '/enc.th')
         torch.save(self.extKnow, directory + '/enc_kb.th')
-        torch.save(self.extKnow4Head, directory + 'enc_kb4h.th')
+        torch.save(self.extKnow4Head, directory + '/enc_kb4h.th')
         torch.save(self.decoder, directory + '/dec.th')
 
     def reset(self):
