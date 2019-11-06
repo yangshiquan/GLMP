@@ -37,20 +37,26 @@ class GLMP(nn.Module):
                 print("MODEL {} LOADED".format(str(path)))
                 self.encoder = torch.load(str(path)+'/enc.th')
                 self.extKnow = torch.load(str(path)+'/enc_kb.th')
+                self.extKnow4Head = torch.load(str(path) + '/enc_kb4h.th')
+                # self.extKnow4Head = torch.load('/home/student.unimelb.edu.au/shiquan/pytorch_graph_memory_with_head_pointer_change_data_label/GLMP/save/GLMP-KVR/HDD128BSZ32DR0.2L3lr0.001ENTF1-0.5218enc_kb4h.th')
                 self.decoder = torch.load(str(path)+'/dec.th')
             else:
                 print("MODEL {} LOADED".format(str(path)))
                 self.encoder = torch.load(str(path)+'/enc.th',lambda storage, loc: storage)
                 self.extKnow = torch.load(str(path)+'/enc_kb.th',lambda storage, loc: storage)
+                self.extKnow4Head = torch.load(str(path)+'/enc_kb4h.th',lambda storage, loc: storage)
+                # self.extKnow4Head = torch.load('/home/student.unimelb.edu.au/shiquan/pytorch_graph_memory_with_head_pointer_change_data_label/GLMP/save/GLMP-KVR/HDD128BSZ32DR0.2L3lr0.001ENTF1-0.5218enc_kb4h.th',lambda storage, loc: storage)
                 self.decoder = torch.load(str(path)+'/dec.th',lambda storage, loc: storage)
         else:
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, graph_dr, n_graph_layers)
+            self.extKnow4Head = ExternalKnowledge4Head(lang.n_words, hidden_size, n_layers, graph_hidden_size, nheads, alpha, graph_dr, n_graph_layers)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
         self.extKnow_optimizer = optim.Adam(self.extKnow.parameters(), lr=lr)
+        self.extKnow4Head_optimizer = optim.Adam(self.extKnow4Head.parameters(), lr=lr)
         self.decoder_optimizer = optim.Adam(self.decoder.parameters(), lr=lr)
         self.scheduler = lr_scheduler.ReduceLROnPlateau(self.decoder_optimizer, mode='max', factor=0.5, patience=1, min_lr=0.0001, verbose=True)
         self.criterion_bce = nn.BCELoss()
@@ -59,6 +65,7 @@ class GLMP(nn.Module):
         if USE_CUDA:
             self.encoder.cuda()
             self.extKnow.cuda()
+            self.extKnow4Head.cuda()
             self.decoder.cuda()
 
     def print_loss(self):    
@@ -67,9 +74,9 @@ class GLMP(nn.Module):
         print_loss_v = self.loss_v / self.print_every
         print_loss_l = self.loss_l / self.print_every
         # print_loss_m = self.loss_m / self.print_every
-        # print_loss_h = self.loss_h / self.print_every
+        print_loss_h = self.loss_h / self.print_every
         self.print_every += 1
-        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l)
+        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f},LH:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l, print_loss_h)
     
     def save_model(self, dec_type):
         name_data = "KVR/" if self.task=='' else "BABI/"
@@ -79,6 +86,7 @@ class GLMP(nn.Module):
             os.makedirs(directory)
         torch.save(self.encoder, directory + '/enc.th')
         torch.save(self.extKnow, directory + '/enc_kb.th')
+        torch.save(self.extKnow4Head, directory + '/enc_kb4h.th')
         torch.save(self.decoder, directory + '/dec.th')
 
     def reset(self):
@@ -95,6 +103,7 @@ class GLMP(nn.Module):
         # Zero gradients of both optimizers
         self.encoder_optimizer.zero_grad()
         self.extKnow_optimizer.zero_grad()
+        self.extKnow4Head_optimizer.zero_grad()
         self.decoder_optimizer.zero_grad()
         
         # Encode and Decode
@@ -116,25 +125,27 @@ class GLMP(nn.Module):
         #     all_decoder_outputs_gate_signal.transpose(0, 1).contiguous(),
         #     data['gate_label'].contiguous(),
         #     data['response_lengths'])
-        # loss_h = self.criterion_bce(head_pointer, data['head_pointer'])
-        loss = 3 * loss_g + loss_v + loss_l
+        loss_h = self.criterion_bce(head_pointer, data['head_pointer'])
+        loss = loss_g + loss_v + loss_l + loss_h
         loss.backward()
 
         # Clip gradient norms
         ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
         ec = torch.nn.utils.clip_grad_norm_(self.extKnow.parameters(), clip)
+        ec = torch.nn.utils.clip_grad_norm_(self.extKnow4Head.parameters(), clip)
         dc = torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), clip)
 
         # Update parameters with optimizers
         self.encoder_optimizer.step()
         self.extKnow_optimizer.step()
+        self.extKnow4Head_optimizer.step()
         self.decoder_optimizer.step()
         self.loss += loss.item()
         self.loss_g += loss_g.item()
         self.loss_v += loss_v.item()
         self.loss_l += loss_l.item()
         # self.loss_m += loss_m.item()
-        # self.loss_h += loss_h.item()
+        self.loss_h += loss_h.item()
     
     def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words):
         # Build unknown mask for memory
@@ -157,6 +168,7 @@ class GLMP(nn.Module):
         # Encode dialog history and KB to vectors
         dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
         global_pointer, kb_readout, head_pointer = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs, data['adj'])
+        head_pointer, _ = self.extKnow4Head.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs, data['adj'])
         encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1)
         
         # Get the words that can be copy from the memory
@@ -189,6 +201,7 @@ class GLMP(nn.Module):
         # Set to not-training mode to disable dropout
         self.encoder.train(False)
         self.extKnow.train(False)
+        self.extKnow4Head.train(False)
         self.decoder.train(False)  
         
         ref, hyp = [], []
@@ -266,6 +279,7 @@ class GLMP(nn.Module):
         # Set back to training mode
         self.encoder.train(True)
         self.extKnow.train(True)
+        self.extKnow4Head.train(True)
         self.decoder.train(True)
 
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)

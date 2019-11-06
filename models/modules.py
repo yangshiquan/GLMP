@@ -44,6 +44,86 @@ class ContextRNN(nn.Module):
         return outputs.transpose(0,1), hidden
 
 
+class ExternalKnowledge4Head(nn.Module):
+    def __init__(self, vocab, embedding_dim, hop, nhid, nheads, alpha, dropout, graph_layer_num):
+        super(ExternalKnowledge4Head, self).__init__()
+        self.max_hops = hop
+        self.embedding_dim = embedding_dim
+        self.vocab = vocab
+        self.nhid = nhid
+        self.nheads = nheads
+        self.alpha = alpha
+        self.graph_layer_num = graph_layer_num
+        self.dropout = dropout
+        self.dropout_layer = nn.Dropout(dropout)
+        for hop in range(self.max_hops + 1):
+            C = nn.Embedding(vocab, embedding_dim, padding_idx=PAD_token)
+            C.weight.data.normal_(0, 0.1)
+            # t = torch.randn(vocab, embedding_dim) * 0.1
+            # t[PAD_token, :] = torch.zeros(1, embedding_dim)
+            # C.weight.data = t
+            self.add_module("C_{}".format(hop), C)
+        self.C = AttrProxy(self, "C_")
+
+        self.softmax = nn.Softmax(dim=1)
+        self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
+        self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
+
+    def add_lm_embedding(self, full_memory, kb_len, conv_len, hiddens):
+        for bi in range(full_memory.size(0)):
+            start, end = kb_len[bi], kb_len[bi] + conv_len[bi]
+            full_memory[bi, start:end, :] = full_memory[bi, start:end, :] + hiddens[bi, :conv_len[bi], :]
+        return full_memory
+
+    def update_pad_token_adj(self, adj, kb_len, conv_len):
+        batch_size = adj.shape[0]
+        max_len = adj.shape[1]
+        adj_array = adj.numpy()
+        for i in range(batch_size):
+            kb_len_i = kb_len[i] - 1
+            conv_len_i = conv_len[i]
+            context_len_i = kb_len_i + conv_len_i + 1
+            for k in range(context_len_i, max_len):
+                adj_array[i, k, k] = 1
+        ret_adj = torch.Tensor(adj_array)
+        return ret_adj
+
+    def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs, adj):
+        # Forward multiple hop mechanism
+        u = [hidden.squeeze(0)]
+        story_size = story.size()
+        self.m_story = []
+        adj = self.update_pad_token_adj(adj, kb_len, conv_len)
+        for hop in range(self.max_hops):
+            embed_A = self.C[hop](story.contiguous().view(story_size[0], -1))  # .long()) # b * (m * s) * e
+            embed_A = embed_A.view(story_size + (embed_A.size(-1),))  # b * m * s * e
+            embed_A = torch.sum(embed_A, 2).squeeze(2)  # b * m * e
+            if not args["ablationH"]:
+                embed_A = self.add_lm_embedding(embed_A, kb_len, conv_len, dh_outputs)
+            embed_A = self.dropout_layer(embed_A)
+
+            if (len(list(u[-1].size())) == 1):
+                u[-1] = u[-1].unsqueeze(0)  ## used for bsz = 1.
+            u_temp = u[-1].unsqueeze(1).expand_as(embed_A)
+            prob_logit = torch.sum(embed_A * u_temp, 2)
+            prob_ = self.softmax(prob_logit)
+
+            embed_C = self.C[hop + 1](story.contiguous().view(story_size[0], -1).long())
+            embed_C = embed_C.view(story_size + (embed_C.size(-1),))
+            embed_C = torch.sum(embed_C, 2).squeeze(2)
+            if not args["ablationH"]:
+                embed_C = self.add_lm_embedding(embed_C, kb_len, conv_len, dh_outputs)
+
+            prob = prob_.unsqueeze(2).expand_as(embed_C)
+            o_k = torch.sum(embed_C * prob, 1)
+            u_k = u[-1] + o_k
+            u.append(u_k)
+            self.m_story.append(embed_A)
+        self.m_story.append(embed_C)
+
+        return self.sigmoid(prob_logit), u[-1]
+
 class ExternalKnowledge(nn.Module):
     def __init__(self, vocab, embedding_dim, hop, nhid, nheads, alpha, dropout, graph_layer_num):
         super(ExternalKnowledge, self).__init__()
@@ -73,8 +153,6 @@ class ExternalKnowledge(nn.Module):
                 graph_layers.append(graph_layer)
             self.graph_layers_list.append(graph_layers)
 
-        self.a1 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
-        self.a2 = nn.Parameter(nn.init.xavier_uniform(torch.Tensor(embedding_dim, 1).type(torch.FloatTensor), gain=np.sqrt(2.0)), requires_grad=True)
         self.W1 = nn.Linear(2 * embedding_dim, 4 * embedding_dim)
         self.W2 = nn.Linear(4 * embedding_dim, 1)
         # self.W2 = nn.Linear(4 * embedding_dim, 4 * embedding_dim)
@@ -82,9 +160,6 @@ class ExternalKnowledge(nn.Module):
         # self.W4 = nn.Linear(2 * embedding_dim, 1)
         # self.W5 = nn.Linear(4 * embedding_dim, 2 * embedding_dim)
         # self.W6 = nn.Linear(2 * embedding_dim, 1)
-        self.a3 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
-        self.a4 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
-        self.a5 = nn.Parameter(nn.init.uniform(torch.Tensor(1).type(torch.FloatTensor)))
 
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
@@ -182,7 +257,7 @@ class ExternalKnowledge(nn.Module):
         # global_pointer = global_pointer + gate_signal_new
 
         # global_pointer = self.a3 * global_pointer + self.a4 * head_pointer
-        # global_pointer = global_pointer + head_pointer
+        global_pointer = global_pointer * head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
@@ -200,7 +275,6 @@ class ExternalKnowledge(nn.Module):
             o_k  = torch.sum(m_C*prob, 1)
             u_k = u[-1] + o_k
             u.append(u_k)
-        # prob_logits = self.a3 * prob_logits + self.a4 * global_pointer + self.a5 * head_pointer
         return prob_soft, prob_logits
 
 
