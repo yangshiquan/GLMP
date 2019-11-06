@@ -94,6 +94,7 @@ class Dataset(data.Dataset):
         data_info['context_arr_plain'] = self.data_info['context_arr'][index]
         data_info['response_plain'] = self.data_info['response'][index]
         data_info['kb_arr_plain'] = self.data_info['kb_arr'][index]
+        data_info['context_debug'] = self.data_info['context_debug'][index]
 
         return data_info
 

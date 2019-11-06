@@ -212,6 +212,9 @@ class GLMP(nn.Module):
         pbar = tqdm(enumerate(dev),total=len(dev))
         new_precision, new_recall, new_f1_score = 0, 0, 0
 
+        fd = open('test_result_{}.txt'.format(args['dataset']), 'a')
+        fd_global_pointer = open('test_result_{}_global_pointer.txt'.format(args['dataset']), 'a')
+
         if args['dataset'] == 'kvr':
             with open('data/KVR/kvret_entities.json') as f:
                 global_entity = json.load(f)
@@ -226,7 +229,7 @@ class GLMP(nn.Module):
 
         for j, data_dev in pbar: 
             # Encode and Decode
-            _, _, decoded_fine, decoded_coarse, global_pointer, _, _ = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
+            _, _, decoded_fine, decoded_coarse, global_pointer, _, head_pointer = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
             decoded_fine = np.transpose(decoded_fine)
             for bi, row in enumerate(decoded_fine):
@@ -238,11 +241,39 @@ class GLMP(nn.Module):
                 for e in decoded_coarse[bi]:
                     if e == 'EOS': break
                     else: st_c += e + ' '
+
+                context_debug = data_dev['context_debug'][bi]
+                global_pointer_debug = global_pointer.cpu().detach().numpy()[bi]
+
                 pred_sent = st.lstrip().rstrip()
                 pred_sent_coarse = st_c.lstrip().rstrip()
                 gold_sent = data_dev['response_plain'][bi].lstrip().rstrip()
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
+
+                line_cnt = 0
+                global_pointer_index = 0
+                for index, content in enumerate(context_debug):
+                    if content.startswith('#'):
+                        global_pointer_temp = global_pointer_debug[global_pointer_index]
+                        fd.write("\"" + content + "<br/>" + "\"")
+                        fd.write("," + "\n")
+                        fd_global_pointer.write(str('{:.4f}'.format(global_pointer_temp)) + ",")
+                        global_pointer_index += 1
+                    else:
+                        line_cnt += 1
+                        for loc, word in enumerate(content.split(" ")):
+                            global_pointer_temp = global_pointer_debug[global_pointer_index]
+                            fd.write("\"" + word + "<br/>" + "\"")
+                            fd.write("," + "\n")
+                            fd_global_pointer.write(str('{:.4f}'.format(global_pointer_temp)) + ",")
+                            global_pointer_index += 1
+                fd.write("\n")
+                fd.write("predict response: " + pred_sent + "\n")
+                fd.write("golden response: " + gold_sent + "\n")
+                fd.write("\n")
+                fd_global_pointer.write("\n")
+                fd_global_pointer.write("\n")
                 
                 if args['dataset'] == 'kvr': 
                     # compute F1 SCORE
@@ -275,6 +306,9 @@ class GLMP(nn.Module):
 
                 if args['genSample']:
                     self.print_examples(bi, data_dev, pred_sent, pred_sent_coarse, gold_sent)
+
+        fd.close()
+        fd_global_pointer.close()
 
         # Set back to training mode
         self.encoder.train(True)

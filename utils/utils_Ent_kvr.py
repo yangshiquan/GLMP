@@ -10,6 +10,7 @@ def read_langs(file_name, max_line = None):
     max_resp_len = 0
     node2id, neighbors_info = {}, {}
     node_cnt = 0
+    context_debug = []
     
     with open('data/KVR/kvret_entities.json') as f:
         global_entity = json.load(f)
@@ -32,6 +33,9 @@ def read_langs(file_name, max_line = None):
                     context_arr += gen_u
                     conv_arr += gen_u
                     conv_arr_plain.append(u)
+                    temp_list = []
+                    temp_list.append(u)
+                    context_debug = context_debug + temp_list
                     
                     # Get gold entity for each domain
                     gold_ent = ast.literal_eval(gold_ent)
@@ -247,12 +251,16 @@ def read_langs(file_name, max_line = None):
                         'domain':task_type,
                         'adj': list(adj),
                         'gate_label': gate_label+[2],
-                        'head_pointer': head_pointer}
+                        'head_pointer': head_pointer,
+                        'context_debug': list(context_debug)}
                     data.append(data_detail)
                     
                     gen_r = generate_memory(r, "$s", str(nid)) 
                     context_arr += gen_r
                     conv_arr += gen_r
+                    temp_list_r = []
+                    temp_list_r.append(r)
+                    context_debug = context_debug + temp_list_r
                     if max_resp_len < len(r.split()):
                         max_resp_len = len(r.split())
                     sample_counter += 1
@@ -265,9 +273,14 @@ def read_langs(file_name, max_line = None):
                     node2id[node] = node_cnt
                     node_cnt += 1
                     neighbors_info[node] = neighbors
+                    r = "#" + r
+                    kb_temp = []
+                    kb_temp.append(r)
+                    context_debug = kb_temp + context_debug
             else:
                 cnt_lin += 1
                 context_arr, conv_arr, kb_arr = [], [], []
+                context_debug = []
                 node2id, neighbors_info = {}, {}
                 node_cnt = 0
                 if(max_line and cnt_lin >= max_line):
