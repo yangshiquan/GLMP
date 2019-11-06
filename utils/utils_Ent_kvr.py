@@ -101,56 +101,78 @@ def read_langs(file_name, max_line = None):
                                         continue
 
 
-                    head_list = []
-                    head_pointer = []
-                    for word_arr in conv_arr:
-                        if word_arr[0] in head_ent_mapping.keys():
-                            head_list.append(word_arr[0])
-                    if task_type == "navigate":
-                        for word_arr in context_arr:
-                            n = 0
-                            for elm in word_arr:
-                                if elm != 'PAD': n += 1
-                            if n == 5 or n == 4:
-                                head = word_arr[0]
-                            else:
-                                head = word_arr[2]
-                            if head in head_list:
-                                head_pointer.append(1)
-                            else:
-                                head_pointer.append(0)
-                    elif task_type == "schedule":
-                        for word_arr in context_arr:
-                            n = 0
-                            for elm in word_arr:
-                                if elm != 'PAD': n += 1
-                            if n == 3:
-                                head = word_arr[2]
-                            else:
-                                head = word_arr[0]
-                            if head in head_list:
-                                head_pointer.append(1)
-                            else:
-                                head_pointer.append(0)
-                    elif task_type == "weather":
-                        for word_arr in context_arr:
-                            n = 0
-                            for elm in word_arr:
-                                if elm != 'PAD': n += 1
-                            if n == 2:
-                                head = word_arr[0]
-                            elif n == 3:
-                                head = word_arr[2]
-                            elif n == 4:
-                                head = word_arr[3]
-                            if head in head_list:
-                                head_pointer.append(1)
-                            else:
-                                head_pointer.append(0)
-                    head_pointer.append(1)
+                    # head_list = []
+                    # head_pointer = []
+                    # for word_arr in conv_arr:
+                    #     if word_arr[0] in head_ent_mapping.keys():
+                    #         head_list.append(word_arr[0])
+                    # if task_type == "navigate":
+                    #     for word_arr in context_arr:
+                    #         n = 0
+                    #         for elm in word_arr:
+                    #             if elm != 'PAD': n += 1
+                    #         if n == 5 or n == 4:
+                    #             head = word_arr[0]
+                    #         else:
+                    #             head = word_arr[2]
+                    #         if head in head_list:
+                    #             head_pointer.append(1)
+                    #         else:
+                    #             head_pointer.append(0)
+                    # elif task_type == "schedule":
+                    #     for word_arr in context_arr:
+                    #         n = 0
+                    #         for elm in word_arr:
+                    #             if elm != 'PAD': n += 1
+                    #         if n == 3:
+                    #             head = word_arr[2]
+                    #         else:
+                    #             head = word_arr[0]
+                    #         if head in head_list:
+                    #             head_pointer.append(1)
+                    #         else:
+                    #             head_pointer.append(0)
+                    # elif task_type == "weather":
+                    #     for word_arr in context_arr:
+                    #         n = 0
+                    #         for elm in word_arr:
+                    #             if elm != 'PAD': n += 1
+                    #         if n == 2:
+                    #             head = word_arr[0]
+                    #         elif n == 3:
+                    #             head = word_arr[2]
+                    #         elif n == 4:
+                    #             head = word_arr[3]
+                    #         if head in head_list:
+                    #             head_pointer.append(1)
+                    #         else:
+                    #             head_pointer.append(0)
+                    # head_pointer.append(1)
 
-                    # # Get head pointer for words in response
-                    # r_list = r.split(' ')
+                    # Get head pointer for words in response
+                    r_list = r.split(' ')
+                    head_lists = []
+                    for word in r_list:
+                        head_list = []
+                        if word in ent_head_mapping:
+                            for head in ent_head_mapping[word]:
+                                if head not in head_list:
+                                    head_list.append(head)
+                        if head_list:
+                            head_lists.append(head_list)
+                    final_list = []
+                    if head_lists:
+                        final_list = head_lists[0]
+                        for elm in head_lists:
+                            final_list = list(set(final_list).intersection(set(elm)))
+
+                    entity_list = []
+                    for head in final_list:
+                        if head in head_ent_mapping:
+                            entities = head_ent_mapping[head]
+                            for ent in entities:
+                                if ent not in entity_list:
+                                    entity_list.append(ent)
                     # head_list = []
                     # for word in r_list:
                     #     if word in ent_head_mapping:
@@ -164,7 +186,9 @@ def read_langs(file_name, max_line = None):
                     #         for ent in entities:
                     #             if ent not in entity_list:
                     #                 entity_list.append(ent)
-                    # head_pointer = [1 if word_arr[0] in entity_list else 0 for word_arr in context_arr] + [1]
+                    # If it's the head's entity, Then label 1, Else label 0.
+                    head_pointer = [1 if word_arr[0] in entity_list and set(final_list).intersection(set(word_arr)) != set([]) and '$u' not in word_arr and '$s' not in word_arr else 0 for word_arr in context_arr] + [0]
+
 
                     # Get local pointer position for each word in system response
                     ptr_index = []
