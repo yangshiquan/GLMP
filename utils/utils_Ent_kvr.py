@@ -85,10 +85,10 @@ def read_langs(file_name, max_line = None):
                             for word_arr in kb_arr:
                                 head = word_arr[2]
                                 entity = word_arr[0]
-                            if entity not in ent_head_mapping:
-                                ent_head_mapping[entity] = [head]
-                            else:
-                                ent_head_mapping[entity].append(head)
+                                if entity not in ent_head_mapping:
+                                    ent_head_mapping[entity] = [head]
+                                else:
+                                    ent_head_mapping[entity].append(head)
 
                     # Get head-entity mapping
                     head_ent_mapping = {}
