@@ -192,7 +192,7 @@ def read_langs(file_name, max_line = None):
                     #                 entity_list.append(ent)
                     # If it's the head's entity, Then label 1, Else label 0.
                     # head_pointer = [1 if word_arr[0] in entity_list and set(final_list).intersection(set(word_arr)) != set([]) and '$u' not in word_arr and '$s' not in word_arr else 0 for word_arr in context_arr] + [0]
-                    head_pointer = [1 if (word_arr[0] in entity_list and set(final_list).intersection(set(word_arr)) != set([]) and '$u' not in word_arr and '$s' not in word_arr  or word_arr[0] in r.split()) else 0 for word_arr in context_arr] + [1]
+                    head_pointer = [1 if ((word_arr[0] in entity_list and set(final_list).intersection(set(word_arr)) != set([]) and '$u' not in word_arr and '$s' not in word_arr) or (word_arr[0] in r.split() and word_arr[0] in ent_index and ('$u' in word_arr or '$s' in word_arr))) else 0 for word_arr in context_arr] + [1]
 
 
                     # Get local pointer position for each word in system response
