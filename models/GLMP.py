@@ -9,6 +9,7 @@ import numpy as np
 # import seaborn as sns
 import os
 import json
+import pdb
 
 from utils.measures import wer, moses_multi_bleu
 from utils.masked_cross_entropy import *
@@ -233,7 +234,8 @@ class GLMP(nn.Module):
                             global_entity_list += [item[k].lower().replace(' ', '_') for k in item.keys()]
                 global_entity_list = list(set(global_entity_list))
 
-        for j, data_dev in pbar: 
+        for j, data_dev in pbar:
+            pdb.set_trace()
             # Encode and Decode
             _, _, decoded_fine, decoded_coarse, global_pointer, _, head_pointer, decoded_words = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
