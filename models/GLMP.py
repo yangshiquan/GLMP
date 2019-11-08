@@ -109,13 +109,18 @@ class GLMP(nn.Module):
         # Encode and Decode
         use_teacher_forcing = random.random() < args['teacher_forcing_ratio'] 
         max_target_length = max(data['response_lengths'])
-        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, all_decoder_outputs_gate_signal, head_pointer = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
+        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, all_decoder_outputs_gate_signal, head_pointer, decoded_words = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
         
         # Loss calculation and backpropagation
-        loss_g = self.criterion_bce(global_pointer, data['selector_index'])
+        loss_g = self.criterion_bce(global_pointer, data['head_pointer'])
+        # loss_g = self.criterion_bce(global_pointer, data['selector_index'])
+        # loss_v = masked_cross_entropy(
+        #     all_decoder_outputs_vocab.transpose(0, 1).contiguous(),
+        #     data['sketch_response'].contiguous(),
+        #     data['response_lengths'])
         loss_v = masked_cross_entropy(
-            all_decoder_outputs_vocab.transpose(0, 1).contiguous(), 
-            data['sketch_response'].contiguous(), 
+            all_decoder_outputs_vocab.transpose(0, 1).contiguous(),
+            data['response'].contiguous(),
             data['response_lengths'])
         loss_l = masked_cross_entropy(
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(), 
@@ -126,7 +131,7 @@ class GLMP(nn.Module):
         #     data['gate_label'].contiguous(),
         #     data['response_lengths'])
         loss_h = self.criterion_bce(head_pointer, data['head_pointer'])
-        loss = loss_g + loss_v + loss_l + loss_h
+        loss = loss_g + loss_v + loss_l
         loss.backward()
 
         # Clip gradient norms
@@ -178,7 +183,7 @@ class GLMP(nn.Module):
             elm_temp = [ word_arr[0] for word_arr in elm ]
             self.copy_list.append(elm_temp) 
         
-        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, outputs_gate_signal = self.decoder(
+        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, outputs_gate_signal, decoded_words = self.decoder(
             self.extKnow, 
             story.size(), 
             data['context_arr_lengths'],
@@ -192,9 +197,10 @@ class GLMP(nn.Module):
             global_pointer,
             data['kb_arr_lengths'],
             data['conv_arr_lengths'],
-            head_pointer)
+            head_pointer,
+            story)
 
-        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_gate_signal, head_pointer
+        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_gate_signal, head_pointer, decoded_words
 
     def evaluate(self, dev, matric_best, early_stop=None):
         print("STARTING EVALUATION")
@@ -229,51 +235,58 @@ class GLMP(nn.Module):
 
         for j, data_dev in pbar: 
             # Encode and Decode
-            _, _, decoded_fine, decoded_coarse, global_pointer, _, head_pointer = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
+            _, _, decoded_fine, decoded_coarse, global_pointer, _, head_pointer, decoded_words = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
             decoded_fine = np.transpose(decoded_fine)
-            for bi, row in enumerate(decoded_fine):
+            # for bi, row in enumerate(decoded_fine):
+            temp_gen = []
+            for bi, row in enumerate(decoded_words):
                 st = ''
                 for e in row:
                     if e == 'EOS': break
                     else: st += e + ' '
-                st_c = ''
-                for e in decoded_coarse[bi]:
-                    if e == 'EOS': break
-                    else: st_c += e + ' '
-
-                context_debug = data_dev['context_debug'][bi]
-                global_pointer_debug = global_pointer.cpu().detach().numpy()[bi]
-
+                temp_gen.append(st)
                 pred_sent = st.lstrip().rstrip()
-                pred_sent_coarse = st_c.lstrip().rstrip()
                 gold_sent = data_dev['response_plain'][bi].lstrip().rstrip()
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
-
-                line_cnt = 0
-                global_pointer_index = 0
-                for index, content in enumerate(context_debug):
-                    if content.startswith('#'):
-                        global_pointer_temp = global_pointer_debug[global_pointer_index]
-                        fd.write("\"" + content + "<br/>" + "\"")
-                        fd.write("," + "\n")
-                        fd_global_pointer.write(str('{:.4f}'.format(global_pointer_temp)) + ",")
-                        global_pointer_index += 1
-                    else:
-                        line_cnt += 1
-                        for loc, word in enumerate(content.split(" ")):
-                            global_pointer_temp = global_pointer_debug[global_pointer_index]
-                            fd.write("\"" + word + "<br/>" + "\"")
-                            fd.write("," + "\n")
-                            fd_global_pointer.write(str('{:.4f}'.format(global_pointer_temp)) + ",")
-                            global_pointer_index += 1
-                fd.write("\n")
-                fd.write("predict response: " + pred_sent + "\n")
-                fd.write("golden response: " + gold_sent + "\n")
-                fd.write("\n")
-                fd_global_pointer.write("\n")
-                fd_global_pointer.write("\n")
+                # st_c = ''
+                # for e in decoded_coarse[bi]:
+                #     if e == 'EOS': break
+                #     else: st_c += e + ' '
+                #
+                # context_debug = data_dev['context_debug'][bi]
+                # global_pointer_debug = global_pointer.cpu().detach().numpy()[bi]
+                #
+                # pred_sent = st.lstrip().rstrip()
+                # pred_sent_coarse = st_c.lstrip().rstrip()
+                # gold_sent = data_dev['response_plain'][bi].lstrip().rstrip()
+                # ref.append(gold_sent)
+                # hyp.append(pred_sent)
+                #
+                # line_cnt = 0
+                # global_pointer_index = 0
+                # for index, content in enumerate(context_debug):
+                #     if content.startswith('#'):
+                #         global_pointer_temp = global_pointer_debug[global_pointer_index]
+                #         fd.write("\"" + content + "<br/>" + "\"")
+                #         fd.write("," + "\n")
+                #         fd_global_pointer.write(str('{:.4f}'.format(global_pointer_temp)) + ",")
+                #         global_pointer_index += 1
+                #     else:
+                #         line_cnt += 1
+                #         for loc, word in enumerate(content.split(" ")):
+                #             global_pointer_temp = global_pointer_debug[global_pointer_index]
+                #             fd.write("\"" + word + "<br/>" + "\"")
+                #             fd.write("," + "\n")
+                #             fd_global_pointer.write(str('{:.4f}'.format(global_pointer_temp)) + ",")
+                #             global_pointer_index += 1
+                # fd.write("\n")
+                # fd.write("predict response: " + pred_sent + "\n")
+                # fd.write("golden response: " + gold_sent + "\n")
+                # fd.write("\n")
+                # fd_global_pointer.write("\n")
+                # fd_global_pointer.write("\n")
                 
                 if args['dataset'] == 'kvr': 
                     # compute F1 SCORE
@@ -304,8 +317,8 @@ class GLMP(nn.Module):
                 if (gold_sent == pred_sent):
                     acc += 1
 
-                if args['genSample']:
-                    self.print_examples(bi, data_dev, pred_sent, pred_sent_coarse, gold_sent)
+                # if args['genSample']:
+                #     self.print_examples(bi, data_dev, pred_sent, pred_sent_coarse, gold_sent)
 
         fd.close()
         fd_global_pointer.close()

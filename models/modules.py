@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from utils.config import *
 from utils.utils_general import _cuda
 from models.GraphAttentionLayer import GraphAttentionLayer
+from torch.autograd import Variable
 import numpy as np
 import pdb
 
@@ -197,9 +198,9 @@ class ExternalKnowledge(nn.Module):
             embed_A = torch.sum(embed_A, 2).squeeze(2) # b * m * e
             if not args["ablationH"]:
                 embed_A = self.add_lm_embedding(embed_A, kb_len, conv_len, dh_outputs)
-            for layer in range(self.graph_layer_num):
-                graph_layer = self.graph_layers_list[layer][hop]
-                embed_A = graph_layer(embed_A, adj)
+            # for layer in range(self.graph_layer_num):
+            #     graph_layer = self.graph_layers_list[layer][hop]
+            #     embed_A = graph_layer(embed_A, adj)
                 # embed_A_t = graph_layer(embed_A, adj)
                 # embed_A = embed_A + embed_A_t
             embed_A = self.dropout_layer(embed_A)
@@ -215,9 +216,9 @@ class ExternalKnowledge(nn.Module):
             embed_C = torch.sum(embed_C, 2).squeeze(2)
             if not args["ablationH"]:
                 embed_C = self.add_lm_embedding(embed_C, kb_len, conv_len, dh_outputs)
-            for layer in range(self.graph_layer_num):
-                graph_layer = self.graph_layers_list[layer][hop+1]
-                embed_C = graph_layer(embed_C, adj)
+            # for layer in range(self.graph_layer_num):
+            #     graph_layer = self.graph_layers_list[layer][hop+1]
+            #     embed_C = graph_layer(embed_C, adj)
                 # embed_C_t = graph_layer(embed_C, adj)
                 # embed_C = embed_C + embed_C_t
 
@@ -257,7 +258,7 @@ class ExternalKnowledge(nn.Module):
         # global_pointer = global_pointer + gate_signal_new
 
         # global_pointer = self.a3 * global_pointer + self.a4 * head_pointer
-        global_pointer = global_pointer + head_pointer
+        # global_pointer = global_pointer + head_pointer
 
         for hop in range(self.max_hops):
             m_A = self.m_story[hop] 
@@ -297,7 +298,7 @@ class LocalMemoryDecoder(nn.Module):
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
 
-    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer, kb_len, conv_len, head_pointer):
+    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer, kb_len, conv_len, head_pointer, story):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
@@ -308,6 +309,8 @@ class LocalMemoryDecoder(nn.Module):
         
         hidden = self.relu(self.projector(encode_hidden)).unsqueeze(0)
 
+        decoded_words = []
+        self.from_whichs = []
         # Start to generate word-by-word
         for t in range(max_target_length):
             temp = self.C(decoder_input)
@@ -329,40 +332,60 @@ class LocalMemoryDecoder(nn.Module):
             # query the external konwledge using the hidden state of sketch RNN
             prob_soft, prob_logits = extKnow(query_vector, global_pointer, gate_signal, kb_len, conv_len, head_pointer)
             all_decoder_outputs_ptr[t] = prob_logits
+            _, toppi = prob_logits.data.topk(1)
 
             if use_teacher_forcing:
                 decoder_input = target_batches[:,t] 
             else:
-                decoder_input = topvi.squeeze()
+                # change decoder
+                # decoder_input = topvi.squeeze()
+                top_ptr_i = torch.gather(story[:, :, 0], 1, Variable(toppi))
+                next_in = [top_ptr_i[i].item() if (toppi[i].item() < story_lengths[i] - 1) else topvi[i].item() for i in range(batch_size)]
+                decoder_input = Variable(torch.LongTensor(next_in))
             
             if get_decoded_words:
-
-                search_len = min(5, min(story_lengths))
-                prob_soft = prob_soft * memory_mask_for_step
-                _, toppi = prob_soft.data.topk(search_len)
-                temp_f, temp_c = [], []
-                
+                temp = []
+                from_which = []
                 for bi in range(batch_size):
-                    token = topvi[bi].item() #topvi[:,0][bi].item()
-                    temp_c.append(self.lang.index2word[token])
-                    
-                    if '@' in self.lang.index2word[token]:
-                        cw = 'UNK'
-                        for i in range(search_len):
-                            if toppi[:,i][bi] < story_lengths[bi]-1: 
-                                cw = copy_list[bi][toppi[:,i][bi].item()]            
-                                break
-                        temp_f.append(cw)
-                        
-                        if args['record']:
-                            memory_mask_for_step[bi, toppi[:,i][bi].item()] = 0
+                    if (toppi[bi].item() < story_lengths[bi] - 1):
+                        temp.append(copy_list[bi][toppi[bi].item()])
+                        from_which.append('p')
                     else:
-                        temp_f.append(self.lang.index2word[token])
+                        ind = topvi[bi].item()
+                        if ind == EOS_token:
+                            temp.append('EOS')
+                        else:
+                            temp.append(self.lang.index2word[ind])
+                        from_which.append('v')
+                decoded_words.append(temp)
+                self.from_whichs.append(from_which)
+        self.from_whichs = np.array(self.from_whichs)
+                # search_len = min(5, min(story_lengths))
+                # prob_soft = prob_soft * memory_mask_for_step
+                # _, toppi = prob_soft.data.topk(search_len)
+                # temp_f, temp_c = [], []
+                #
+                # for bi in range(batch_size):
+                #     token = topvi[bi].item() #topvi[:,0][bi].item()
+                #     temp_c.append(self.lang.index2word[token])
+                #
+                #     if '@' in self.lang.index2word[token]:
+                #         cw = 'UNK'
+                #         for i in range(search_len):
+                #             if toppi[:,i][bi] < story_lengths[bi]-1:
+                #                 cw = copy_list[bi][toppi[:,i][bi].item()]
+                #                 break
+                #         temp_f.append(cw)
+                #
+                #         if args['record']:
+                #             memory_mask_for_step[bi, toppi[:,i][bi].item()] = 0
+                #     else:
+                #         temp_f.append(self.lang.index2word[token])
+                #
+                # decoded_fine.append(temp_f)
+                # decoded_coarse.append(temp_c)
 
-                decoded_fine.append(temp_f)
-                decoded_coarse.append(temp_c)
-
-        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_gate_signal
+        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_gate_signal, decoded_words
 
     def attend_vocab(self, seq, cond):
         scores_ = cond.matmul(seq.transpose(1,0))
