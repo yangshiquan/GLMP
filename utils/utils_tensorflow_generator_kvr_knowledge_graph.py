@@ -65,7 +65,8 @@ def gen_samples(data, length):
               data_info['deps'][i],\
               data_info['deps_type'][i],\
               data_info['cell_masks'][i], \
-              data_info['adj'][i]
+              data_info['adj'][i], \
+              data_info['head_pointer'][i]
 
 
 def get_seq(data_info, batch_size, drop_remainder):
@@ -96,7 +97,8 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                  tf.string,  # deps 23
                                                  tf.int32,  # deps_type 24
                                                  tf.int32,  # cell_masks 25
-                                                 tf.int32  # adj 26
+                                                 tf.int32,  # adj 26
+                                                 tf.int32  # head_pointer 27
                                                  ),
                                    output_shapes=((None, None),  # context_arr
                                                   (None,),  # response
@@ -124,7 +126,8 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                   (None, None, None),  # deps
                                                   (None, None, None),  # deps_type
                                                   (None, None, None),  # cell_masks
-                                                  (None, None)  # adj
+                                                  (None, None),  # adj
+                                                  (None,)  # head_pointer
                                                   )
                                    )
     print(len(data_info))
@@ -154,7 +157,8 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                                               [2, None, MAX_DEPENDENCIES_PER_NODE],  # deps
                                                                               [2, None, (MAX_DEPENDENCIES_PER_NODE+1)],  # deps_type
                                                                               [2, None, (MAX_DEPENDENCIES_PER_NODE+1)],  # cell_masks
-                                                                              [None, None]  # adj
+                                                                              [None, None],  # adj
+                                                                              [None,]  # head_pointer
                                                                               ),
                                                    padding_values=(PAD_token,  # context_arr
                                                                    PAD_token,  # response
@@ -182,7 +186,8 @@ def get_seq(data_info, batch_size, drop_remainder):
                                                                    '$',  # deps
                                                                    PAD_token,  # deps_type
                                                                    0,  # cell_masks
-                                                                   0  # adj
+                                                                   0,  # adj
+                                                                   0  # head_pointer
                                                                    ),
                                                     drop_remainder=drop_remainder
                                                    )

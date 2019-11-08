@@ -55,8 +55,8 @@ class GraphAttentionLayer(tf.keras.Model):
         prob_logits = tf.where(adj > 0, prob_logits, (-1 * np.ones_like(prob_logits) * np.inf))  # prob_logits: batch_size * max_len * max_len.
         prob_soft = self.softmax(prob_logits)  # prob_soft: batch_size * max_len * max_len.
         # comment for mimic memory
-        if training:
-            prob_soft = self.dropout_layer(prob_soft, training=training)  # prob_soft: batch_size * max_len * max_len.
+        # if training:
+        #     prob_soft = self.dropout_layer(prob_soft, training=training)  # prob_soft: batch_size * max_len * max_len.
         h_prime = tf.matmul(prob_soft, h)  # h_prime: batch_size * max_len * output_dim.
 
         if self.concat:

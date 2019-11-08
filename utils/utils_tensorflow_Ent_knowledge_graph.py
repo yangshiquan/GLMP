@@ -51,6 +51,93 @@ def read_langs(file_name, max_line=None):
                         ent_idx_nav = gold_ent
                     ent_index = list(set(ent_idx_cal + ent_idx_nav + ent_idx_wet))
 
+                    # Get entity-head mapping
+                    ent_head_mapping = {}
+                    if task_type == "navigate":
+                        for word_arr in kb_arr:
+                            n = 0
+                            for elm in word_arr:
+                                if elm != 'PAD': n += 1
+                            if n == 5:
+                                head = word_arr[0]
+                                entity = word_arr[0]
+                            else:
+                                head = word_arr[2]
+                                entity = word_arr[0]
+                            if entity not in ent_head_mapping:
+                                ent_head_mapping[entity] = [head]
+                            else:
+                                ent_head_mapping[entity].append(head)
+                    elif task_type == "weather":
+                        for word_arr in kb_arr:
+                            n = 0
+                            for elm in word_arr:
+                                if elm != 'PAD': n += 1
+                            if n == 2: continue
+                            elif n == 3:
+                                head = word_arr[2]
+                                entity = word_arr[0]
+                            elif n == 4:
+                                head = word_arr[3]
+                                entity = word_arr[0]
+                            else:
+                                continue
+                            if entity not in ent_head_mapping:
+                                ent_head_mapping[entity] = [head]
+                            else:
+                                ent_head_mapping[entity].append(head)
+                    elif task_type == "schedule":
+                        if len(kb_arr) != 0:
+                            for word_arr in kb_arr:
+                                head = word_arr[2]
+                                entity = word_arr[0]
+                                if entity not in ent_head_mapping:
+                                    ent_head_mapping[entity] = [head]
+                                else:
+                                    ent_head_mapping[entity].append(head)
+
+                    # Get head-entity mapping
+                    head_ent_mapping = {}
+                    if ent_head_mapping:
+                        for ent in ent_head_mapping.keys():
+                            head_list = ent_head_mapping[ent]
+                            for head in head_list:
+                                if head not in head_ent_mapping:
+                                    head_ent_mapping[head] = [ent]
+                                else:
+                                    if ent not in head_ent_mapping[head]:
+                                        head_ent_mapping[head].append(ent)
+                                    else:
+                                        continue
+
+                    # Get head pointer for words in response
+                    r_list = r.split(' ')
+                    head_lists = []
+                    for word in r_list:
+                        head_list = []
+                        if word in ent_head_mapping:
+                            for head in ent_head_mapping[word]:
+                                if head not in head_list:
+                                    head_list.append(head)
+                        if head_list:
+                            head_lists.append(head_list)
+                    final_list = []
+                    if head_lists:
+                        final_list = head_lists[0]
+                        for elm in head_lists:
+                            final_list = list(set(final_list).intersection(set(elm)))
+
+                    entity_list = []
+                    for head in final_list:
+                        if head in head_ent_mapping:
+                            entities = head_ent_mapping[head]
+                            for ent in entities:
+                                if ent not in entity_list:
+                                    entity_list.append(ent)
+                    # If it's the head's entity, Then label 1, Else label 0.
+                    # head_pointer = [1 if word_arr[0] in entity_list and set(final_list).intersection(set(word_arr)) != set([]) and '$u' not in word_arr and '$s' not in word_arr else 0 for word_arr in context_arr] + [0]
+                    head_pointer = [1 if ((word_arr[0] in entity_list and set(final_list).intersection(set(word_arr)) != set([]) and '$u' not in word_arr and '$s' not in word_arr) or (word_arr[0] in r.split() and word_arr[0] in ent_index and ('$u' in word_arr or '$s' in word_arr))) else 0 for word_arr in context_arr] + [1]
+
                     # Get local pointer position for each word in system response
                     ptr_index = []
                     a = 0
@@ -135,7 +222,8 @@ def read_langs(file_name, max_line=None):
                         'id': int(sample_counter),
                         'ID': int(cnt_lin),
                         'domain': task_type,
-                        'adj': list(adj)}
+                        'adj': list(adj),
+                        'head_pointer': head_pointer}
                     data.append(data_detail)
 
                     gen_r = generate_memory(r, "$s", str(nid))
@@ -308,7 +396,8 @@ def text_to_sequence(pairs, lang):
             'deps': pair['deps'],
             'deps_type': deps_type,
             'cell_masks': pair['cell_masks'],
-            'adj': tf.convert_to_tensor(pair['adj'])
+            'adj': tf.convert_to_tensor(pair['adj']),
+            'head_pointer': tf.convert_to_tensor(pair['head_pointer'])
         })
     return sequence_data
 
@@ -346,7 +435,7 @@ def prepare_data_seq(task, batch_size=100):
     # debug dataset batch result
     context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\
         kb_arr_plain, context_arr_lengths, response_lengths, conv_arr_lengths, kb_arr_lengths, ent_index, ent_index_lengths,\
-        ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID, deps, deps_type, cell_masks, adj = next(iter(train))
+        ent_idx_cal, ent_idx_nav, ent_idx_wet, ent_idx_cal_lengths, ent_idx_nav_lengths, ent_idx_wet_lengths, ID, deps, deps_type, cell_masks, adj, head_pointer = next(iter(train))
 
     print("Read %s sentence pairs train" % len(pair_train))
     print("Read %s sentence pairs dev" % len(pair_dev))

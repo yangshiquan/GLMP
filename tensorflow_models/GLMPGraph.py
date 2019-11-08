@@ -161,7 +161,8 @@ class GLMPGraph(tf.keras.Model):
                                                                                                               True)
             # loss calculation and backpropagation
             # pdb.set_trace()
-            loss_g = tf.cast(tf.compat.v1.losses.sigmoid_cross_entropy(data[5], tf.cast(global_pointer_logits, dtype=tf.double)), dtype=tf.float32)
+            # loss_g = tf.cast(tf.compat.v1.losses.sigmoid_cross_entropy(data[5], tf.cast(global_pointer_logits, dtype=tf.double)), dtype=tf.float32)
+            loss_g = tf.cast(tf.compat.v1.losses.sigmoid_cross_entropy(data[27], tf.cast(global_pointer_logits, dtype=tf.double)), dtype=tf.float32)
             #loss_gs = tf.keras.backend.binary_crossentropy(tf.cast(data[5], dtype=tf.double), tf.cast(global_pointer, dtype=tf.double))
             #loss_g = tf.cast(tf.reduce_sum(loss_gs) / (loss_gs.shape[0]*loss_gs.shape[1]), dtype=tf.float32)
             # loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data['selector_index'])  # data[5]: selector_index.
@@ -175,7 +176,7 @@ class GLMPGraph(tf.keras.Model):
                                           data[4],
                                           tf.cast(data[11], dtype=tf.int32))  # data[4]: ptr_index, data[11]: response_lengths.
             # print("loss_l:", loss_l)
-            loss = 3 * loss_g + loss_v + loss_l
+            loss = loss_g + loss_v + loss_l
 
         # compute gradients for encoder, decoder and external knowledge
         encoder_variables = self.encoder.trainable_variables

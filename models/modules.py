@@ -338,54 +338,54 @@ class LocalMemoryDecoder(nn.Module):
                 decoder_input = target_batches[:,t] 
             else:
                 # change decoder
-                # decoder_input = topvi.squeeze()
-                top_ptr_i = torch.gather(story[:, :, 0], 1, Variable(toppi))
-                next_in = [top_ptr_i[i].item() if (toppi[i].item() < story_lengths[i] - 1) else topvi[i].item() for i in range(batch_size)]
-                decoder_input = Variable(torch.LongTensor(next_in))
+                decoder_input = topvi.squeeze()
+                # top_ptr_i = torch.gather(story[:, :, 0], 1, Variable(toppi))
+                # next_in = [top_ptr_i[i].item() if (toppi[i].item() < story_lengths[i] - 1) else topvi[i].item() for i in range(batch_size)]
+                # decoder_input = Variable(torch.LongTensor(next_in))
             
             if get_decoded_words:
-                temp = []
-                from_which = []
+        #         temp = []
+        #         from_which = []
+        #         for bi in range(batch_size):
+        #             if (toppi[bi].item() < story_lengths[bi] - 1):
+        #                 temp.append(copy_list[bi][toppi[bi].item()])
+        #                 from_which.append('p')
+        #             else:
+        #                 ind = topvi[bi].item()
+        #                 if ind == EOS_token:
+        #                     temp.append('EOS')
+        #                 else:
+        #                     temp.append(self.lang.index2word[ind])
+        #                 from_which.append('v')
+        #         decoded_words.append(temp)
+        #         self.from_whichs.append(from_which)
+        # self.from_whichs = np.array(self.from_whichs)
+        # decoded_words = np.array(decoded_words)
+        # decoded_words = decoded_words.transpose()
+                search_len = min(5, min(story_lengths))
+                prob_soft = prob_soft * memory_mask_for_step
+                _, toppi = prob_soft.data.topk(search_len)
+                temp_f, temp_c = [], []
+
                 for bi in range(batch_size):
-                    if (toppi[bi].item() < story_lengths[bi] - 1):
-                        temp.append(copy_list[bi][toppi[bi].item()])
-                        from_which.append('p')
+                    token = topvi[bi].item() #topvi[:,0][bi].item()
+                    temp_c.append(self.lang.index2word[token])
+
+                    if '@' in self.lang.index2word[token]:
+                        cw = 'UNK'
+                        for i in range(search_len):
+                            if toppi[:,i][bi] < story_lengths[bi]-1:
+                                cw = copy_list[bi][toppi[:,i][bi].item()]
+                                break
+                        temp_f.append(cw)
+
+                        if args['record']:
+                            memory_mask_for_step[bi, toppi[:,i][bi].item()] = 0
                     else:
-                        ind = topvi[bi].item()
-                        if ind == EOS_token:
-                            temp.append('EOS')
-                        else:
-                            temp.append(self.lang.index2word[ind])
-                        from_which.append('v')
-                decoded_words.append(temp)
-                self.from_whichs.append(from_which)
-        self.from_whichs = np.array(self.from_whichs)
-        decoded_words = np.array(decoded_words)
-        decoded_words = decoded_words.transpose()
-                # search_len = min(5, min(story_lengths))
-                # prob_soft = prob_soft * memory_mask_for_step
-                # _, toppi = prob_soft.data.topk(search_len)
-                # temp_f, temp_c = [], []
-                #
-                # for bi in range(batch_size):
-                #     token = topvi[bi].item() #topvi[:,0][bi].item()
-                #     temp_c.append(self.lang.index2word[token])
-                #
-                #     if '@' in self.lang.index2word[token]:
-                #         cw = 'UNK'
-                #         for i in range(search_len):
-                #             if toppi[:,i][bi] < story_lengths[bi]-1:
-                #                 cw = copy_list[bi][toppi[:,i][bi].item()]
-                #                 break
-                #         temp_f.append(cw)
-                #
-                #         if args['record']:
-                #             memory_mask_for_step[bi, toppi[:,i][bi].item()] = 0
-                #     else:
-                #         temp_f.append(self.lang.index2word[token])
-                #
-                # decoded_fine.append(temp_f)
-                # decoded_coarse.append(temp_c)
+                        temp_f.append(self.lang.index2word[token])
+
+                decoded_fine.append(temp_f)
+                decoded_coarse.append(temp_c)
 
         return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_gate_signal, decoded_words
 
