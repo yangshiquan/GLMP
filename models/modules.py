@@ -360,7 +360,6 @@ class LocalMemoryDecoder(nn.Module):
                 decoded_words.append(temp)
                 self.from_whichs.append(from_which)
         self.from_whichs = np.array(self.from_whichs)
-        pdb.set_trace()
         decoded_words = np.array(decoded_words)
         decoded_words = decoded_words.transpose()
                 # search_len = min(5, min(story_lengths))
