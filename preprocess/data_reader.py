@@ -52,6 +52,7 @@ with open('../data/MULTIWOZ2.1/data.json') as f:
                     elif word.endswith('.'):
                         word = word.replace('.', '')
                         word_new.append(word)
+                        word_new.append('.')
                     elif word.endswith('?'):
                         word = word.replace('?', '')
                         word_new.append(word)
