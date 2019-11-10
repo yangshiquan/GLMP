@@ -45,13 +45,13 @@ class RNN(tf.keras.Model):
                                  edge_types,
                                  shared_emb,
                                  recurrent_size,
-                                 # kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
+                                 kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
                                  # kernel_initializer=tf.initializers.RandomNormal(0.0, 0.01),
-                                 kernel_initializer=tf.initializers.glorot_uniform,
-                                 # recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
-                                 recurrent_initializer=tf.initializers.orthogonal,
-                                 # bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units)))),
-                                 bias_initializer = tf.initializers.zeros)
+                                 # kernel_initializer=tf.initializers.glorot_uniform,
+                                 recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
+                                 # recurrent_initializer=tf.initializers.orthogonal,
+                                 bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))))
+                                 # bias_initializer = tf.initializers.zeros)
 
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim

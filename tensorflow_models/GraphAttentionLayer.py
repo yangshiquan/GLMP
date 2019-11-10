@@ -27,7 +27,8 @@ class GraphAttentionLayer(tf.keras.Model):
         self.a1 = self.add_weight(
             name='a1',
             shape=(self.output_dim, 1),
-            initializer='glorot_uniform',
+            # initializer='glorot_uniform',
+            initializer=tf.initializers.RandomUniform(-(1/np.sqrt(self.output_dim)),(1/np.sqrt(self.output_dim))),
             # initializer='glorot_normal',
             regularizer=None,
             constraint=None
@@ -35,7 +36,8 @@ class GraphAttentionLayer(tf.keras.Model):
         self.a2 = self.add_weight(
             name='a2',
             shape=(self.output_dim, 1),
-            initializer='glorot_uniform',
+            # initializer='glorot_uniform',
+            initializer=tf.initializers.RandomUniform(-(1 / np.sqrt(self.output_dim)), (1 / np.sqrt(self.output_dim))),
             # initializer='glorot_normal',
             regularizer=None,
             constraint=None
