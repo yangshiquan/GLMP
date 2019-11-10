@@ -46,11 +46,11 @@ class RNN(tf.keras.Model):
                                  shared_emb,
                                  recurrent_size,
                                  # kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
-                                 kernel_initializer=tf.initializers.RandomNormal,
+                                 kernel_initializer=tf.initializers.RandomNormal(0.0, 0.1),
                                  # recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units))),
-                                 recurrent_initializer=tf.initializers.RandomNormal,
+                                 recurrent_initializer=tf.initializers.RandomNormal(0.0, 0.1),
                                  # bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(units)),(1/np.sqrt(units)))),
-                                 bias_initializer = tf.initializers.RandomNormal)
+                                 bias_initializer = tf.initializers.RandomNormal(0.0, 0.1))
 
     def call(self,
              inputs,  # inputs: batch_size*max_len*embedding_dim
