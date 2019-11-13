@@ -1,3 +1,6 @@
 *pyc
 sftp-config.json
 save/
+data/MULTIWOZ2.1/data.json
+data/KVR/train_edge_paris_full_features.txt
+data/KVR/train_transformed_full_features.txt

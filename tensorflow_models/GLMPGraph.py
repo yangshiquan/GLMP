@@ -215,13 +215,13 @@ class GLMPGraph(tf.keras.Model):
     def evaluate(self, dev, dev_length, matric_best, early_stop=None):
         print('STARTING EVALUATION:')
 
-        fd = open('test_result_{}.txt'.format(args['dataset']), 'a')
+        # fd = open('test_result_{}.txt'.format(args['dataset']), 'a')
 
         ref, hyp = [], []
         acc, total = 0, 0
         dialog_acc_dict = {}
-        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred = 0, 0, 0, 0
-        F1_count, F1_cal_count, F1_nav_count, F1_wet_count = 0, 0, 0, 0
+        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred, F1_restaurant_pred, F1_hotel_pred, F1_attraction_pred, F1_train_pred, F1_hospital_pred = 0, 0, 0, 0, 0, 0, 0, 0, 0
+        F1_count, F1_cal_count, F1_nav_count, F1_wet_count, F1_restaurant_count, F1_hotel_count, F1_attraction_count, F1_train_count, F1_hospital_count = 0, 0, 0, 0, 0, 0, 0, 0, 0
         pbar = tqdm(enumerate(dev.take(-1)), total=(dev_length))
         new_precision, new_recall, new_f1_score = 0, 0, 0
 
@@ -236,6 +236,14 @@ class GLMPGraph(tf.keras.Model):
                         for item in global_entity['poi']:
                             global_entity_list += [item[k].lower().replace(' ', '_') for k in item.keys()]
                 global_entity_list = list(set(global_entity_list))
+        elif args['dataset'] == 'multiwoz':
+            with open('data/MULTIWOZ2.1/multiwoz_entities.json') as f:
+                global_entity = json.load(f)
+                global_entity_list = []
+                for key in global_entity.keys():
+                    global_entity_list += [item.lower().replace(' ', '_') for item in global_entity[key]]
+                global_entity_list = list(set(global_entity_list))
+
         for j, data_dev in pbar:
             # Encode and Decode
             # pdb.set_trace()
@@ -268,9 +276,9 @@ class GLMPGraph(tf.keras.Model):
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
 
-                fd.write("predict response: " + pred_sent + "\n")
-                fd.write("golden  response: " + gold_sent + "\n")
-                fd.write("\n")
+                # fd.write("predict response: " + pred_sent + "\n")
+                # fd.write("golden  response: " + gold_sent + "\n")
+                # fd.write("\n")
 
                 if args['dataset'] == 'kvr':
                     # compute F1 SCORE
@@ -290,6 +298,32 @@ class GLMPGraph(tf.keras.Model):
                                                         global_entity_list, data_dev[9][bi])  # data[18]: ent_idx_wet, data[9]: kb_arr_plain.
                     F1_wet_pred += single_f1
                     F1_wet_count += count
+                elif args['dataset'] == 'multiwoz':
+                    # compute F1 SCORE
+                    single_f1, count = self.compute_prf(data_dev[14][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev[9][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
+                    F1_pred += single_f1
+                    F1_count += count
+                    single_f1, count = self.compute_prf(data_dev[28][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev[9][bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
+                    F1_restaurant_pred += single_f1
+                    F1_restaurant_count += count
+                    single_f1, count = self.compute_prf(data_dev[29][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev[9][bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
+                    F1_hotel_pred += single_f1
+                    F1_hotel_count += count
+                    single_f1, count = self.compute_prf(data_dev[30][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev[9][bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
+                    F1_attraction_pred += single_f1
+                    F1_attraction_count += count
+                    single_f1, count = self.compute_prf(data_dev[31][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev[9][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                    F1_train_pred += single_f1
+                    F1_train_count += count
+                    single_f1, count = self.compute_prf(data_dev[32][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev[9][bi])  # data[32]: ent_idx_hospital, data[9]: kb_arr_plain.
+                    F1_hospital_pred += single_f1
+                    F1_hospital_count += count
                 else:
                     # compute Dialogue Accuracy Score
                     current_id = data_dev[22][bi]
@@ -308,7 +342,7 @@ class GLMPGraph(tf.keras.Model):
                 if args['genSample']:
                     self.print_examples(bi, data_dev, pred_sent, pred_sent_coarse, gold_sent)
 
-        fd.close()
+        # fd.close()
 
         # pdb.set_trace()
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
@@ -321,6 +355,15 @@ class GLMPGraph(tf.keras.Model):
             print("\tCAL F1:\t{}".format(F1_cal_pred / float(F1_cal_count)))
             print("\tWET F1:\t{}".format(F1_wet_pred / float(F1_wet_count)))
             print("\tNAV F1:\t{}".format(F1_nav_pred / float(F1_nav_count)))
+            print("BLEU SCORE:\t" + str(bleu_score))
+        elif args['dataset'] == 'multiwoz':
+            F1_score = F1_pred / float(F1_count)
+            print("F1 SCORE:\t{}".format(F1_pred / float(F1_count)))
+            print("\tRES F1:\t{}".format(F1_restaurant_pred / float(F1_restaurant_count)))
+            print("\tHOT F1:\t{}".format(F1_hotel_pred / float(F1_hotel_count)))
+            print("\tATT F1:\t{}".format(F1_attraction_pred / float(F1_attraction_count)))
+            print("\tTRA F1:\t{}".format(F1_train_pred / float(F1_train_count)))
+            print("\tHOS F1:\t{}".format(F1_hospital_pred / float(F1_hospital_count)))
             print("BLEU SCORE:\t" + str(bleu_score))
         else:
             dia_acc = 0

@@ -15,6 +15,10 @@ if args['dataset'] == 'kvr':
     from utils.utils_tensorflow_Ent_knowledge_graph import *
     # from utils.utils_tensorflow_Ent_graphgru import *
     early_stop = 'ENTF1'
+elif args['dataset'] == "multiwoz":
+    from utils.utils_tensorflow_Ent_multiwoz_knowledge_graph import *
+    # from utils.utils_tensorflow_Ent_graphgru import *
+    early_stop = 'ENTF1'
 elif args['dataset'] == 'babi':
     from utils.utils_Ent_babi import *
     early_stop = None
