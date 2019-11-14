@@ -20,6 +20,8 @@ DS = 'kvr' if 'kvr' in directory[1].split('-')[1].lower() else 'babi'
 early_stop = args['earlyStop']
 if DS=='kvr':
     from utils.utils_tensorflow_Ent_kvr import *
+elif DS=='multiwoz':
+	from utils.utils_tensorflow_Ent_multiwoz_knowledge_graph import *
 elif DS=='babi':
     from utils.utils_Ent_babi import *
 else:

@@ -320,10 +320,6 @@ class GLMPGraph(tf.keras.Model):
                                                         global_entity_list, data_dev[9][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
                     F1_train_pred += single_f1
                     F1_train_count += count
-                    single_f1, count = self.compute_prf(data_dev[32][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev[9][bi])  # data[32]: ent_idx_hospital, data[9]: kb_arr_plain.
-                    F1_hospital_pred += single_f1
-                    F1_hospital_count += count
                 else:
                     # compute Dialogue Accuracy Score
                     current_id = data_dev[22][bi]
@@ -363,7 +359,6 @@ class GLMPGraph(tf.keras.Model):
             print("\tHOT F1:\t{}".format(F1_hotel_pred / float(F1_hotel_count)))
             print("\tATT F1:\t{}".format(F1_attraction_pred / float(F1_attraction_count)))
             print("\tTRA F1:\t{}".format(F1_train_pred / float(F1_train_count)))
-            print("\tHOS F1:\t{}".format(F1_hospital_pred / float(F1_hospital_count)))
             print("BLEU SCORE:\t" + str(bleu_score))
         else:
             dia_acc = 0
