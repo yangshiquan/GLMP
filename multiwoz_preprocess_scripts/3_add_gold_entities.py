@@ -2,7 +2,7 @@ import numpy as np
 import json
 import pdb
 
-dataset = "test"
+dataset = "train"
 input_path = "../data/MULTIWOZ2.1/{}_w_kb.txt".format(dataset)
 output_path = "../data/MULTIWOZ2.1/{}_w_kb_w_gold.txt".format(dataset)
 fout = open(output_path, "w")

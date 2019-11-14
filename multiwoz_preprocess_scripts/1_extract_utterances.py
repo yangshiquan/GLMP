@@ -25,7 +25,7 @@ with open('../data/MULTIWOZ2.1/data.json') as f:
                 # drop out police and taxi data because of small data size.
                 if goal[domain] and domain in ('taxi', 'police', 'hospital', 'hotel', 'attraction', 'restaurant', 'train'):
                     type = domain
-            if type in ('taxi', 'police'):
+            if type in ('taxi', 'police', 'hospital'):
                 continue
             if key in valList:
                 fout_val.write('#' + type + '#' + '\n')
