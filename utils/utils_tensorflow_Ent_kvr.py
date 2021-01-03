@@ -403,9 +403,9 @@ def prepare_data_seq(task, batch_size=100):
     test_seq = text_to_sequence(pair_test, lang)
 
     # generate padded batches using tf.data.Dataset.from_generator (3.0)
-    train = get_seq(train_seq, batch_size, drop_remainder=True)
-    dev = get_seq(dev_seq, batch_size, drop_remainder=True)
-    test = get_seq(test_seq, batch_size, drop_remainder=True)
+    train = get_seq(train_seq, batch_size, drop_remainder=False)
+    dev = get_seq(dev_seq, batch_size, drop_remainder=False)
+    test = get_seq(test_seq, batch_size, drop_remainder=False)
 
     # debug dataset batch result
     context_arr, response, sketch_response, conv_arr, ptr_index, selector_index, kb_arr, context_arr_plain, response_plain,\

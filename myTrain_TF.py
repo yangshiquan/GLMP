@@ -5,13 +5,13 @@ import datetime
 import os
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 tf.compat.v1.enable_eager_execution()
 
 early_stop = args['earlyStop']
 if args['dataset'] == 'kvr':
     from utils.utils_tensorflow_Ent_kvr import *
-    early_stop = 'BLEU'
+    early_stop = 'ENTF1'
 elif args['dataset'] == 'babi':
     from utils.utils_Ent_babi import *
     early_stop = None
@@ -53,8 +53,8 @@ model = GLMP(int(args['hidden']),
 for epoch in range(200):
     print("Epoch:{}".format(epoch))
     # pdb.set_trace()
-    train_length = compute_dataset_length(train_length, int(args['batch']))
-    pbar = tqdm(enumerate(train.take(-1)), total=(train_length))
+    train_length_ = compute_dataset_length(train_length, int(args['batch']))
+    pbar = tqdm(enumerate(train.take(-1)), total=(train_length_))
     for i, data in pbar:
         tf.config.experimental_run_functions_eagerly(True)
         model.train_batch(data, int(args['clip']), reset=(i==0))
@@ -73,8 +73,8 @@ for epoch in range(200):
 
     if ((epoch+1) % int(args['evalp']) == 0):
         # len = int(dev_length / (int(args['batch'])))
-        dev_length = compute_dataset_length(dev_length, int(args['batch']))
-        acc = model.evaluate(dev, dev_length, avg_best, early_stop)
+        dev_length_ = compute_dataset_length(dev_length, int(args['batch']))
+        acc = model.evaluate(dev, dev_length_, avg_best, early_stop)
 
         if (acc >= avg_best):
             avg_best = acc

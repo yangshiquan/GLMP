@@ -19,6 +19,16 @@ class ContextRNN(tf.keras.Model):
                 dropout=dropout,
                 return_sequences=True,
                 return_state=True))  # different: initializer, input shape.
+        # self.gru2 = tf.keras.layers.Bidirectional(
+        #    tf.keras.layers.RNN(
+        #       tf.keras.layers.GRUCell(hidden_size,
+        #                               kernel_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(hidden_size)),(1/np.sqrt(hidden_size))),
+        #                               recurrent_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(hidden_size)),(1/np.sqrt(hidden_size))),
+        #                               bias_initializer=tf.initializers.RandomUniform(-(1/np.sqrt(hidden_size)),(1/np.sqrt(hidden_size)))),
+        #       return_sequences=True,
+        #       return_state=True
+        #    )
+        #)
         self.gru2 = tf.keras.layers.Bidirectional(
             tf.keras.layers.RNN(
                tf.keras.layers.GRUCell(hidden_size,
@@ -68,6 +78,11 @@ class ContextRNN(tf.keras.Model):
                                                 mask=mask,
                                                 initial_state=hidden,
                                                 training=training)  # need to check the meaning of outpus!!! not sure!!! different: padded token not mask in forward calculation, need a flag to indicate train or test if using dropout. No pack_padded_sequence and pad_packed_sequence.
+        #pdb.set_trace()
+        #outputs, hidden_f, cell_f, hidden_b, cell_b = self.gru2(embedded,
+        #                                        mask=mask,
+        #                                        training=training)  # need to check the meaning of outpus!!! not sure!!! different: padded token not mask in forward calculation, need a flag to indicate train or test if using dropout. No pack_padded_sequence and pad_packed_sequence.
+        #hidden_hat = tf.concat([hidden_f, hidden_b], 1)
         hidden_hat = tf.concat([hidden_f, hidden_b], 1)
         hidden = self.W(hidden_hat)  # different: no unsqueeze(0).
         outputs = self.W(outputs)  # different: no need to transpose(0, 1) because the first dimension is already batch_size.

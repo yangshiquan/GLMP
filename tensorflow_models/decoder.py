@@ -64,6 +64,9 @@ class LocalMemoryDecoder(tf.keras.Model):
         all_decoder_outputs_ptr = []
         for t in range(max_target_length):
             embed_q = self.C(decoder_input)
+            if len(decoder_input.shape) == 0:  # for batch_size = 1
+                decoder_input = tf.expand_dims(decoder_input, 0)
+                embed_q = tf.expand_dims(embed_q, 0)
             pad_mask = self.gen_embedding_mask(decoder_input)
             embed_q = tf.multiply(embed_q, pad_mask)
             if training:

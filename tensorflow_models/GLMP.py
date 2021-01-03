@@ -159,6 +159,8 @@ class GLMP(tf.keras.Model):
             # loss calculation and backpropagation
             # pdb.set_trace()
             loss_g = tf.cast(tf.compat.v1.losses.sigmoid_cross_entropy(data[5], tf.cast(global_pointer_logits, dtype=tf.double)), dtype=tf.float32)
+            #loss_gs = tf.keras.backend.binary_crossentropy(tf.cast(data[5], dtype=tf.double), tf.cast(global_pointer, dtype=tf.double))
+            #loss_g = tf.cast(tf.reduce_sum(loss_gs) / (loss_gs.shape[0]*loss_gs.shape[1]), dtype=tf.float32)
             # loss_g_mat = tf.nn.sigmoid_cross_entropy_with_logits(tf.cast(global_pointer, dtype=tf.double), data['selector_index'])  # data[5]: selector_index.
             # loss_g = tf.cast(tf.reduce_sum(loss_g_mat) / (loss_g_mat.shape[0] * loss_g_mat.shape[1]), dtype=tf.float32)
             # print("loss_g:", loss_g)
@@ -194,17 +196,20 @@ class GLMP(tf.keras.Model):
         decoder_gradients = tape.gradient(loss, decoder_variables)
 
         # clip gradients
-        clipped_encoder_gradients = [elem if isinstance(elem, ops.IndexedSlices) else tf.clip_by_norm(elem, clip) for elem in encoder_gradients]
-        clipped_extKnow_gradients = [elem if isinstance(elem, ops.IndexedSlices) else tf.clip_by_norm(elem, clip) for elem in extKnow_gradients]
-        clipped_decoder_gradients = [elem if isinstance(elem, ops.IndexedSlices) else tf.clip_by_norm(elem, clip) for elem in decoder_gradients]
+        encoder_gradients, ec = tf.clip_by_global_norm(encoder_gradients, clip)
+        extKnow_gradients, kc = tf.clip_by_global_norm(extKnow_gradients, clip)
+        decoder_gradients, dc = tf.clip_by_global_norm(decoder_gradients, clip)
+        # clipped_encoder_gradients = [elem if isinstance(elem, ops.IndexedSlices) else tf.clip_by_norm(elem, clip) for elem in encoder_gradients]
+        # clipped_extKnow_gradients = [elem if isinstance(elem, ops.IndexedSlices) else tf.clip_by_norm(elem, clip) for elem in extKnow_gradients]
+        # clipped_decoder_gradients = [elem if isinstance(elem, ops.IndexedSlices) else tf.clip_by_norm(elem, clip) for elem in decoder_gradients]
 
         # apply update
         self.encoder_optimizer.apply_gradients(
-            zip(clipped_encoder_gradients, self.encoder.trainable_variables))
+            zip(encoder_gradients, self.encoder.trainable_variables))
         self.extKnow_optimizer.apply_gradients(
-            zip(clipped_extKnow_gradients, self.extKnow.trainable_variables))
+            zip(extKnow_gradients, self.extKnow.trainable_variables))
         self.decoder_optimizer.apply_gradients(
-            zip(clipped_decoder_gradients, self.decoder.trainable_variables))
+            zip(decoder_gradients, self.decoder.trainable_variables))
 
         self.loss += loss.numpy()
         self.loss_g += loss_g.numpy()
