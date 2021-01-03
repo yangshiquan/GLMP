@@ -241,7 +241,7 @@ class GLMP(nn.Module):
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
                 
-                if args['dataset'] == 'kvr': 
+                if args['dataset'] == 'kvr':
                     # compute F1 SCORE
                     single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
                     F1_pred += single_f1
@@ -255,6 +255,11 @@ class GLMP(nn.Module):
                     single_f1, count = self.compute_prf(data_dev['ent_idx_wet'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
                     F1_wet_pred += single_f1
                     F1_wet_count += count
+                elif args['dataset'] == 'multiwoz':
+                    # compute F1 SCORE
+                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
+                    F1_pred += single_f1
+                    F1_count += count
                 else:
                     # compute Dialogue Accuracy Score
                     current_id = data_dev['ID'][bi]
