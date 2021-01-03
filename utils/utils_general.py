@@ -2,7 +2,7 @@ import torch
 import torch.utils.data as data
 import torch.nn as nn
 from utils.config import *
-import tensorflow as tf
+# import tensorflow as tf
 
 
 def _cuda(x):
@@ -175,8 +175,8 @@ def get_seq(pairs, lang, batch_size, type):
     dataset = Dataset(data_info, lang.word2index, lang.word2index)
     data_loader = torch.utils.data.DataLoader(dataset = dataset,
                                               batch_size = batch_size,
-                                              shuffle = type,
-                                              # shuffle = False,
+                                              # shuffle = type,
+                                              shuffle = False,
                                               collate_fn = dataset.collate_fn)
     return data_loader
 
