@@ -48,6 +48,26 @@ class GLMP(nn.Module):
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
 
+        # # FOR DEBUG
+        # # pdb.set_trace()
+        # if path:
+        #     enc_embedding = self.encoder.embedding.weight.data.numpy()
+        #     for name, params in self.encoder.gru.named_parameters():
+        #         name = name
+        #         params = params
+        #         if name == 'weight_ih_l0':
+        #             t1 = name
+        #             t2 = params
+        #         if name == 'weight_ih_l0_reverse':
+        #             t3 = name
+        #             t4 = params
+        #         else:
+        #             continue
+        #     pdb.set_trace()
+        #     for name, params in self.encoder.W.named_parameters():
+        #         t5 = name
+        #         t6 = params
+
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
         self.extKnow_optimizer = optim.Adam(self.extKnow.parameters(), lr=lr)
@@ -101,6 +121,7 @@ class GLMP(nn.Module):
         all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
         
         # Loss calculation and backpropagation
+        # pdb.set_trace()
         loss_g = self.criterion_bce(global_pointer, data['selector_index'])
         loss_v = masked_cross_entropy(
             all_decoder_outputs_vocab.transpose(0, 1).contiguous(), 
@@ -115,7 +136,7 @@ class GLMP(nn.Module):
 
         # Clip gradient norms
         ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
-        ec = torch.nn.utils.clip_grad_norm_(self.extKnow.parameters(), clip)
+        kc = torch.nn.utils.clip_grad_norm_(self.extKnow.parameters(), clip)
         dc = torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), clip)
 
         # Update parameters with optimizers
@@ -186,6 +207,7 @@ class GLMP(nn.Module):
         F1_count, F1_cal_count, F1_nav_count, F1_wet_count = 0, 0, 0, 0
         pbar = tqdm(enumerate(dev),total=len(dev))
         new_precision, new_recall, new_f1_score = 0, 0, 0
+        global_entity_list = []
 
         if args['dataset'] == 'kvr':
             with open('data/KVR/kvret_entities.json') as f:
@@ -260,7 +282,7 @@ class GLMP(nn.Module):
         acc_score = acc / float(total)
         print("ACC SCORE:\t"+str(acc_score))
 
-        if args['dataset'] == 'kvr':
+        if args['dataset'] == 'multiwoz':
             F1_score = F1_pred / float(F1_count)
             print("F1 SCORE:\t{}".format(F1_pred/float(F1_count)))
             print("\tCAL F1:\t{}".format(F1_cal_pred/float(F1_cal_count))) 
