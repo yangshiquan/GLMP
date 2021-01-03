@@ -139,6 +139,10 @@ class GLMP(tf.keras.Model):
 
     @tf.function
     def train_batch(self, data, clip, reset=0):
+        # FOR DEBUG
+        # pdb.set_trace()
+        # t1 = self.encoder.trainable_variables
+
         # model training process
         # no need to zero gradients of optimizers in tensorflow
         # encode and decode
@@ -172,6 +176,19 @@ class GLMP(tf.keras.Model):
         encoder_variables = self.encoder.trainable_variables
         extKnow_variables = self.extKnow.trainable_variables
         decoder_variables = self.decoder.trainable_variables
+        for var in encoder_variables:
+            name = var.name
+            params = var.read_value()
+            np.savetxt('/home/yimeng/shiquan/tmp3/GLMP/params/{}'.format(name), params.numpy())
+        for var in extKnow_variables:
+            name = var.name
+            params = var.read_value()
+            np.savetxt('/home/yimeng/shiquan/tmp3/GLMP/params/{}'.format(name), params.numpy())
+        for var in decoder_variables:
+            name = var.name
+            params = var.read_value()
+            np.savetxt('/home/yimeng/shiquan/tmp3/GLMP/params/{}'.format(name), params.numpy())
+        pdb.set_trace()
         encoder_gradients = tape.gradient(loss, encoder_variables)
         extKnow_gradients = tape.gradient(loss, extKnow_variables)
         decoder_gradients = tape.gradient(loss, decoder_variables)
