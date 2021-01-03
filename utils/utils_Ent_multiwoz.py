@@ -27,6 +27,7 @@ def read_langs(file_name, max_line=None):
                 nid, line = line.split(' ', 1)
                 if '\t' in line:
                     u, r, gold_ent = line.split('\t')
+                    r = " ".join(r.split())
                     gen_u = generate_memory(u, "$u", str(nid))
                     context_arr += gen_u
                     conv_arr += gen_u
@@ -133,6 +134,7 @@ def generate_template(global_entity, sentence, sent_ent, kb_arr, domain):
                                 break
                 sketch_response.append('@' + ent_type)
     sketch_response = " ".join(sketch_response)
+    assert len(sketch_response.split()) == len(sentence.split())
     return sketch_response
 
 
