@@ -283,11 +283,14 @@ class GLMP(nn.Module):
         print("ACC SCORE:\t"+str(acc_score))
 
         if args['dataset'] == 'multiwoz':
-            F1_score = F1_pred / float(F1_count)
-            print("F1 SCORE:\t{}".format(F1_pred/float(F1_count)))
-            print("\tCAL F1:\t{}".format(F1_cal_pred/float(F1_cal_count))) 
-            print("\tWET F1:\t{}".format(F1_wet_pred/float(F1_wet_count))) 
-            print("\tNAV F1:\t{}".format(F1_nav_pred/float(F1_nav_count))) 
+            if F1_count == 0:
+                F1_score = 0.0
+            else:
+                F1_score = F1_pred / float(F1_count)
+            print("F1 SCORE:\t{}".format(F1_score))
+            # print("\tCAL F1:\t{}".format(F1_cal_pred/float(F1_cal_count)))
+            # print("\tWET F1:\t{}".format(F1_wet_pred/float(F1_wet_count)))
+            # print("\tNAV F1:\t{}".format(F1_nav_pred/float(F1_nav_count)))
             print("BLEU SCORE:\t"+str(bleu_score))
         else:
             dia_acc = 0
