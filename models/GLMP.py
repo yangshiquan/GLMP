@@ -169,8 +169,9 @@ class GLMP(nn.Module):
         # Encode dialog history and KB to vectors
         dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
         global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs)
-        encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1) 
-        
+        # encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1)
+        encoded_hidden = torch.cat((dh_hidden.squeeze(0), dh_hidden.squeeze(0)), dim=1)
+
         # Get the words that can be copy from the memory
         batch_size = len(data['context_arr_lengths'])
         self.copy_list = []
