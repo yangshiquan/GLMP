@@ -87,6 +87,13 @@ def read_langs(file_name, max_line=None):
                     if "image" not in r:
                         kb_info = generate_memory(r, "", str(nid))
                         # context_arr = kb_info + context_arr
+                        temp = []
+                        for triple in kb_info:
+                            t = []
+                            for ele in triple:
+                                t.append("PAD")
+                            temp.append(t)
+                        context_arr = temp + context_arr
                         kb_arr += kb_info
                     else:
                         continue
