@@ -86,7 +86,7 @@ def read_langs(file_name, max_line=None):
                     r = line
                     if "image" not in r:
                         kb_info = generate_memory(r, "", str(nid))
-                        context_arr = kb_info + context_arr
+                        # context_arr = kb_info + context_arr
                         kb_arr += kb_info
                     else:
                         continue
