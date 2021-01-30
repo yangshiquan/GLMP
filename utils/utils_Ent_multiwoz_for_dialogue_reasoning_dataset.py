@@ -173,9 +173,9 @@ def generate_memory(sent, speaker, time):
 
 
 def prepare_data_seq(task, batch_size=100):
-    file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/movie_domain_generated_samples_trn.txt'
-    file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/movie_domain_generated_samples_dev.txt'
-    file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/movie_domain_generated_samples_tst.txt'
+    file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/movie_domain_generated_samples_trn.txt'
+    file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/movie_domain_generated_samples_dev.txt'
+    file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/movie_domain_generated_samples_tst.txt'
 
     pair_train, train_max_len = read_langs(file_train, max_line=None)
     pair_dev, dev_max_len = read_langs(file_dev, max_line=None)
