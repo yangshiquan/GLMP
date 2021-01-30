@@ -37,6 +37,7 @@ class ContextRNN(nn.Module):
         outputs, hidden = self.gru(embedded, hidden)
         if input_lengths:
            outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=False)   
+        # pdb.set_trace()
         hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1)).unsqueeze(0)
         outputs = self.W(outputs)
         return outputs.transpose(0,1), hidden

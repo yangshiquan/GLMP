@@ -15,7 +15,7 @@ if args['dataset']=='kvr':
     from utils.utils_Ent_kvr import *
     early_stop = 'BLEU'
 elif args['dataset']=='multiwoz':
-    from utils.utils_Ent_multiwoz import *
+    from utils.utils_Ent_multiwoz_for_dialogue_reasoning_dataset import *
     early_stop = 'BLEU'
 elif args['dataset']=='babi':
     from utils.utils_Ent_babi import *
