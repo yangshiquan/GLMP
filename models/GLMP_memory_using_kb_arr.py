@@ -163,8 +163,8 @@ class GLMP(nn.Module):
         if USE_CUDA:
             rand_mask = torch.Tensor(rand_mask).cuda()
         else:
-            rand_mask = torch.Tensor(rand_mask).float()
-        kb_arr = kb_arr * rand_mask
+            rand_mask = torch.Tensor(rand_mask)
+        kb_arr = kb_arr.float() * rand_mask.float()
         conv_size = conv_arr.shape
         conv_rand_mask = np.ones(conv_size, dtype=np.float32)
         conv_bi_mask = np.random.binomial([np.ones((conv_size[0], conv_size[1]), dtype=np.float32)], 1 - self.dropout)[0]
@@ -172,8 +172,8 @@ class GLMP(nn.Module):
         if USE_CUDA:
             conv_rand_mask = torch.Tensor(conv_rand_mask).cuda()
         else:
-            conv_rand_mask = torch.Tensor(conv_rand_mask).float()
-        conv_arr = conv_arr * conv_rand_mask
+            conv_rand_mask = torch.Tensor(conv_rand_mask)
+        conv_arr = conv_arr.float() * conv_rand_mask.float()
         return kb_arr.long(), conv_arr.long()
 
     def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words):
