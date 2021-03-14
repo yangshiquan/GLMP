@@ -1,5 +1,5 @@
 from utils.config import *
-from models.GLMP import *
+from models.GLMP_memory_using_kb_arr import *
 
 '''
 Command:
