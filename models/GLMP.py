@@ -204,8 +204,8 @@ class GLMP(nn.Module):
         ref, hyp = [], []
         acc, total = 0, 0
         dialog_acc_dict = {}
-        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred = 0, 0, 0, 0
-        F1_count, F1_cal_count, F1_nav_count, F1_wet_count = 0, 0, 0, 0
+        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred, F1_restaurant_pred, F1_hotel_pred, F1_attraction_pred, F1_train_pred = 0, 0, 0, 0, 0, 0, 0, 0
+        F1_count, F1_cal_count, F1_nav_count, F1_wet_count, F1_restaurant_count, F1_hotel_count, F1_attraction_count, F1_train_count = 0, 0, 0, 0, 0, 0, 0, 0
         pbar = tqdm(enumerate(dev),total=len(dev))
         new_precision, new_recall, new_f1_score = 0, 0, 0
         global_entity_list = []
@@ -266,9 +266,26 @@ class GLMP(nn.Module):
                     F1_wet_count += count
                 elif args['dataset'] == 'multiwoz':
                     # compute F1 SCORE
-                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
+                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
                     F1_pred += single_f1
                     F1_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_restaurant'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
+                    F1_restaurant_pred += single_f1
+                    F1_restaurant_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_hotel'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
+                    F1_hotel_pred += single_f1
+                    F1_hotel_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_attraction'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
+                    F1_attraction_pred += single_f1
+                    F1_attraction_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_train'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                    F1_train_pred += single_f1
+                    F1_train_count += count
                 else:
                     # compute Dialogue Accuracy Score
                     current_id = data_dev['ID'][bi]
@@ -297,15 +314,13 @@ class GLMP(nn.Module):
         print("ACC SCORE:\t"+str(acc_score))
 
         if args['dataset'] == 'multiwoz':
-            if F1_count == 0:
-                F1_score = 0.0
-            else:
-                F1_score = F1_pred / float(F1_count)
-            print("F1 SCORE:\t{}".format(F1_score))
-            # print("\tCAL F1:\t{}".format(F1_cal_pred/float(F1_cal_count)))
-            # print("\tWET F1:\t{}".format(F1_wet_pred/float(F1_wet_count)))
-            # print("\tNAV F1:\t{}".format(F1_nav_pred/float(F1_nav_count)))
-            print("BLEU SCORE:\t"+str(bleu_score))
+            F1_score = F1_pred / float(F1_count)
+            print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
+            print("Restaurant F1:\t{:.4f}".format(F1_restaurant_pred / float(F1_restaurant_count)))
+            print("Hotel F1:\t{:.4f}".format(F1_hotel_pred / float(F1_hotel_count)))
+            print("Attraction F1:\t{:.4f}".format(F1_attraction_pred / float(F1_attraction_count)))
+            print("Train F1:\t{:.4f}".format(F1_train_pred / float(F1_train_count)))
+            print("BLEU SCORE:\t" + str(bleu_score))
         else:
             dia_acc = 0
             for k in dialog_acc_dict.keys():
