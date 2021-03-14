@@ -22,8 +22,9 @@ if DS=='kvr':
 elif DS=='babi':
     from utils.utils_Ent_babi import *
 elif DS=='multiwoz':
-    from utils.utils_Ent_multiwoz_for_dialogue_reasoning_dataset import *
-else: 
+    # from utils.utils_Ent_multiwoz_for_dialogue_reasoning_dataset import *
+    from utils.utils_Ent_multiwoz_new import *
+else:
     print("You need to provide the --dataset information")
 
 train, dev, test, testOOV, lang, max_resp_len = prepare_data_seq(task, batch_size=BSZ)
