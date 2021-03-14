@@ -222,7 +222,15 @@ class GLMP(nn.Module):
                             global_entity_list += [item[k].lower().replace(' ', '_') for k in item.keys()]
                 global_entity_list = list(set(global_entity_list))
 
-        for j, data_dev in pbar: 
+        if args['dataset'] == 'multiwoz':
+            with open('data/multiwoz/multiwoz_entities.json') as f:
+                global_entity = json.load(f)
+                global_entity_list = []
+                for key in global_entity.keys():
+                    global_entity_list += [item.lower().replace(' ', '_') for item in global_entity[key]]
+                global_entity_list = list(set(global_entity_list))
+
+        for j, data_dev in pbar:
             # Encode and Decode
             _, _, decoded_fine, decoded_coarse, global_pointer = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
