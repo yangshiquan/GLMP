@@ -162,6 +162,8 @@ class GLMP(nn.Module):
         rand_mask[:, :, 0] = rand_mask[:, :, 0] * bi_mask
         if USE_CUDA:
             rand_mask = torch.Tensor(rand_mask).cuda()
+        else:
+            rand_mask = torch.Tensor(rand_mask)
         kb_arr = kb_arr * rand_mask
         conv_size = conv_arr.shape
         conv_rand_mask = np.ones(conv_size, dtype=np.float32)
@@ -169,6 +171,8 @@ class GLMP(nn.Module):
         conv_rand_mask[:, :, 0] = conv_rand_mask[:, :, 0] * conv_bi_mask
         if USE_CUDA:
             conv_rand_mask = torch.Tensor(conv_rand_mask).cuda()
+        else:
+            conv_rand_mask = torch.Tensor(conv_rand_mask)
         conv_arr = conv_arr * conv_rand_mask
         return kb_arr.long(), conv_arr.long()
 
