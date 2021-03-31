@@ -148,9 +148,12 @@ def generate_memory(sent, speaker, time):
 
 
 def prepare_data_seq(task, batch_size=100):
-    file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train.txt'
-    file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid.txt'
-    file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test.txt'
+    # file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train.txt'
+    # file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid.txt'
+    # file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test.txt'
+    file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train_modified.txt'
+    file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid_modified.txt'
+    file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test_modified.txt'
 
     pair_train, train_max_len = read_langs(file_train, max_line=None)
     pair_dev, dev_max_len = read_langs(file_dev, max_line=None)
