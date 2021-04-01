@@ -1,5 +1,6 @@
 from utils.config import *
-from models.GLMP_memory_using_kb_arr import *
+# from models.GLMP_memory_using_kb_arr import *
+from models.GLMP import *
 
 '''
 Command:
@@ -23,8 +24,8 @@ elif DS=='babi':
     from utils.utils_Ent_babi import *
 elif DS=='multiwoz':
     # from utils.utils_Ent_multiwoz_for_dialogue_reasoning_dataset import *
-	from utils.utils_Ent_multiwoz_new_memory_using_kb_arr import *
-    # from utils.utils_Ent_multiwoz_new import *
+	# from utils.utils_Ent_multiwoz_new_memory_using_kb_arr import *
+    from utils.utils_Ent_multiwoz_new import *
 else:
     print("You need to provide the --dataset information")
 
