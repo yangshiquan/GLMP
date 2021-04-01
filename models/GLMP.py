@@ -315,11 +315,15 @@ class GLMP(nn.Module):
 
         if args['dataset'] == 'multiwoz':
             F1_score = F1_pred / float(F1_count)
+            rest_f1 = 0.0 if F1_restaurant_count == 0 else (F1_restaurant_pred / float(F1_restaurant_count))
+            hotel_f1 = 0.0 if F1_hotel_count == 0 else (F1_hotel_pred / float(F1_hotel_count))
+            attraction_f1 = 0.0 if F1_attraction_count == 0 else (F1_attraction_pred / float(F1_attraction_count))
+            train_f1 = 0.0 if F1_train_count == 0 else (F1_train_pred / float(F1_train_count))
             print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
-            print("Restaurant F1:\t{:.4f}".format(F1_restaurant_pred / float(F1_restaurant_count)))
-            print("Hotel F1:\t{:.4f}".format(F1_hotel_pred / float(F1_hotel_count)))
-            print("Attraction F1:\t{:.4f}".format(F1_attraction_pred / float(F1_attraction_count)))
-            print("Train F1:\t{:.4f}".format(F1_train_pred / float(F1_train_count)))
+            print("Restaurant F1:\t{:.4f}".format(rest_f1))
+            print("Hotel F1:\t{:.4f}".format(hotel_f1))
+            print("Attraction F1:\t{:.4f}".format(attraction_f1))
+            print("Train F1:\t{:.4f}".format(train_f1))
             print("BLEU SCORE:\t" + str(bleu_score))
         else:
             dia_acc = 0
