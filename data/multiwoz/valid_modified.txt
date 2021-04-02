@@ -5199,52 +5199,6 @@
 4 that s fine can you give me the arrival time travel time and train id please ?	tr2000 takes 51_minutes to arrive at by 9:51 would you like me to reserve this for you ?	['tr2000', '51_minutes']
 5 nope that s all i needed thanks !	thank you for using the cambridge towninfo centre and have a great day !	['cambridge']
 
-#restaurant#
-0 rice_boat address 37_newnham_road_newnham
-0 rice_boat area west
-0 rice_boat food indian
-0 rice_boat phone 01223302800
-0 rice_boat postcode cb39ey
-0 rice_boat pricerange expensive
-0 rice_boat type restaurant
-0 curry_garden address 106_regent_street_city_centre
-0 curry_garden area centre
-0 curry_garden food indian
-0 curry_garden phone 01223302330
-0 curry_garden postcode cb21dp
-0 curry_garden pricerange expensive
-0 curry_garden type restaurant
-0 bangkok_city address 24_green_street_city_centre
-0 bangkok_city area centre
-0 bangkok_city food thai
-0 bangkok_city phone 01223354382
-0 bangkok_city postcode cb23jx
-0 bangkok_city pricerange expensive
-0 bangkok_city type restaurant
-0 sala_thong address 35_newnham_road_newnham
-0 sala_thong area west
-0 sala_thong food thai
-0 sala_thong phone 01223323178
-0 sala_thong postcode cb39ey
-0 sala_thong pricerange expensive
-0 sala_thong type restaurant
-0 cote address bridge_street_city_centre
-0 cote area centre
-0 cote food french
-0 cote phone 01223311053
-0 cote postcode cb21uf
-0 cote pricerange expensive
-0 cote type restaurant
-0 city_stop_restaurant address cambridge_city_football_club_milton_road_chesterton
-0 city_stop_restaurant area north
-0 city_stop_restaurant food european
-0 city_stop_restaurant phone 01223363270
-0 city_stop_restaurant postcode cb41uy
-0 city_stop_restaurant pricerange expensive
-0 city_stop_restaurant type restaurant
-1 i am looking for the price range of a restaurant called rice_boat	rice_boat is in the expensive price range can i help you with something else ?	['rice_boat', 'expensive']
-2 no that is all i needed thanks bye	great ! have a nice day !	[]
-
 #train#
 0 tr8476 day saturday
 0 tr8476 departure cambridge
@@ -5574,102 +5528,6 @@
 1 i am looking for the chiquito_restaurant_bar can you help me find it ?	sure ! their address is 2g cambridge leisure park cherry hinton road and their phone number is 01223400170	['01223400170']
 2 please book a table for 6 people at 11:45 on tuesday	i am sorry but the restaurant is fully booked do you want to try another restaurant ?	['restaurant']
 3 is there a similar restaurant in the area at that price range ?	i m sorry that s the only restaurant in that price range	['restaurant']
-
-#hotel#
-0 city_centre_north_b_and_b address 328a_histon_road
-0 city_centre_north_b_and_b area north
-0 city_centre_north_b_and_b internet yes
-0 city_centre_north_b_and_b parking yes
-0 city_centre_north_b_and_b phone 01223312843
-0 city_centre_north_b_and_b postcode cb43ht
-0 city_centre_north_b_and_b singleprice 40
-0 city_centre_north_b_and_b pricerange cheap
-0 city_centre_north_b_and_b stars 0
-0 city_centre_north_b_and_b takesbookings yes
-0 city_centre_north_b_and_b type guesthouse
-0 the_cambridge_belfry address back_lane_cambourne
-0 the_cambridge_belfry area west
-0 the_cambridge_belfry internet yes
-0 the_cambridge_belfry parking yes
-0 the_cambridge_belfry phone 01954714600
-0 the_cambridge_belfry postcode cb236bw
-0 the_cambridge_belfry singleprice 60
-0 the_cambridge_belfry doubleprice 60
-0 the_cambridge_belfry pricerange cheap
-0 the_cambridge_belfry stars 4
-0 the_cambridge_belfry takesbookings yes
-0 the_cambridge_belfry type hotel
-0 worth_house address 152_chesterton_road
-0 worth_house area north
-0 worth_house internet yes
-0 worth_house parking yes
-0 worth_house phone 01223316074
-0 worth_house postcode cb41da
-0 worth_house singleprice 49
-0 worth_house doubleprice 60
-0 worth_house familyprice 85
-0 worth_house pricerange cheap
-0 worth_house stars 4
-0 worth_house takesbookings yes
-0 worth_house type guesthouse
-0 limehouse address 78-80_milton_road
-0 limehouse area north
-0 limehouse internet yes
-0 limehouse parking yes
-0 limehouse phone 01223300552
-0 limehouse postcode cb42je
-0 limehouse singleprice 40
-0 limehouse doubleprice 75
-0 limehouse pricerange moderate
-0 limehouse stars 4
-0 limehouse takesbookings yes
-0 limehouse type guesthouse
-0 hamilton_lodge address 156_chesterton_road
-0 hamilton_lodge area north
-0 hamilton_lodge internet yes
-0 hamilton_lodge parking yes
-0 hamilton_lodge phone 01223365664
-0 hamilton_lodge postcode cb41da
-0 hamilton_lodge singleprice 50
-0 hamilton_lodge doubleprice 73
-0 hamilton_lodge familyprice 85
-0 hamilton_lodge pricerange moderate
-0 hamilton_lodge stars 3
-0 hamilton_lodge takesbookings yes
-0 hamilton_lodge type guesthouse
-0 huntingdon_marriott_hotel address kingfisher_way_hinchinbrook_business_park_huntingdon
-0 huntingdon_marriott_hotel area west
-0 huntingdon_marriott_hotel internet yes
-0 huntingdon_marriott_hotel parking yes
-0 huntingdon_marriott_hotel phone 01480446000
-0 huntingdon_marriott_hotel postcode pe296fl
-0 huntingdon_marriott_hotel singleprice 125
-0 huntingdon_marriott_hotel doubleprice 145
-0 huntingdon_marriott_hotel familyprice 145
-0 huntingdon_marriott_hotel pricerange expensive
-0 huntingdon_marriott_hotel stars 4
-0 huntingdon_marriott_hotel takesbookings yes
-0 huntingdon_marriott_hotel type hotel
-0 el_shaddai address 41_warkworth_street
-0 el_shaddai area centre
-0 el_shaddai internet yes
-0 el_shaddai parking yes
-0 el_shaddai phone 01223327978
-0 el_shaddai postcode cb11eg
-0 el_shaddai singleprice 40
-0 el_shaddai doubleprice 60
-0 el_shaddai familyprice 62
-0 el_shaddai pricerange cheap
-0 el_shaddai stars 0
-0 el_shaddai takesbookings yes
-0 el_shaddai type guesthouse
-1 i m looking for a cheap hotel in the north	i would recommend the worth_house on chesterton road would you like the number ?	['worth_house']
-2 does it have free wifi and a 4 star rating i need wifi and i d like a nice rating	i have a listing for worth_house that fits what you are looking for,can i make a booking for you ?	['worth_house']
-3 is there availability for 5 people for 5 nights starting on thursday ?	i have you booked for thursday at the worth_house for 5 nights with 5 people !	['worth_house']
-4 great what is the reference number ?	my mistake booking was actually unsuccessful would you like to find another hotel ?	['hotel']
-5 is there another hotel in the same general price range ?	with all other parameters the same unfortunately not want to try different parameters ?	[]
-6 any hotel in the north cheap nothing else matters	city_centre_north_b_and_b.reference number is : b2h3yyf4 will you need anything else ?	['north', 'centre', 'city_centre_north_b_and_b']
-7 that is all thank you	great glad i could be of help enjoy your stay	[]
 
 #restaurant#
 0 frankie_and_bennys address cambridge_leisure_park_clifton_way_cherry_hinton
@@ -6195,6 +6053,54 @@
 3 the 13:00 train is perfect please book 7 tickets thanks	it has been booked and your reference number is: b02eelpu is there anything else i can do for you ?	[]
 4 no that is all thank you for the help	okay thank you for calling the cambridge towninfo centre have a great day	['cambridge']
 
+#train#
+0 tr8530 day thursday
+0 tr8530 departure leicester
+0 tr8530 destination cambridge
+0 tr8530 duration 105_minutes
+0 tr8530 leaveat 19:09
+0 tr8530 arriveby 20:54
+0 tr8530 price 37.80_pounds
+0 tr5343 day tuesday
+0 tr5343 departure cambridge
+0 tr5343 destination stevenage
+0 tr5343 duration 49_minutes
+0 tr5343 leaveat 15:21
+0 tr5343 arriveby 16:10
+0 tr5343 price 12.80_pounds
+0 tr9629 day friday
+0 tr9629 departure leicester
+0 tr9629 destination cambridge
+0 tr9629 duration 105_minutes
+0 tr9629 leaveat 18:09
+0 tr9629 arriveby 19:54
+0 tr9629 price 37.80_pounds
+0 tr1616 day saturday
+0 tr1616 departure peterborough
+0 tr1616 destination cambridge
+0 tr1616 duration 50_minutes
+0 tr1616 leaveat 12:48
+0 tr1616 arriveby 13:38
+0 tr1616 price 13.20_pounds
+0 tr5108 day saturday
+0 tr5108 departure bishops_stortford
+0 tr5108 destination cambridge
+0 tr5108 duration 38_minutes
+0 tr5108 leaveat 13:29
+0 tr5108 arriveby 14:07
+0 tr5108 price 8.08_pounds
+0 tr2534 day friday
+0 tr2534 departure cambridge
+0 tr2534 destination norwich
+0 tr2534 duration 79_minutes
+0 tr2534 leaveat 05:36
+0 tr2534 arriveby 06:55
+0 tr2534 price 17.60_pounds
+1 am looking for a train the train should arrive by 18:00 and should go to stevenage	can you provide me with your departure site ?	[]
+2 i am departing from cambridge on tuesday	there are many options available is there a certain time you would like to leave ?	[]
+3 what one gets me there before but closest to 18:00 ?	train tr5343 arrives at 16:10 it is the closest to your required arrival time would you like to reserve any tickets today ?	['tr5343', '16:10']
+4 no i have decided not to book today thank you goodbye	you re welcome have a good day	[]
+
 #hotel#
 0 kirkwood_house address 172_chesterton_road
 0 kirkwood_house area north
@@ -6364,61 +6270,52 @@
 3 that sounds great thanks so much for your help !	you are very welcome is there anything else i can help you with ?	[]
 4 no thank you that s all i needed	thank you have a nice day goodbye	[]
 
-#restaurant#
-0 rice_boat address 37_newnham_road_newnham
-0 rice_boat area west
-0 rice_boat food indian
-0 rice_boat phone 01223302800
-0 rice_boat postcode cb39ey
-0 rice_boat pricerange expensive
-0 rice_boat type restaurant
-0 frankie_and_bennys address cambridge_leisure_park_clifton_way_cherry_hinton
-0 frankie_and_bennys area south
-0 frankie_and_bennys food italian
-0 frankie_and_bennys phone 01223412430
-0 frankie_and_bennys postcode cb17dy
-0 frankie_and_bennys pricerange expensive
-0 frankie_and_bennys type restaurant
-0 royal_spice address victoria_avenue_chesterton
-0 royal_spice area north
-0 royal_spice food indian
-0 royal_spice phone 01733553355
-0 royal_spice postcode cb41eh
-0 royal_spice pricerange cheap
-0 royal_spice type restaurant
-0 pizza_hut_city_centre address regent_street_city_centre
-0 pizza_hut_city_centre area centre
-0 pizza_hut_city_centre food italian
-0 pizza_hut_city_centre phone 01223323737
-0 pizza_hut_city_centre postcode cb21ab
-0 pizza_hut_city_centre pricerange cheap
-0 pizza_hut_city_centre type restaurant
-0 tandoori_palace address 68_histon_road_chesterton
-0 tandoori_palace area west
-0 tandoori_palace food indian
-0 tandoori_palace phone 01223506055
-0 tandoori_palace postcode cb43le
-0 tandoori_palace pricerange expensive
-0 tandoori_palace type restaurant
-0 bangkok_city address 24_green_street_city_centre
-0 bangkok_city area centre
-0 bangkok_city food thai
-0 bangkok_city phone 01223354382
-0 bangkok_city postcode cb23jx
-0 bangkok_city pricerange expensive
-0 bangkok_city type restaurant
-0 anatolia address 30_bridge_street_city_centre
-0 anatolia area centre
-0 anatolia food turkish
-0 anatolia phone 01223362372
-0 anatolia postcode cb21uj
-0 anatolia pricerange moderate
-0 anatolia type restaurant
-1 hi i m looking for an indian restaurant i d prefer something on the west side	i have found 6 restaurants meeting your criteria rice_boat is a good choice would you like me to book you a table ?	['rice_boat']
-2 i m looking for something in the fine dining price range so the place should be expensive are there any that fit that criteria ?	absolutely there are a few choices how about tandoori_palace on histon road ?	['tandoori_palace']
-3 that sounds good may i have their postcode address and phone number ?	sure tandoori is located at 68_histon_road_chesterton in postcode cb43le their phone number is 01223506055 can i book it for you ?	['cb43le', '68_histon_road_chesterton', '01223506055']
-4 no that s fine	ok will there be anything else i can assist you with ?	[]
-5 no i think that s everything thank you	you re welcome have a nice day !	[]
+#train#
+0 tr6454 day saturday
+0 tr6454 departure cambridge
+0 tr6454 destination stevenage
+0 tr6454 duration 49_minutes
+0 tr6454 leaveat 23:21
+0 tr6454 arriveby 24:10
+0 tr6454 price 10.24_pounds
+0 tr9589 day friday
+0 tr9589 departure norwich
+0 tr9589 destination cambridge
+0 tr9589 duration 79_minutes
+0 tr9589 leaveat 19:16
+0 tr9589 arriveby 20:35
+0 tr9589 price 17.60_pounds
+0 tr4294 day monday
+0 tr4294 departure cambridge
+0 tr4294 destination ely
+0 tr4294 duration 17_minutes
+0 tr4294 leaveat 17:50
+0 tr4294 arriveby 18:07
+0 tr4294 price 4.40_pounds
+0 tr9265 day monday
+0 tr9265 departure peterborough
+0 tr9265 destination cambridge
+0 tr9265 duration 50_minutes
+0 tr9265 leaveat 08:19
+0 tr9265 arriveby 09:09
+0 tr9265 price 16.50_pounds
+0 tr4804 day wednesday
+0 tr4804 departure peterborough
+0 tr4804 destination cambridge
+0 tr4804 duration 50_minutes
+0 tr4804 leaveat 22:48
+0 tr4804 arriveby 23:38
+0 tr4804 price 16.50_pounds
+0 tr0674 day tuesday
+0 tr0674 departure peterborough
+0 tr0674 destination cambridge
+0 tr0674 duration 50_minutes
+0 tr0674 leaveat 14:48
+0 tr0674 arriveby 15:38
+0 tr0674 price 16.50_pounds
+1 hi i want to catch a train from peterborough to cambridge can you please tell me what the schedule is for the rout ?	i would be happy to help what day are you wanting to take the train ?	[]
+2 i want to arrive by 15:45 on tuesday	booking was successful the total fee is 16.5 gbp payable at the station reference number is : 3xnw24tq	[]
+3 thank you goodbye	i m sorry the schedule for tuesday shows tr0674 arriving at 15:38 in cambridge i will re-book is it one ticket you need ?	['15:38', 'tr0674', 'tuesday', 'cambridge']
 
 #hotel#
 0 home_from_home address 78-80_milton_road
@@ -6736,97 +6633,209 @@
 3 that s great thanks	is there anything else i can help you with ?	[]
 4 no thanks you ve been a great help have a nice day bye	thank you have a great day goodbye	[]
 
-#hotel#
-0 cityroomz address sleeperz_hotel_station_road
-0 cityroomz area centre
-0 cityroomz internet yes
-0 cityroomz parking no
-0 cityroomz phone 01223304050
-0 cityroomz postcode cb12tz
-0 cityroomz singleprice 47
-0 cityroomz doubleprice 67
-0 cityroomz familyprice 77
-0 cityroomz pricerange moderate
-0 cityroomz stars 0
-0 cityroomz takesbookings yes
-0 cityroomz type hotel
-0 city_centre_north_b_and_b address 328a_histon_road
-0 city_centre_north_b_and_b area north
-0 city_centre_north_b_and_b internet yes
-0 city_centre_north_b_and_b parking yes
-0 city_centre_north_b_and_b phone 01223312843
-0 city_centre_north_b_and_b postcode cb43ht
-0 city_centre_north_b_and_b singleprice 40
-0 city_centre_north_b_and_b pricerange cheap
-0 city_centre_north_b_and_b stars 0
-0 city_centre_north_b_and_b takesbookings yes
-0 city_centre_north_b_and_b type guesthouse
-0 archway_house address 52_gilbert_road
-0 archway_house area north
-0 archway_house internet yes
-0 archway_house parking yes
-0 archway_house phone 01223575314
-0 archway_house postcode cb43pe
-0 archway_house singleprice 40
-0 archway_house doubleprice 70
-0 archway_house pricerange moderate
-0 archway_house stars 4
-0 archway_house takesbookings yes
-0 archway_house type guesthouse
-0 ashley_hotel address 74_chesterton_road
-0 ashley_hotel area north
-0 ashley_hotel internet yes
-0 ashley_hotel parking yes
-0 ashley_hotel phone 01223350059
-0 ashley_hotel postcode cb41er
-0 ashley_hotel doubleprice 75
-0 ashley_hotel familyprice 85
-0 ashley_hotel pricerange moderate
-0 ashley_hotel stars 2
-0 ashley_hotel takesbookings yes
-0 ashley_hotel type hotel
-0 rosa_s_bed_and_breakfast address 53_roseford_road
-0 rosa_s_bed_and_breakfast area south
-0 rosa_s_bed_and_breakfast internet yes
-0 rosa_s_bed_and_breakfast parking yes
-0 rosa_s_bed_and_breakfast phone 01223512596
-0 rosa_s_bed_and_breakfast postcode cb22ha
-0 rosa_s_bed_and_breakfast singleprice 25
-0 rosa_s_bed_and_breakfast pricerange cheap
-0 rosa_s_bed_and_breakfast stars 4
-0 rosa_s_bed_and_breakfast takesbookings yes
-0 rosa_s_bed_and_breakfast type guesthouse
-0 alpha-milton_guest_house address 63_milton_road
-0 alpha-milton_guest_house area north
-0 alpha-milton_guest_house internet no
-0 alpha-milton_guest_house parking no
-0 alpha-milton_guest_house phone 01223311625
-0 alpha-milton_guest_house postcode cb41xa
-0 alpha-milton_guest_house singleprice 45
-0 alpha-milton_guest_house doubleprice 80
-0 alpha-milton_guest_house pricerange moderate
-0 alpha-milton_guest_house stars 3
-0 alpha-milton_guest_house takesbookings yes
-0 alpha-milton_guest_house type guesthouse
-0 avalon address 62_gilbert_road
-0 avalon area north
-0 avalon internet yes
-0 avalon parking no
-0 avalon phone 01223353071
-0 avalon postcode cb43pd
-0 avalon singleprice 45
-0 avalon doubleprice 65
-0 avalon pricerange moderate
-0 avalon stars 4
-0 avalon takesbookings yes
-0 avalon type guesthouse
-1 could you help me locate a 4 star lodging on the north side of town ?	sure how about the avalon ? they also have free internet as well	['avalon']
-2 sure that would be lovely	alright for how many people and for how long would you like to book this ?	[]
-3 can i get it for 3 people 4 nights and we will be there thursday thank you	i was unable to get you that booking perhaps a different day or length of stay ?	[]
-4 sure how about a different hotel in the same price range ?	there are 7 guest houses in the same price range archway_house and arbury guest house are on the same road would you like me to book one ?	['archway_house']
-5 yes please book it for me	i was able to successfully book you your reference number is ij54oohx may i assist with anything else ?	[]
-6 thank you so much for your help	i am happy i was able to confirm your booking is there anything else i can assist you with today ?	[]
-7 no that is all i need thank you so much !	you re welcome good-bye	[]
+#train#
+0 tr8445 day wednesday
+0 tr8445 departure cambridge
+0 tr8445 destination kings_lynn
+0 tr8445 duration 47_minutes
+0 tr8445 leaveat 21:11
+0 tr8445 arriveby 21:58
+0 tr8445 price 9.80_pounds
+0 tr2939 day sunday
+0 tr2939 departure cambridge
+0 tr2939 destination broxbourne
+0 tr2939 duration 60_minutes
+0 tr2939 leaveat 12:01
+0 tr2939 arriveby 13:01
+0 tr2939 price 14.32_pounds
+0 tr5119 day wednesday
+0 tr5119 departure broxbourne
+0 tr5119 destination cambridge
+0 tr5119 duration 60_minutes
+0 tr5119 leaveat 07:32
+0 tr5119 arriveby 08:32
+0 tr5119 price 17.90_pounds
+0 tr0031 day monday
+0 tr0031 departure birmingham_new_street
+0 tr0031 destination cambridge
+0 tr0031 duration 163_minutes
+0 tr0031 leaveat 14:40
+0 tr0031 arriveby 17:23
+0 tr0031 price 75.10_pounds
+0 tr2635 day thursday
+0 tr2635 departure stansted_airport
+0 tr2635 destination cambridge
+0 tr2635 duration 28_minutes
+0 tr2635 leaveat 10:24
+0 tr2635 arriveby 10:52
+0 tr2635 price 10.10_pounds
+0 tr4997 day friday
+0 tr4997 departure peterborough
+0 tr4997 destination cambridge
+0 tr4997 duration 50_minutes
+0 tr4997 leaveat 14:48
+0 tr4997 arriveby 15:38
+0 tr4997 price 16.50_pounds
+0 tr5478 day saturday
+0 tr5478 departure norwich
+0 tr5478 destination cambridge
+0 tr5478 duration 79_minutes
+0 tr5478 leaveat 11:16
+0 tr5478 arriveby 12:35
+0 tr5478 price 14.08_pounds
+1 i need a to find a train departing from stansted_airport going to cambridge	do you want the earliest train ?	[]
+2 it needs to leave after 9:15	there are 105 trains making that trip do you have a day you need to travel ?	[]
+3 i am looking to leave on thursday can you also please give me the train id for this trip ?	tr0031 leaves at 9:24 would you like me to book it for you ?	['tr0031']
+4 that might be cutting it a little close maybe one an hour later ?	okay i have a 10:24 that arrives at 10:52	['10:52', '10:24']
+5 can you give me the train id for the 10:24 ?	sure the tr2635 train leaves at 10:24 and arrives at 10:52 with a travel time of 28_minutes	['10:52', '28_minutes', '10:24', 'tr2635']
+6 thank you very much i appreciate your help	did you need anything else today or may i close this conversation in our system ?	[]
+7 that s all thank you	thank you have a good day goodbye	[]
+
+#train#
+0 tr8192 day tuesday
+0 tr8192 departure bishops_stortford
+0 tr8192 destination cambridge
+0 tr8192 duration 38_minutes
+0 tr8192 leaveat 05:29
+0 tr8192 arriveby 06:07
+0 tr8192 price 10.10_pounds
+0 tr3254 day saturday
+0 tr3254 departure stansted_airport
+0 tr3254 destination cambridge
+0 tr3254 duration 28_minutes
+0 tr3254 leaveat 23:24
+0 tr3254 arriveby 23:52
+0 tr3254 price 8.08_pounds
+0 tr2130 day tuesday
+0 tr2130 departure cambridge
+0 tr2130 destination broxbourne
+0 tr2130 duration 60_minutes
+0 tr2130 leaveat 11:01
+0 tr2130 arriveby 12:01
+0 tr2130 price 17.90_pounds
+0 tr1709 day friday
+0 tr1709 departure cambridge
+0 tr1709 destination ely
+0 tr1709 duration 17_minutes
+0 tr1709 leaveat 05:50
+0 tr1709 arriveby 06:07
+0 tr1709 price 4.40_pounds
+0 tr5842 day saturday
+0 tr5842 departure cambridge
+0 tr5842 destination stevenage
+0 tr5842 duration 49_minutes
+0 tr5842 leaveat 21:21
+0 tr5842 arriveby 22:10
+0 tr5842 price 10.24_pounds
+0 tr3087 day monday
+0 tr3087 departure norwich
+0 tr3087 destination cambridge
+0 tr3087 duration 79_minutes
+0 tr3087 leaveat 13:16
+0 tr3087 arriveby 14:35
+0 tr3087 price 17.60_pounds
+1 i m looking for a train actually i need to go to broxbourne on tuesday after 10:15	there are 13 options available do you need to arrive by a certain time ?	[]
+2 no not particularly sooner the better i suppose	train tr2130 leaves at 11:01 with the rest following in one hour increments	['11:01', 'tr2130']
+3 ok what is the travel time ? when does the train arrive ?	it arrives at 12:01 shall i book it for you ?	['12:01']
+4 how long is the train ride ?	train tr2130 goes from cambridge to broxbourne the travel time is 60_minutes can i book that train for you ?	['broxbourne', '60_minutes', 'cambridge', 'tr2130']
+5 sure why not ? thank you	i ve reserved your ticket the total fee is 17.89 gbp payable at the station and your reference number is nze7upos	[]
+6 great thank you ! that is all i need today	happy i was able to accommodate you	[]
+
+#restaurant#
+0 de_luca_cucina_and_bar address 83_regent_street
+0 de_luca_cucina_and_bar area centre
+0 de_luca_cucina_and_bar food modern_european
+0 de_luca_cucina_and_bar phone 01223356666
+0 de_luca_cucina_and_bar postcode cb21aw
+0 de_luca_cucina_and_bar pricerange moderate
+0 de_luca_cucina_and_bar type restaurant
+0 yu_garden address 529_newmarket_road_fen_ditton
+0 yu_garden area east
+0 yu_garden food chinese
+0 yu_garden phone 01223248882
+0 yu_garden postcode cb58pa
+0 yu_garden pricerange expensive
+0 yu_garden type restaurant
+0 darrys_cookhouse_and_wine_shop address 40270_king_street_city_centre
+0 darrys_cookhouse_and_wine_shop area centre
+0 darrys_cookhouse_and_wine_shop food modern_european
+0 darrys_cookhouse_and_wine_shop phone 01223505015
+0 darrys_cookhouse_and_wine_shop postcode cb11ln
+0 darrys_cookhouse_and_wine_shop pricerange expensive
+0 darrys_cookhouse_and_wine_shop type restaurant
+0 anatolia address 30_bridge_street_city_centre
+0 anatolia area centre
+0 anatolia food turkish
+0 anatolia phone 01223362372
+0 anatolia postcode cb21uj
+0 anatolia pricerange moderate
+0 anatolia type restaurant
+0 riverside_brasserie address doubletree_by_hilton_cambridge_granta_place_mill_lane
+0 riverside_brasserie area centre
+0 riverside_brasserie food modern_european
+0 riverside_brasserie phone 01223259988
+0 riverside_brasserie postcode cb21rt
+0 riverside_brasserie pricerange moderate
+0 riverside_brasserie type restaurant
+0 hotel_du_vin_and_bistro address 15_-_19_trumpington_street
+0 hotel_du_vin_and_bistro area centre
+0 hotel_du_vin_and_bistro food european
+0 hotel_du_vin_and_bistro phone 01223227330
+0 hotel_du_vin_and_bistro postcode cb21qa
+0 hotel_du_vin_and_bistro pricerange moderate
+0 hotel_du_vin_and_bistro type restaurant
+1 hey could you tell me if there are any panasian restaurants in the east side of town ?	i m not finding any restaurants matching that description would you like to try searching a different area ?	[]
+2 no	ok would you like me to check for a different type of cuisine ?	[]
+3 are there any chinese restaurants on the east side of town ? if so what is the address phone number and post code ?	yu_garden is located at 529 newmarket_road_fen_ditton its phone number is 01223 248882 and the postcode is cb58pa is there anything else i can help you with ?	['cb58pa', 'yu_garden', 'newmarket_road_fen_ditton']
+4 thank you goodbye	thank you and good bye to you as well	[]
+
+#restaurant#
+0 restaurant_alimentum address 152_-_154_hills_road
+0 restaurant_alimentum area south
+0 restaurant_alimentum food modern_european
+0 restaurant_alimentum phone 01223413000
+0 restaurant_alimentum postcode cb28pb
+0 restaurant_alimentum pricerange moderate
+0 restaurant_alimentum type restaurant
+0 tandoori_palace address 68_histon_road_chesterton
+0 tandoori_palace area west
+0 tandoori_palace food indian
+0 tandoori_palace phone 01223506055
+0 tandoori_palace postcode cb43le
+0 tandoori_palace pricerange expensive
+0 tandoori_palace type restaurant
+0 backstreet_bistro address 2_sturton_street_city_centre
+0 backstreet_bistro area centre
+0 backstreet_bistro food gastropub
+0 backstreet_bistro phone 01223306306
+0 backstreet_bistro postcode cb12qa
+0 backstreet_bistro pricerange expensive
+0 backstreet_bistro type restaurant
+0 rice_house address 88_mill_road_city_centre
+0 rice_house area centre
+0 rice_house food chinese
+0 rice_house phone 01223367755
+0 rice_house postcode cb12bd
+0 rice_house pricerange cheap
+0 rice_house type restaurant
+0 michaelhouse_cafe address st_michael_s_church_trinity_street_city_centre
+0 michaelhouse_cafe area centre
+0 michaelhouse_cafe food european
+0 michaelhouse_cafe phone 01223309147
+0 michaelhouse_cafe postcode cb21su
+0 michaelhouse_cafe pricerange expensive
+0 michaelhouse_cafe type restaurant
+0 graffiti address hotel_felix_whitehouse_lane_huntingdon_road
+0 graffiti area west
+0 graffiti food british
+0 graffiti phone 01223277977
+0 graffiti postcode cb30lx
+0 graffiti pricerange expensive
+0 graffiti type restaurant
+1 hi ! i m looking for information on the rice_house restaurant	the phone number is 01223367755 is there anything else i can help you with ?	['01223367755']
+2 yes i ll also need their address please	they are located at 88 mill_road_city_centre	['mill_road_city_centre']
+3 great thank you thanks for the info have a good rest of your day	you re welcome is there anything else you need ?	[]
+4 no i have all the information i need thank you	thank you for using this system !	[]
 
 #train#
 0 tr2334 day saturday
@@ -6869,6 +6878,241 @@
 3 yes that is correct	booking was successful the total fee is 18.88 gbp payable at the station reference number is : ddypie2s	[]
 4 thank you for all of your help ! have a great day !	thank you for using our services do you need any further assistance ?	[]
 5 no i don t need anything	you are very welcome please let me know if you need anything in the future	[]
+
+#train#
+0 tr2775 day thursday
+0 tr2775 departure london_kings_cross
+0 tr2775 destination cambridge
+0 tr2775 duration 51_minutes
+0 tr2775 leaveat 05:17
+0 tr2775 arriveby 06:08
+0 tr2775 price 23.60_pounds
+0 tr1923 day thursday
+0 tr1923 departure cambridge
+0 tr1923 destination ely
+0 tr1923 duration 17_minutes
+0 tr1923 leaveat 09:50
+0 tr1923 arriveby 10:07
+0 tr1923 price 4.40_pounds
+0 tr1082 day friday
+0 tr1082 departure kings_lynn
+0 tr1082 destination cambridge
+0 tr1082 duration 47_minutes
+0 tr1082 leaveat 20:11
+0 tr1082 arriveby 20:58
+0 tr1082 price 9.80_pounds
+0 tr7269 day monday
+0 tr7269 departure cambridge
+0 tr7269 destination birmingham_new_street
+0 tr7269 duration 163_minutes
+0 tr7269 leaveat 07:01
+0 tr7269 arriveby 09:44
+0 tr7269 price 75.10_pounds
+0 tr2225 day sunday
+0 tr2225 departure peterborough
+0 tr2225 destination cambridge
+0 tr2225 duration 50_minutes
+0 tr2225 leaveat 14:48
+0 tr2225 arriveby 15:38
+0 tr2225 price 13.20_pounds
+0 tr0123 day saturday
+0 tr0123 departure cambridge
+0 tr0123 destination bishops_stortford
+0 tr0123 duration 38_minutes
+0 tr0123 leaveat 23:29
+0 tr0123 arriveby 24:07
+0 tr0123 price 8.08_pounds
+1 i m looking for a train going to ely please	what day is this for ?	[]
+2 it will be for thursday	what time would you like to go ?	[]
+3 i just need to arrive by 14:15	i have three different train choices depending on how early you want to arrive i have one arriving at 6:07 one at 8:07 and one at 10:07	['10:07']
+4 what s the travel time ? knowing that will help me select on a time	the travel time is only 17_minutes	['17_minutes']
+5 when is the departure time for 10:07 ?	tr1923 departs cambridge at 9:50 and arrives in ely by 10:07 total travel time of 17_minutes do you want to book a ticket ?	['cambridge', '17_minutes', 'ely', 'tr1923', '10:07']
+6 not at this time thank you for your help !	is there any other information i can get for you at this time ?	[]
+7 no that s it thanks !	you re welcome enjoy your day	[]
+
+#restaurant#
+0 golden_wok address 191_histon_road_chesterton
+0 golden_wok area north
+0 golden_wok food chinese
+0 golden_wok phone 01223350688
+0 golden_wok postcode cb43hl
+0 golden_wok pricerange moderate
+0 golden_wok type restaurant
+0 de_luca_cucina_and_bar address 83_regent_street
+0 de_luca_cucina_and_bar area centre
+0 de_luca_cucina_and_bar food modern_european
+0 de_luca_cucina_and_bar phone 01223356666
+0 de_luca_cucina_and_bar postcode cb21aw
+0 de_luca_cucina_and_bar pricerange moderate
+0 de_luca_cucina_and_bar type restaurant
+0 galleria address 33_bridge_street
+0 galleria area centre
+0 galleria food european
+0 galleria phone 01223362054
+0 galleria postcode cb21uw
+0 galleria pricerange moderate
+0 galleria type restaurant
+0 zizzi_cambridge address 47-53_regent_street
+0 zizzi_cambridge area centre
+0 zizzi_cambridge food italian
+0 zizzi_cambridge phone 01223365599
+0 zizzi_cambridge postcode cb21ab
+0 zizzi_cambridge pricerange cheap
+0 zizzi_cambridge type restaurant
+0 shanghai_family_restaurant address 39_burleigh_street_city_centre
+0 shanghai_family_restaurant area centre
+0 shanghai_family_restaurant food chinese
+0 shanghai_family_restaurant phone 01223301761
+0 shanghai_family_restaurant postcode cb11dg
+0 shanghai_family_restaurant pricerange moderate
+0 shanghai_family_restaurant type restaurant
+0 city_stop_restaurant address cambridge_city_football_club_milton_road_chesterton
+0 city_stop_restaurant area north
+0 city_stop_restaurant food european
+0 city_stop_restaurant phone 01223363270
+0 city_stop_restaurant postcode cb41uy
+0 city_stop_restaurant pricerange expensive
+0 city_stop_restaurant type restaurant
+1 do you know of any moderately priced restaurants in the north part of town ? i ll need the address and phone number	the golden_wok is located at 191_histon_road_chesterton it s phone number is 01223350688	['01223350688', '191_histon_road_chesterton', 'golden_wok']
+2 thank you good bye	enjoy your stay good bye	[]
+
+#train#
+0 tr4249 day sunday
+0 tr4249 departure cambridge
+0 tr4249 destination broxbourne
+0 tr4249 duration 60_minutes
+0 tr4249 leaveat 06:01
+0 tr4249 arriveby 07:01
+0 tr4249 price 14.32_pounds
+0 tr4321 day thursday
+0 tr4321 departure cambridge
+0 tr4321 destination norwich
+0 tr4321 duration 79_minutes
+0 tr4321 leaveat 22:36
+0 tr4321 arriveby 23:55
+0 tr4321 price 17.60_pounds
+0 tr3068 day wednesday
+0 tr3068 departure cambridge
+0 tr3068 destination peterborough
+0 tr3068 duration 50_minutes
+0 tr3068 leaveat 21:34
+0 tr3068 arriveby 22:24
+0 tr3068 price 16.50_pounds
+0 tr5173 day sunday
+0 tr5173 departure cambridge
+0 tr5173 destination leicester
+0 tr5173 duration 105_minutes
+0 tr5173 leaveat 08:21
+0 tr5173 arriveby 10:06
+0 tr5173 price 30.24_pounds
+0 tr6146 day monday
+0 tr6146 departure cambridge
+0 tr6146 destination kings_lynn
+0 tr6146 duration 47_minutes
+0 tr6146 leaveat 21:11
+0 tr6146 arriveby 21:58
+0 tr6146 price 9.80_pounds
+1 i m looking for a train the train should arrive by 16:00 and should leave on saturday	where will you be traveling to ?	[]
+2 i am going to cambridge from broxbourne	the tr 1412 arrives at 15:32 will this be okay ?	['15:32']
+3 yes please book it for 1 person	i booked your ticket and your reference number is dbwtxco1 can i help further today ?	[]
+4 no that s it ! thanks so much !	thanks again for choosing us	[]
+5 you have been helpful good bye	thank you goodbye	[]
+
+#restaurant#
+0 travellers_rest address huntingdon_road_city_centre
+0 travellers_rest area west
+0 travellers_rest food british
+0 travellers_rest phone 01223276182
+0 travellers_rest postcode cb30df
+0 travellers_rest pricerange expensive
+0 travellers_rest type restaurant
+0 golden_house address 12_lensfield_road_city_centre
+0 golden_house area centre
+0 golden_house food chinese
+0 golden_house phone 01842753771
+0 golden_house postcode cb21eg
+0 golden_house pricerange cheap
+0 golden_house type restaurant
+0 la_tasca address 14_-16_bridge_street
+0 la_tasca area centre
+0 la_tasca food spanish
+0 la_tasca phone 01223464630
+0 la_tasca postcode cb21uf
+0 la_tasca pricerange moderate
+0 la_tasca type restaurant
+0 zizzi_cambridge address 47-53_regent_street
+0 zizzi_cambridge area centre
+0 zizzi_cambridge food italian
+0 zizzi_cambridge phone 01223365599
+0 zizzi_cambridge postcode cb21ab
+0 zizzi_cambridge pricerange cheap
+0 zizzi_cambridge type restaurant
+0 bedouin address 100_mill_road_city_centre
+0 bedouin area centre
+0 bedouin food african
+0 bedouin phone 01223367660
+0 bedouin postcode cb12bd
+0 bedouin pricerange expensive
+0 bedouin type restaurant
+0 bangkok_city address 24_green_street_city_centre
+0 bangkok_city area centre
+0 bangkok_city food thai
+0 bangkok_city phone 01223354382
+0 bangkok_city postcode cb23jx
+0 bangkok_city pricerange expensive
+0 bangkok_city type restaurant
+1 i am looking for an expensive restaurant in the centre	alright well you have 33 to choose from any type of cuisine you re looking for ?	[]
+2 i ll take something chinese if you have it i ll take the postcode of which every of those you recommend	okay the postcode for the golden_house is cb21eg is there anything else i can help you with ?	['golden_house', 'cb21eg']
+3 no that will do it thanks for your help have a nice day	i m glad to be of service enjoy your dinner in cambridge !	[]
+
+#train#
+0 tr1012 day sunday
+0 tr1012 departure cambridge
+0 tr1012 destination birmingham_new_street
+0 tr1012 duration 163_minutes
+0 tr1012 leaveat 21:01
+0 tr1012 arriveby 23:44
+0 tr1012 price 60.08_pounds
+0 tr3371 day sunday
+0 tr3371 departure cambridge
+0 tr3371 destination leicester
+0 tr3371 duration 105_minutes
+0 tr3371 leaveat 09:21
+0 tr3371 arriveby 11:06
+0 tr3371 price 30.24_pounds
+0 tr9382 day sunday
+0 tr9382 departure ely
+0 tr9382 destination cambridge
+0 tr9382 duration 17_minutes
+0 tr9382 leaveat 05:35
+0 tr9382 arriveby 05:52
+0 tr9382 price 3.52_pounds
+0 tr3420 day tuesday
+0 tr3420 departure cambridge
+0 tr3420 destination ely
+0 tr3420 duration 17_minutes
+0 tr3420 leaveat 13:50
+0 tr3420 arriveby 14:07
+0 tr3420 price 4.40_pounds
+0 tr7514 day monday
+0 tr7514 departure norwich
+0 tr7514 destination cambridge
+0 tr7514 duration 79_minutes
+0 tr7514 leaveat 17:16
+0 tr7514 arriveby 18:35
+0 tr7514 price 17.60_pounds
+0 tr0439 day thursday
+0 tr0439 departure cambridge
+0 tr0439 destination peterborough
+0 tr0439 duration 50_minutes
+0 tr0439 leaveat 21:34
+0 tr0439 arriveby 22:24
+0 tr0439 price 16.50_pounds
+1 i am looking for a train from norwich on monday	i found 19 trains that match your request where is your destination ?	[]
+2 the train should leave after 17:00 and should go to cambridge	how about tr7514 that leaves at 17:16 on monday ?	['17:16', 'monday', 'tr7514']
+3 that would be perfect could you book it for 6 people and provide me a reference number ?	i ve booked 6 tickets the fee is 105.6 and the reference number is 4reiium5	[]
+4 thank you for your help	you are welcome can i assist with anything else today ?	[]
+5 no that is all thanks goodbye	thank you goodbye	[]
 
 #restaurant#
 0 pizza_express_fen_ditton address jesus_lane_fen_ditton
@@ -6941,6 +7185,95 @@
 5 how about another restaurant in the same area and price range ?	i was able to book you at another italian place by the name of clowns caafe your reference number is baohhc1z is there anything else that i can assist with ?	['italian']
 6 no that will be all thanks for your help	thank you for calling have a great day !	[]
 
+#attraction#
+0 hughes_hall address wollaston_road
+0 hughes_hall area centre
+0 hughes_hall entrancefee free
+0 hughes_hall phone 01223334898
+0 hughes_hall postcode cb12ew
+0 hughes_hall pricerange free
+0 hughes_hall type college
+0 nusha address unit_g6_cambridge_leisure_park_clifton_road
+0 nusha area south
+0 nusha phone 01223902158
+0 nusha postcode cb17dy
+0 nusha type entertainment
+0 regency_gallery address 39_fitzroy_street
+0 regency_gallery area centre
+0 regency_gallery entrancefee free
+0 regency_gallery phone 01223365454
+0 regency_gallery postcode cb11er
+0 regency_gallery pricerange free
+0 regency_gallery type museum
+0 tenpin address cambridge_leisure_park_clifton_way
+0 tenpin area south
+0 tenpin phone 08715501010
+0 tenpin postcode cb17dy
+0 tenpin type entertainment
+0 cafe_jello_gallery address cafe_jello_gallery_13_magdalene_street
+0 cafe_jello_gallery area west
+0 cafe_jello_gallery entrancefee free
+0 cafe_jello_gallery phone 01223312112
+0 cafe_jello_gallery postcode cb30af
+0 cafe_jello_gallery pricerange free
+0 cafe_jello_gallery type museum
+0 magdalene_college address magdalene_street
+0 magdalene_college area west
+0 magdalene_college entrancefee free
+0 magdalene_college phone 01223332138
+0 magdalene_college postcode cb30ag
+0 magdalene_college pricerange free
+0 magdalene_college type college
+1 hi i am looking to go to a museum in town please	we offer 23 museums any location preferences ?	[]
+2 not really can you just tell me your favorite and let me know how it will be for me to get in ? oh and the postcode for my gps	sure cafe_jello_gallery is my personal favorite the postcode is cb30af it is free to get in	['cafe_jello_gallery', 'free', 'cb30af']
+3 great thank you !	you re welcome ! glad to help	[]
+
+#attraction#
+0 byard_art address 14_king_s_parade
+0 byard_art area south
+0 byard_art entrancefee free
+0 byard_art phone 01223464646
+0 byard_art postcode cb21sj
+0 byard_art pricerange free
+0 byard_art type museum
+0 clare_hall address herschel_road
+0 clare_hall area west
+0 clare_hall entrancefee free
+0 clare_hall phone 01223332360
+0 clare_hall postcode cb39al
+0 clare_hall pricerange free
+0 clare_hall type college
+0 clare_college address trinity_lane
+0 clare_college area west
+0 clare_college entrancefee 2.50_pounds
+0 clare_college phone 01223333200
+0 clare_college postcode cb21tl
+0 clare_college pricerange moderate
+0 clare_college type college
+0 cambridge_contemporary_art address 6_trinity_street
+0 cambridge_contemporary_art area centre
+0 cambridge_contemporary_art entrancefee free
+0 cambridge_contemporary_art phone 01223324222
+0 cambridge_contemporary_art postcode cb21su
+0 cambridge_contemporary_art pricerange free
+0 cambridge_contemporary_art type museum
+0 gonville_and_caius_college address trinity_street
+0 gonville_and_caius_college area centre
+0 gonville_and_caius_college entrancefee free
+0 gonville_and_caius_college phone 01223332400
+0 gonville_and_caius_college postcode cb21ta
+0 gonville_and_caius_college pricerange free
+0 gonville_and_caius_college type college
+0 milton_country_park address milton_country_park_milton
+0 milton_country_park area north
+0 milton_country_park entrancefee free
+0 milton_country_park phone 01223420060
+0 milton_country_park postcode cb46az
+0 milton_country_park pricerange free
+0 milton_country_park type park
+1 i want a museum please ? please include address postcode and area	i suggest byard_art the address postcode and area are 14_king_s_parade cb21sj and it is located in the south	['cb21sj', 'byard_art', '14_king_s_parade', 'south']
+2 great thanks for all your help that s all i needed goodbye	happy to be of help and i hope you enjoy the museum goodbye !	['museum']
+
 #restaurant#
 0 little_seoul address 108_regent_street_city_centre
 0 little_seoul area centre
@@ -6989,52 +7322,89 @@
 3 no that s all thanks ! bye !	all right enjoy your meal !	[]
 
 #train#
-0 tr5541 day wednesday
-0 tr5541 departure cambridge
-0 tr5541 destination kings_lynn
-0 tr5541 duration 47_minutes
-0 tr5541 leaveat 07:11
-0 tr5541 arriveby 07:58
-0 tr5541 price 9.80_pounds
-0 tr6868 day wednesday
-0 tr6868 departure cambridge
-0 tr6868 destination birmingham_new_street
-0 tr6868 duration 163_minutes
-0 tr6868 leaveat 07:01
-0 tr6868 arriveby 09:44
-0 tr6868 price 75.10_pounds
-0 tr7678 day sunday
-0 tr7678 departure cambridge
-0 tr7678 destination leicester
-0 tr7678 duration 105_minutes
-0 tr7678 leaveat 12:21
-0 tr7678 arriveby 14:06
-0 tr7678 price 30.24_pounds
-0 tr5870 day sunday
-0 tr5870 departure stevenage
-0 tr5870 destination cambridge
-0 tr5870 duration 49_minutes
-0 tr5870 leaveat 07:54
-0 tr5870 arriveby 08:43
-0 tr5870 price 10.24_pounds
-0 tr7767 day sunday
-0 tr7767 departure cambridge
-0 tr7767 destination norwich
-0 tr7767 duration 79_minutes
-0 tr7767 leaveat 21:36
-0 tr7767 arriveby 22:55
-0 tr7767 price 14.08_pounds
-0 tr7317 day thursday
-0 tr7317 departure cambridge
-0 tr7317 destination peterborough
-0 tr7317 duration 50_minutes
-0 tr7317 leaveat 10:06
-0 tr7317 arriveby 10:56
-0 tr7317 price 16.50_pounds
-1 hello i need to book a train for thursday leaving to peterborough	no problem can you please let me know where you want to depart from ?	[]
-2 i would like to leave cambridge after 09:15	tr7317 leaves at 10:06 on thursday would you like to reserve a seat ?	['thursday', '10:06', 'tr7317']
-3 yes just one seat and i ll need the reference number	booking was successful the total fee is 16.5 gbp payable at the station reference number is : salfli4e	[]
-4 thank you so much for your help have a great day !	thank you for using the cambridge towninfo centre have a good trip goodbye	['cambridge']
+0 tr3108 day monday
+0 tr3108 departure broxbourne
+0 tr3108 destination cambridge
+0 tr3108 duration 60_minutes
+0 tr3108 leaveat 13:32
+0 tr3108 arriveby 14:32
+0 tr3108 price 17.90_pounds
+0 tr4553 day saturday
+0 tr4553 departure birmingham_new_street
+0 tr4553 destination cambridge
+0 tr4553 duration 163_minutes
+0 tr4553 leaveat 11:40
+0 tr4553 arriveby 14:23
+0 tr4553 price 60.08_pounds
+0 tr4390 day friday
+0 tr4390 departure leicester
+0 tr4390 destination cambridge
+0 tr4390 duration 105_minutes
+0 tr4390 leaveat 08:09
+0 tr4390 arriveby 09:54
+0 tr4390 price 37.80_pounds
+0 tr1581 day friday
+0 tr1581 departure london_kings_cross
+0 tr1581 destination cambridge
+0 tr1581 duration 51_minutes
+0 tr1581 leaveat 21:17
+0 tr1581 arriveby 22:08
+0 tr1581 price 23.60_pounds
+0 tr2045 day monday
+0 tr2045 departure cambridge
+0 tr2045 destination stevenage
+0 tr2045 duration 49_minutes
+0 tr2045 leaveat 15:21
+0 tr2045 arriveby 16:10
+0 tr2045 price 12.80_pounds
+1 i would like to book a train for monday departing from kings_lynn and arriving at cambridge at 14:45	what time would you like to leave by ?	[]
+2 can you please provide me with the departure time of the train arriving by 14:45 or just before ?	the departure time is 13:11	['13:11']
+3 what time is it scheduled to arrive ?	the departure time is 13:11 may i book some tickets or provide you with further assistance today ?	['13:11']
+4 thanks so much for your help that s all today	okay thank you so much for contacting us have a great trip !	[]
+
+#attraction#
+0 byard_art address 14_king_s_parade
+0 byard_art area south
+0 byard_art entrancefee free
+0 byard_art phone 01223464646
+0 byard_art postcode cb21sj
+0 byard_art pricerange free
+0 byard_art type museum
+0 saint_catharine_s_college address king_s_parade
+0 saint_catharine_s_college area centre
+0 saint_catharine_s_college entrancefee free
+0 saint_catharine_s_college phone 01223338300
+0 saint_catharine_s_college postcode cb21rl
+0 saint_catharine_s_college pricerange free
+0 saint_catharine_s_college type college
+0 scudamores_punting_co address granta_place_mill_lane
+0 scudamores_punting_co area centre
+0 scudamores_punting_co phone 01223359750
+0 scudamores_punting_co postcode cb21rs
+0 scudamores_punting_co type boat
+0 ruskin_gallery address anglia_ruskin_university_east_road
+0 ruskin_gallery area centre
+0 ruskin_gallery entrancefee free
+0 ruskin_gallery phone 01245493131
+0 ruskin_gallery postcode cb11pt
+0 ruskin_gallery pricerange free
+0 ruskin_gallery type museum
+0 saint_john_s_college address saint_john_s_street
+0 saint_john_s_college area centre
+0 saint_john_s_college entrancefee 2.50_pounds
+0 saint_john_s_college phone 01223338600
+0 saint_john_s_college postcode cb21tp
+0 saint_john_s_college pricerange moderate
+0 saint_john_s_college type college
+0 the_place address 22_sidney_street
+0 the_place area south
+0 the_place phone 01223324600
+0 the_place postcode cb23hg
+0 the_place pricerange moderate
+0 the_place type nightclub
+1 can you please help me find a museum ?	sure ! there are plenty of great museums to choose from is there a specific area of town you are looking for ?	[]
+2 the centre area looking for modern art and the museums phone number please	i recommend byard_art their phone number is 01223464646	['byard_art', '01223464646']
+3 great ! that is all i need thank you	you are welcome ! have a nice day	[]
 
 #attraction#
 0 cambridge_university_botanic_gardens address bateman_street
@@ -7080,89 +7450,6 @@
 1 hello i am looking for information on kambar what do you know about that attraction ?	kambar is a nightclub located in the centre of town its address is 1 wheeler_street and postcode is cb23qb with an entrance fee of 5_pounds	['kambar', 'wheeler_street', '5_pounds', 'centre', 'nightclub', 'cb23qb']
 2 alright that s all i really needed to know thanks again !	you re welcome have a great day !	[]
 3 thanks you too !	have a great time and thanks for letting us help !	[]
-
-#hotel#
-0 finches_bed_and_breakfast address 144_thornton_road
-0 finches_bed_and_breakfast area west
-0 finches_bed_and_breakfast internet yes
-0 finches_bed_and_breakfast parking yes
-0 finches_bed_and_breakfast phone 01223276653
-0 finches_bed_and_breakfast postcode cb30nd
-0 finches_bed_and_breakfast singleprice 50
-0 finches_bed_and_breakfast doubleprice 50
-0 finches_bed_and_breakfast pricerange cheap
-0 finches_bed_and_breakfast stars 4
-0 finches_bed_and_breakfast takesbookings yes
-0 finches_bed_and_breakfast type guesthouse
-0 gonville_hotel address gonville_place
-0 gonville_hotel area centre
-0 gonville_hotel internet yes
-0 gonville_hotel parking yes
-0 gonville_hotel phone 01223366611
-0 gonville_hotel postcode cb11ly
-0 gonville_hotel singleprice 79
-0 gonville_hotel doubleprice 95
-0 gonville_hotel familyprice 119
-0 gonville_hotel pricerange expensive
-0 gonville_hotel stars 3
-0 gonville_hotel takesbookings yes
-0 gonville_hotel type hotel
-0 rosa_s_bed_and_breakfast address 53_roseford_road
-0 rosa_s_bed_and_breakfast area south
-0 rosa_s_bed_and_breakfast internet yes
-0 rosa_s_bed_and_breakfast parking yes
-0 rosa_s_bed_and_breakfast phone 01223512596
-0 rosa_s_bed_and_breakfast postcode cb22ha
-0 rosa_s_bed_and_breakfast singleprice 25
-0 rosa_s_bed_and_breakfast pricerange cheap
-0 rosa_s_bed_and_breakfast stars 4
-0 rosa_s_bed_and_breakfast takesbookings yes
-0 rosa_s_bed_and_breakfast type guesthouse
-0 lovell_lodge address 365_milton_road
-0 lovell_lodge area north
-0 lovell_lodge internet yes
-0 lovell_lodge parking yes
-0 lovell_lodge phone 01223425478
-0 lovell_lodge postcode cb41sr
-0 lovell_lodge singleprice 50
-0 lovell_lodge doubleprice 65
-0 lovell_lodge familyprice 70
-0 lovell_lodge pricerange moderate
-0 lovell_lodge stars 2
-0 lovell_lodge takesbookings yes
-0 lovell_lodge type hotel
-0 worth_house address 152_chesterton_road
-0 worth_house area north
-0 worth_house internet yes
-0 worth_house parking yes
-0 worth_house phone 01223316074
-0 worth_house postcode cb41da
-0 worth_house singleprice 49
-0 worth_house doubleprice 60
-0 worth_house familyprice 85
-0 worth_house pricerange cheap
-0 worth_house stars 4
-0 worth_house takesbookings yes
-0 worth_house type guesthouse
-0 el_shaddai address 41_warkworth_street
-0 el_shaddai area centre
-0 el_shaddai internet yes
-0 el_shaddai parking yes
-0 el_shaddai phone 01223327978
-0 el_shaddai postcode cb11eg
-0 el_shaddai singleprice 40
-0 el_shaddai doubleprice 60
-0 el_shaddai familyprice 62
-0 el_shaddai pricerange cheap
-0 el_shaddai stars 0
-0 el_shaddai takesbookings yes
-0 el_shaddai type guesthouse
-1 hi i m looking for a 4 star hotel on the west side	i was able to find three results for what you are looking for may i recommended finches_bed_and_breakfast ?	['finches_bed_and_breakfast']
-2 great do they have free wifi ?	they have free wifi and free parking ! they re a guesthouse not a hotel though - is that ok ?	['guesthouse', 'hotel']
-3 yes sounds good i d like to book for 6 people for 5 nights from thursday	i m afraid that wont work can we try a different day or length of time ?	[]
-4 would you be able to get it for 1 night and also get me a reference number	yes i was able to book a room there for one night reference number is pl0p458j	[]
-5 great ! thanks for your help with booking that	is there anything else i can help you with today ?	[]
-6 no that s all thanks	thank you for contacting cambridge towninfo centre	['centre']
 
 #hotel#
 0 home_from_home address 78-80_milton_road
@@ -7259,6 +7546,54 @@
 3 yes please book me a stay for 7 people and 5 nights starting from saturday	the hamilton_lodge guesthouse does have free parking is that okay ? there is the alpha-milton_guest_house in the north it 3 stars moderately priced and doesn t offer parking	['hamilton_lodge', '3', 'guesthouse', 'alpha-milton_guest_house', 'north']
 4 the alpha milton guest house sounds better please book a room there	i have that booked the reference code is 8epnpvvm anything else ?	[]
 5 no that is it ,thanks	ok thank you for using our service & have a good day !	[]
+
+#train#
+0 tr8301 day tuesday
+0 tr8301 departure cambridge
+0 tr8301 destination broxbourne
+0 tr8301 duration 60_minutes
+0 tr8301 leaveat 14:01
+0 tr8301 arriveby 15:01
+0 tr8301 price 17.90_pounds
+0 tr9662 day monday
+0 tr9662 departure cambridge
+0 tr9662 destination peterborough
+0 tr9662 duration 50_minutes
+0 tr9662 leaveat 08:06
+0 tr9662 arriveby 08:56
+0 tr9662 price 16.50_pounds
+0 tr1028 day monday
+0 tr1028 departure cambridge
+0 tr1028 destination birmingham_new_street
+0 tr1028 duration 163_minutes
+0 tr1028 leaveat 11:01
+0 tr1028 arriveby 13:44
+0 tr1028 price 75.10_pounds
+0 tr9594 day tuesday
+0 tr9594 departure cambridge
+0 tr9594 destination norwich
+0 tr9594 duration 79_minutes
+0 tr9594 leaveat 21:36
+0 tr9594 arriveby 22:55
+0 tr9594 price 17.60_pounds
+0 tr7964 day monday
+0 tr7964 departure cambridge
+0 tr7964 destination kings_lynn
+0 tr7964 duration 47_minutes
+0 tr7964 leaveat 05:11
+0 tr7964 arriveby 05:58
+0 tr7964 price 9.80_pounds
+0 tr0315 day tuesday
+0 tr0315 departure cambridge
+0 tr0315 destination london_kings_cross
+0 tr0315 duration 51_minutes
+0 tr0315 leaveat 13:00
+0 tr0315 arriveby 13:51
+0 tr0315 price 23.60_pounds
+1 i need a train on monday leaving after 10:45	where will you be departing from and what is your destination ?	[]
+2 i want to go to cambridge from birmingham_new_street	we have the tr1028 leaving at 11:01 does that work ?	['tr1028', '11:01']
+3 when does it arrive ? and what is the total travel time please ?	it arrives at 1:44 in the afternoon and it is a 2 hour and 43 minute trip	[]
+4 great ! thanks for your help goodbye !	you re welcome happy to help have a good day	[]
 
 #hotel#
 0 carolina_bed_and_breakfast address 138_perne_road
@@ -7381,6 +7716,500 @@
 2 i m departing from norwich and need to arrive by 12:15	there are many options available is there a certain time you would like to depart ?	[]
 3 no just tell me the price of the trip please	the price of the train would be 17.60_pounds anything else you need ?	['17.60_pounds']
 4 that ll be all thanks so much for your assistance !	you re welcome have a great trip !	[]
+
+#train#
+0 tr5297 day tuesday
+0 tr5297 departure leicester
+0 tr5297 destination cambridge
+0 tr5297 duration 105_minutes
+0 tr5297 leaveat 05:09
+0 tr5297 arriveby 06:54
+0 tr5297 price 37.80_pounds
+0 tr7002 day monday
+0 tr7002 departure kings_lynn
+0 tr7002 destination cambridge
+0 tr7002 duration 47_minutes
+0 tr7002 leaveat 16:11
+0 tr7002 arriveby 16:58
+0 tr7002 price 9.80_pounds
+0 tr0813 day thursday
+0 tr0813 departure ely
+0 tr0813 destination cambridge
+0 tr0813 duration 17_minutes
+0 tr0813 leaveat 11:35
+0 tr0813 arriveby 11:52
+0 tr0813 price 4.40_pounds
+0 tr2534 day friday
+0 tr2534 departure cambridge
+0 tr2534 destination norwich
+0 tr2534 duration 79_minutes
+0 tr2534 leaveat 05:36
+0 tr2534 arriveby 06:55
+0 tr2534 price 17.60_pounds
+0 tr6164 day saturday
+0 tr6164 departure cambridge
+0 tr6164 destination peterborough
+0 tr6164 duration 50_minutes
+0 tr6164 leaveat 13:06
+0 tr6164 arriveby 13:56
+0 tr6164 price 13.20_pounds
+0 tr9212 day saturday
+0 tr9212 departure cambridge
+0 tr9212 destination peterborough
+0 tr9212 duration 50_minutes
+0 tr9212 leaveat 13:34
+0 tr9212 arriveby 14:24
+0 tr9212 price 13.20_pounds
+1 looking for a train the train should arrive by 09:45 and should depart from cambridge	what is your destination ?	[]
+2 i need to go to norwich	how about tr2534 that leaves at 05:36 ?	['05:36', 'tr2534']
+3 that sounds great ! thanks for all of your help !	you are most welcome !	[]
+
+#train#
+0 tr4689 day saturday
+0 tr4689 departure cambridge
+0 tr4689 destination kings_lynn
+0 tr4689 duration 47_minutes
+0 tr4689 leaveat 08:11
+0 tr4689 arriveby 08:58
+0 tr4689 price 7.84_pounds
+0 tr2969 day saturday
+0 tr2969 departure leicester
+0 tr2969 destination cambridge
+0 tr2969 duration 105_minutes
+0 tr2969 leaveat 08:09
+0 tr2969 arriveby 09:54
+0 tr2969 price 30.24_pounds
+0 tr9114 day monday
+0 tr9114 departure london_kings_cross
+0 tr9114 destination cambridge
+0 tr9114 duration 51_minutes
+0 tr9114 leaveat 15:17
+0 tr9114 arriveby 16:08
+0 tr9114 price 23.60_pounds
+0 tr9859 day friday
+0 tr9859 departure cambridge
+0 tr9859 destination peterborough
+0 tr9859 duration 50_minutes
+0 tr9859 leaveat 05:06
+0 tr9859 arriveby 05:56
+0 tr9859 price 16.50_pounds
+0 tr7734 day saturday
+0 tr7734 departure bishops_stortford
+0 tr7734 destination cambridge
+0 tr7734 duration 38_minutes
+0 tr7734 leaveat 19:29
+0 tr7734 arriveby 20:07
+0 tr7734 price 8.08_pounds
+0 tr0962 day wednesday
+0 tr0962 departure peterborough
+0 tr0962 destination cambridge
+0 tr0962 duration 50_minutes
+0 tr0962 leaveat 12:19
+0 tr0962 arriveby 13:09
+0 tr0962 price 16.50_pounds
+1 i am looking for a train the train should leave on saturday and should depart from cambridge	where are you traveling to ?	[]
+2 i am going to kings_lynn	do you need to arrive or depart by a specific time ?	[]
+3 it should arrive by 09:45	tr4689 is your best bet it will arrive at 8:58 would you like me to book some tickets for you ?	['tr4689']
+4 what time does it depart ?	it departs at 8:11	[]
+5 thanks that s all i needed today goodbye !	you re very welcome have a great day	[]
+
+#attraction#
+0 cineworld_cinema address cambridge_leisure_park_clifton_way
+0 cineworld_cinema area south
+0 cineworld_cinema phone 00872208000
+0 cineworld_cinema postcode cb17dy
+0 cineworld_cinema type cinema
+0 kambar address 1_wheeler_street
+0 kambar area centre
+0 kambar entrancefee 5_pounds
+0 kambar phone 01223842725
+0 kambar postcode cb23qb
+0 kambar pricerange moderate
+0 kambar type nightclub
+0 pembroke_college address trumpington_street
+0 pembroke_college area centre
+0 pembroke_college entrancefee free
+0 pembroke_college phone 01223338100
+0 pembroke_college postcode cb21rf
+0 pembroke_college pricerange free
+0 pembroke_college type college
+0 abbey_pool_and_astroturf_pitch address pool_way_whitehill_road_off_newmarket_road
+0 abbey_pool_and_astroturf_pitch area east
+0 abbey_pool_and_astroturf_pitch phone 01223902088
+0 abbey_pool_and_astroturf_pitch postcode cb58nt
+0 abbey_pool_and_astroturf_pitch type swimmingpool
+0 williams_art_and_antiques address gwydir_street_no_5_dale_s_brewery
+0 williams_art_and_antiques area centre
+0 williams_art_and_antiques entrancefee free
+0 williams_art_and_antiques phone 01223311687
+0 williams_art_and_antiques postcode cb12lj
+0 williams_art_and_antiques pricerange free
+0 williams_art_and_antiques type museum
+0 museum_of_classical_archaeology address sidgwick_avenue
+0 museum_of_classical_archaeology area west
+0 museum_of_classical_archaeology entrancefee free
+0 museum_of_classical_archaeology phone 01223335153
+0 museum_of_classical_archaeology postcode cb39da
+0 museum_of_classical_archaeology pricerange free
+0 museum_of_classical_archaeology type museum
+1 my brother told me about this attraction place called abbey_pool_and_astroturf_pitch would you be able to tell me where it is ?	yes abbey_pool_and_astroturf_pitch is a swimming pool on the east side of town what other information would you like ?	['abbey_pool_and_astroturf_pitch', 'east']
+2 could you tell me the entrance fee for that ?	i m sorry i don t have that information you could call them at 01223902088 and ask though can i help you with anything else ?	['01223902088']
+3 no thanks i think that will take care of it have a good night !	you re quite welcome ! thanks for contacting the cambridge towninfo centre and have a great day !	['centre']
+
+#train#
+0 tr0992 day friday
+0 tr0992 departure peterborough
+0 tr0992 destination cambridge
+0 tr0992 duration 50_minutes
+0 tr0992 leaveat 16:48
+0 tr0992 arriveby 17:38
+0 tr0992 price 16.50_pounds
+0 tr2025 day saturday
+0 tr2025 departure broxbourne
+0 tr2025 destination cambridge
+0 tr2025 duration 60_minutes
+0 tr2025 leaveat 10:32
+0 tr2025 arriveby 11:32
+0 tr2025 price 14.32_pounds
+0 tr9382 day sunday
+0 tr9382 departure ely
+0 tr9382 destination cambridge
+0 tr9382 duration 17_minutes
+0 tr9382 leaveat 05:35
+0 tr9382 arriveby 05:52
+0 tr9382 price 3.52_pounds
+0 tr9823 day sunday
+0 tr9823 departure ely
+0 tr9823 destination cambridge
+0 tr9823 duration 17_minutes
+0 tr9823 leaveat 15:35
+0 tr9823 arriveby 15:52
+0 tr9823 price 3.52_pounds
+0 tr7956 day monday
+0 tr7956 departure stansted_airport
+0 tr7956 destination cambridge
+0 tr7956 duration 28_minutes
+0 tr7956 leaveat 22:24
+0 tr7956 arriveby 22:52
+0 tr7956 price 10.10_pounds
+0 tr9805 day friday
+0 tr9805 departure peterborough
+0 tr9805 destination cambridge
+0 tr9805 duration 50_minutes
+0 tr9805 leaveat 19:48
+0 tr9805 arriveby 20:38
+0 tr9805 price 16.50_pounds
+0 tr0112 day saturday
+0 tr0112 departure cambridge
+0 tr0112 destination birmingham_new_street
+0 tr0112 duration 163_minutes
+0 tr0112 leaveat 23:01
+0 tr0112 arriveby 01:44
+0 tr0112 price 60.08_pounds
+1 hi i m looking for a train from ely to cambridge if there is one	okay what day do you want to leave ?	[]
+2 i would like to leave on sunday	how about tr9382 ?	['tr9382']
+3 well i need to leave after 14:45 so if it is after that time that ll work	tr9823 will leave at 15:35 how does that sound ?	['tr9823', '15:35']
+4 i think that ll work i need to reserve two seats can you help me with that ?	booking was successful the total fee is 7.04 gbp payable at the station reference number is : 6nja0v8r	[]
+5 thank you that s all i need for now !	you re very welcome have a great day	[]
+
+#train#
+0 tr2895 day saturday
+0 tr2895 departure cambridge
+0 tr2895 destination london_liverpool_street
+0 tr2895 duration 88_minutes
+0 tr2895 leaveat 05:59
+0 tr2895 arriveby 07:27
+0 tr2895 price 13.28_pounds
+0 tr0007 day sunday
+0 tr0007 departure cambridge
+0 tr0007 destination bishops_stortford
+0 tr0007 duration 38_minutes
+0 tr0007 leaveat 11:29
+0 tr0007 arriveby 12:07
+0 tr0007 price 8.08_pounds
+0 tr9904 day sunday
+0 tr9904 departure cambridge
+0 tr9904 destination bishops_stortford
+0 tr9904 duration 38_minutes
+0 tr9904 leaveat 09:29
+0 tr9904 arriveby 10:07
+0 tr9904 price 8.08_pounds
+0 tr7360 day monday
+0 tr7360 departure stansted_airport
+0 tr7360 destination cambridge
+0 tr7360 duration 28_minutes
+0 tr7360 leaveat 08:24
+0 tr7360 arriveby 08:52
+0 tr7360 price 10.10_pounds
+0 tr8095 day sunday
+0 tr8095 departure cambridge
+0 tr8095 destination bishops_stortford
+0 tr8095 duration 38_minutes
+0 tr8095 leaveat 07:29
+0 tr8095 arriveby 08:07
+0 tr8095 price 8.08_pounds
+0 tr1012 day sunday
+0 tr1012 departure cambridge
+0 tr1012 destination birmingham_new_street
+0 tr1012 duration 163_minutes
+0 tr1012 leaveat 21:01
+0 tr1012 arriveby 23:44
+0 tr1012 price 60.08_pounds
+0 tr0451 day wednesday
+0 tr0451 departure cambridge
+0 tr0451 destination leicester
+0 tr0451 duration 105_minutes
+0 tr0451 leaveat 14:21
+0 tr0451 arriveby 16:06
+0 tr0451 price 37.80_pounds
+0 tr5253 day thursday
+0 tr5253 departure ely
+0 tr5253 destination cambridge
+0 tr5253 duration 17_minutes
+0 tr5253 leaveat 23:35
+0 tr5253 arriveby 23:52
+0 tr5253 price 4.40_pounds
+0 tr2402 day sunday
+0 tr2402 departure cambridge
+0 tr2402 destination bishops_stortford
+0 tr2402 duration 38_minutes
+0 tr2402 leaveat 13:29
+0 tr2402 arriveby 14:07
+0 tr2402 price 8.08_pounds
+0 tr6572 day sunday
+0 tr6572 departure cambridge
+0 tr6572 destination bishops_stortford
+0 tr6572 duration 38_minutes
+0 tr6572 leaveat 05:29
+0 tr6572 arriveby 06:07
+0 tr6572 price 8.08_pounds
+1 i am looking for a train that will arrive at 20:45 and leaving on sunday	certainly where are you traveling from ?	[]
+2 cambridge and i need it go to bishops_stortford	there are several trains that will get you there on time what time do you hope to leave ?	[]
+3 i don t care i just want to arrive at 20:45	ask for one option below trainid departure destination day leaveat arriveby price duration book (optional) tr6572 cambridge bishops_stortford sunday 05:29 06:07 8.08_pounds 38_minutes tr8095 cambridge bishops_stortford sunday 07:29 08:07 8.08_pounds 38_minutes tr9904 cambridge bishops_stortford sunday 09:29 10:07 8.08_pounds 38_minutes tr0007 cambridge bishops_stortford sunday 11:29 12:07 8.08_pounds 38_minutes tr2402 cambridge bishops_stortford sunday 13:29 14:07 8.08_pounds 38_minutes	['08:07', '13:29', '06:07', 'tr0007', 'tr9904', '14:07', 'tr6572', '12:07', '38_minutes', 'tr2402', 'tr8095', 'bishops_stortford', 'sunday', '11:29', '05:29', '09:29', 'cambridge', '07:29', '8.08_pounds', '10:07']
+4 can i please speak with the manager ? giving me all this information at once is not helpful	i m sorry train tr9904 runs from cambridge to bishops_stortford on sunday and arrives at 10:07 will that work for you ?	['cambridge', 'bishops_stortford', 'sunday', 'tr9904', '10:07']
+5 yes could you please give me the travel time and departure time ?	tr9904 leaves at 09:29 and takes 38_minutes	['tr9904', '09:29', '38_minutes']
+6 thanks that is all i need good bye	thanks for inquiring with us and have a great day	[]
+
+#train#
+0 tr8466 day tuesday
+0 tr8466 departure birmingham_new_street
+0 tr8466 destination cambridge
+0 tr8466 duration 163_minutes
+0 tr8466 leaveat 14:40
+0 tr8466 arriveby 17:23
+0 tr8466 price 75.10_pounds
+0 tr6697 day sunday
+0 tr6697 departure kings_lynn
+0 tr6697 destination cambridge
+0 tr6697 duration 47_minutes
+0 tr6697 leaveat 19:11
+0 tr6697 arriveby 19:58
+0 tr6697 price 7.84_pounds
+0 tr3085 day monday
+0 tr3085 departure cambridge
+0 tr3085 destination london_liverpool_street
+0 tr3085 duration 88_minutes
+0 tr3085 leaveat 09:59
+0 tr3085 arriveby 11:27
+0 tr3085 price 16.60_pounds
+0 tr3396 day saturday
+0 tr3396 departure cambridge
+0 tr3396 destination bishops_stortford
+0 tr3396 duration 38_minutes
+0 tr3396 leaveat 09:29
+0 tr3396 arriveby 10:07
+0 tr3396 price 8.08_pounds
+0 tr0990 day tuesday
+0 tr0990 departure cambridge
+0 tr0990 destination stansted_airport
+0 tr0990 duration 28_minutes
+0 tr0990 leaveat 23:40
+0 tr0990 arriveby 24:08
+0 tr0990 price 10.10_pounds
+0 tr0115 day wednesday
+0 tr0115 departure cambridge
+0 tr0115 destination birmingham_new_street
+0 tr0115 duration 163_minutes
+0 tr0115 leaveat 05:01
+0 tr0115 arriveby 07:44
+0 tr0115 price 75.10_pounds
+1 i need a train leaving cambridge i have to arrive by 20:15	what is your destination and at what time would you like to leave ?	[]
+2 to birmingham_new_street on wednesday	tr0115 will be departing at 05:01 and arrive at 07:44 would you like me to book that for you ?	['tr0115', '05:01', '07:44']
+3 can you give me the total travel time ?	the total duration is 163_minutes will you be needing tickets ?	['163_minutes']
+4 not today i think i may book at the station that is all for today thank you so much !	your welcome please feel free to contact us anytime !	[]
+
+#train#
+0 tr5163 day sunday
+0 tr5163 departure norwich
+0 tr5163 destination cambridge
+0 tr5163 duration 79_minutes
+0 tr5163 leaveat 06:16
+0 tr5163 arriveby 07:35
+0 tr5163 price 14.08_pounds
+0 tr5767 day sunday
+0 tr5767 departure cambridge
+0 tr5767 destination leicester
+0 tr5767 duration 105_minutes
+0 tr5767 leaveat 10:21
+0 tr5767 arriveby 12:06
+0 tr5767 price 30.24_pounds
+0 tr9074 day wednesday
+0 tr9074 departure peterborough
+0 tr9074 destination cambridge
+0 tr9074 duration 50_minutes
+0 tr9074 leaveat 14:19
+0 tr9074 arriveby 15:09
+0 tr9074 price 16.50_pounds
+0 tr2000 day friday
+0 tr2000 departure cambridge
+0 tr2000 destination london_kings_cross
+0 tr2000 duration 51_minutes
+0 tr2000 leaveat 09:00
+0 tr2000 arriveby 09:51
+0 tr2000 price 23.60_pounds
+0 tr0684 day tuesday
+0 tr0684 departure cambridge
+0 tr0684 destination stansted_airport
+0 tr0684 duration 28_minutes
+0 tr0684 leaveat 07:40
+0 tr0684 arriveby 08:08
+0 tr0684 price 10.10_pounds
+0 tr8704 day sunday
+0 tr8704 departure cambridge
+0 tr8704 destination kings_lynn
+0 tr8704 duration 47_minutes
+0 tr8704 leaveat 11:11
+0 tr8704 arriveby 11:58
+0 tr8704 price 7.84_pounds
+0 tr1951 day tuesday
+0 tr1951 departure cambridge
+0 tr1951 destination stansted_airport
+0 tr1951 duration 28_minutes
+0 tr1951 leaveat 06:40
+0 tr1951 arriveby 07:08
+0 tr1951 price 10.10_pounds
+0 tr1419 day wednesday
+0 tr1419 departure stansted_airport
+0 tr1419 destination cambridge
+0 tr1419 duration 28_minutes
+0 tr1419 leaveat 18:24
+0 tr1419 arriveby 18:52
+0 tr1419 price 10.10_pounds
+0 tr1534 day tuesday
+0 tr1534 departure cambridge
+0 tr1534 destination ely
+0 tr1534 duration 17_minutes
+0 tr1534 leaveat 05:50
+0 tr1534 arriveby 06:07
+0 tr1534 price 4.40_pounds
+0 tr1656 day saturday
+0 tr1656 departure cambridge
+0 tr1656 destination leicester
+0 tr1656 duration 105_minutes
+0 tr1656 leaveat 07:21
+0 tr1656 arriveby 09:06
+0 tr1656 price 30.24_pounds
+1 i need to get a train out of cambridge	your looking at the trainid of tr5767 or tr2000 depending on your time	['tr5767', 'tr2000']
+2 the train should go to stansted_airport and should arrive by 21:30	what day of the week are you looking at traveling ?	[]
+3 i would like to leave on tuesday	these three could help trainid departure destination day leaveat arriveby price duration book (optional) tr1656 cambridge stansted_airport tuesday 05:40 06:08 10.10_pounds 28_minutes tr1951 cambridge stansted_airport tuesday 06:40 07:08 10.10_pounds 28_minutes tr0684 cambridge stansted_airport tuesday 07:40 08:08 10.10_pounds 28_minutes	['stansted_airport', 'cambridge', '06:40', 'tr1656', '06:08', 'tuesday', '08:08', '10.10_pounds', '05:40', '28_minutes', '07:08', 'tr0684', '07:40', 'tr1951']
+4 thank you for your help book for me 5 seats and get me the reference numberes	i m sorry could you confirm which train you wanted to book seats on ? there were 3 choices given to you	[]
+5 whichever train goes to stansted_airport tuesday from cabridge arriving closest to 21:30	booking was successful the total fee is 50.5 gbp payable at the station reference number is : gmybpe6f	[]
+6 thanks for that i don t need anything more today	ok enjoy your day	[]
+
+#train#
+0 tr6496 day friday
+0 tr6496 departure peterborough
+0 tr6496 destination cambridge
+0 tr6496 duration 50_minutes
+0 tr6496 leaveat 08:19
+0 tr6496 arriveby 09:09
+0 tr6496 price 16.50_pounds
+0 tr0488 day sunday
+0 tr0488 departure cambridge
+0 tr0488 destination leicester
+0 tr0488 duration 105_minutes
+0 tr0488 leaveat 22:21
+0 tr0488 arriveby 24:06
+0 tr0488 price 30.24_pounds
+0 tr5664 day thursday
+0 tr5664 departure kings_lynn
+0 tr5664 destination cambridge
+0 tr5664 duration 47_minutes
+0 tr5664 leaveat 18:11
+0 tr5664 arriveby 18:58
+0 tr5664 price 9.80_pounds
+0 tr0201 day friday
+0 tr0201 departure bishops_stortford
+0 tr0201 destination cambridge
+0 tr0201 duration 38_minutes
+0 tr0201 leaveat 17:29
+0 tr0201 arriveby 18:07
+0 tr0201 price 10.10_pounds
+0 tr2874 day wednesday
+0 tr2874 departure cambridge
+0 tr2874 destination stevenage
+0 tr2874 duration 49_minutes
+0 tr2874 leaveat 13:21
+0 tr2874 arriveby 14:10
+0 tr2874 price 12.80_pounds
+0 tr7693 day thursday
+0 tr7693 departure leicester
+0 tr7693 destination cambridge
+0 tr7693 duration 105_minutes
+0 tr7693 leaveat 18:09
+0 tr7693 arriveby 19:54
+0 tr7693 price 37.80_pounds
+1 i need a train from peterborough	where are you headed and what day and time did you need to leave ?	[]
+2 i am going to cambridge and leaving after 8:00 on friday	sure i have tr6496 departing at 08:19 arriving at 09:09 with a duration of 50_minutes the cost is 16.50_pounds would that work for you ?	['09:09', '08:19', '50_minutes', '16.50_pounds', 'tr6496']
+3 yes please book it for 5 people and give me a reference number	booking was successful the total fee is 82.5 gbp payable at the station the feference number is : mfchf1yv can i help with anything else ?	[]
+4 i think that takes care of everything thanks !	great i m glad i could help ! please consider using our service again the future goodbye	[]
+
+#restaurant#
+0 golden_wok address 191_histon_road_chesterton
+0 golden_wok area north
+0 golden_wok food chinese
+0 golden_wok phone 01223350688
+0 golden_wok postcode cb43hl
+0 golden_wok pricerange moderate
+0 golden_wok type restaurant
+0 lan_hong_house address 12_norfolk_street_city_centre
+0 lan_hong_house area centre
+0 lan_hong_house food chinese
+0 lan_hong_house phone 01223350420
+0 lan_hong_house postcode cb12lf
+0 lan_hong_house pricerange moderate
+0 lan_hong_house type restaurant
+0 maharajah_tandoori_restaurant address 41518_castle_street_city_centre
+0 maharajah_tandoori_restaurant area west
+0 maharajah_tandoori_restaurant food indian
+0 maharajah_tandoori_restaurant phone 01223358399
+0 maharajah_tandoori_restaurant postcode cb30ah
+0 maharajah_tandoori_restaurant pricerange expensive
+0 maharajah_tandoori_restaurant type restaurant
+0 curry_garden address 106_regent_street_city_centre
+0 curry_garden area centre
+0 curry_garden food indian
+0 curry_garden phone 01223302330
+0 curry_garden postcode cb21dp
+0 curry_garden pricerange expensive
+0 curry_garden type restaurant
+0 shiraz_restaurant address 84_regent_street_city_centre
+0 shiraz_restaurant area centre
+0 shiraz_restaurant food mediterranean
+0 shiraz_restaurant phone 01223307581
+0 shiraz_restaurant postcode cb21dp
+0 shiraz_restaurant pricerange expensive
+0 shiraz_restaurant type restaurant
+0 the_lucky_star address cambridge_leisure_park_clifton_way_cherry_hinton
+0 the_lucky_star area south
+0 the_lucky_star food chinese
+0 the_lucky_star phone 01223244277
+0 the_lucky_star postcode cb17dy
+0 the_lucky_star pricerange cheap
+0 the_lucky_star type restaurant
+1 i m looking for a restaurant that serves indian food	hello i have a bunch of options for you do you have a specific area or price range you are interested in ?	[]
+2 i am looking for an indian restaurant in the west	what price range are you interested in ?	[]
+3 the restaurant should be in the expensive price range	maharajah_tandoori_restaurant on 41518_castle_street_city_centre is a good fit for you	['maharajah_tandoori_restaurant', '41518_castle_street_city_centre']
 
 #attraction#
 0 cambridge_university_botanic_gardens address bateman_street
@@ -7724,54 +8553,6 @@
 4 yes it does thanks for the information bye !	thank you goodbye	[]
 
 #restaurant#
-0 the_nirala address 7_milton_road_chesterton
-0 the_nirala area north
-0 the_nirala food indian
-0 the_nirala phone 01223360966
-0 the_nirala postcode cb41uy
-0 the_nirala pricerange moderate
-0 the_nirala type restaurant
-0 the_oak_bistro address 6_lensfield_road
-0 the_oak_bistro area centre
-0 the_oak_bistro food british
-0 the_oak_bistro phone 01223323361
-0 the_oak_bistro postcode cb21eg
-0 the_oak_bistro pricerange moderate
-0 the_oak_bistro type restaurant
-0 la_tasca address 14_-16_bridge_street
-0 la_tasca area centre
-0 la_tasca food spanish
-0 la_tasca phone 01223464630
-0 la_tasca postcode cb21uf
-0 la_tasca pricerange moderate
-0 la_tasca type restaurant
-0 bedouin address 100_mill_road_city_centre
-0 bedouin area centre
-0 bedouin food african
-0 bedouin phone 01223367660
-0 bedouin postcode cb12bd
-0 bedouin pricerange expensive
-0 bedouin type restaurant
-0 tang_chinese address napier_street_city_centre
-0 tang_chinese area centre
-0 tang_chinese food chinese
-0 tang_chinese phone 01223357187
-0 tang_chinese postcode cb11hr
-0 tang_chinese pricerange expensive
-0 tang_chinese type restaurant
-0 the_river_bar_steakhouse_and_grill address quayside_off_bridge_street
-0 the_river_bar_steakhouse_and_grill area centre
-0 the_river_bar_steakhouse_and_grill food modern_european
-0 the_river_bar_steakhouse_and_grill phone 01223307030
-0 the_river_bar_steakhouse_and_grill postcode cb58aq
-0 the_river_bar_steakhouse_and_grill pricerange cheap
-0 the_river_bar_steakhouse_and_grill type restaurant
-1 i am looking for an expensive restaurant in the city center	there are 33 entries that meet your request is there a type of food you are looking for ?	[]
-2 no i really don t mind recommend one to me	how about bedouin ? it is an african cuisine that is in the expensive price range	['bedouin', 'expensive', 'african']
-3 that sounds wonderful can you give me the address and postcode ?	the bedouin s address is 100_mill_road_city_centre and the postcode is cb12bd can i help you with anything else ?	['100_mill_road_city_centre', 'bedouin', 'cb12bd']
-4 no that s all thank you	okay have a great meal !	[]
-
-#restaurant#
 0 india_house address 31_newnham_road_newnham
 0 india_house area west
 0 india_house food indian
@@ -7918,58 +8699,6 @@
 5 that s okay no need to book now but can i get the travel time for that train ?	the travel time for the train is 60_minutes	['60_minutes']
 6 okay thanks ! that s all i needed ! have a good day !	glad i could help !	[]
 
-#train#
-0 tr8494 day saturday
-0 tr8494 departure peterborough
-0 tr8494 destination cambridge
-0 tr8494 duration 50_minutes
-0 tr8494 leaveat 11:19
-0 tr8494 arriveby 12:09
-0 tr8494 price 13.20_pounds
-0 tr7441 day saturday
-0 tr7441 departure stansted_airport
-0 tr7441 destination cambridge
-0 tr7441 duration 28_minutes
-0 tr7441 leaveat 11:24
-0 tr7441 arriveby 11:52
-0 tr7441 price 8.08_pounds
-0 tr2178 day thursday
-0 tr2178 departure cambridge
-0 tr2178 destination peterborough
-0 tr2178 duration 50_minutes
-0 tr2178 leaveat 20:34
-0 tr2178 arriveby 21:24
-0 tr2178 price 16.50_pounds
-0 tr2357 day sunday
-0 tr2357 departure london_liverpool_street
-0 tr2357 destination cambridge
-0 tr2357 duration 88_minutes
-0 tr2357 leaveat 09:39
-0 tr2357 arriveby 11:07
-0 tr2357 price 13.28_pounds
-0 tr3938 day monday
-0 tr3938 departure london_liverpool_street
-0 tr3938 destination cambridge
-0 tr3938 duration 88_minutes
-0 tr3938 leaveat 23:39
-0 tr3938 arriveby 01:07
-0 tr3938 price 16.60_pounds
-0 tr0998 day thursday
-0 tr0998 departure london_liverpool_street
-0 tr0998 destination cambridge
-0 tr0998 duration 88_minutes
-0 tr0998 leaveat 09:39
-0 tr0998 arriveby 11:07
-0 tr0998 price 16.60_pounds
-1 i need to book a train leaving thursday from cambridge can you help me with that ?	yes what time will you be departing ?	[]
-2 i will be leaving saturday morning at 08:45	is it thursday or saturday ? and where is your destination ?	['thursday', 'saturday']
-3 sorry for the confusion i need to get to peterborough thursday night	okay and what departure or arrival time did you need for thursday ?	['thursday']
-4 i need to leave after 20:15	the first train after 20:15 is the tr2178 leaving at 20:34	['20:34', 'tr2178']
-5 that sounds perfect can you tell me the travel time please ?	the travel time is 50_minutes may i book that for you ?	['50_minutes']
-6 yes i d really appreciate that	i was able to book a train for 1 on thursday from cambridge to peterborough leaving at 20:34 your reference number is 9ip722k1	['peterborough', '20:34', 'cambridge', 'thursday']
-7 perfect thank you for your help !	can i help you with anything further ?	[]
-8 nope that s all thanks !	thank you for using our service goodbye	[]
-
 #restaurant#
 0 the_oak_bistro address 6_lensfield_road
 0 the_oak_bistro area centre
@@ -8025,69 +8754,6 @@
 3 i d like a table for 3 people at 11:00 on friday please	the_oak_bistro is fully booked do you want me to try another restaurant in the centre serving moderate british food ?	['the_oak_bistro', 'restaurant', 'centre', 'british', 'moderate']
 4 yes please try another restaurant in the center serving moderate british food	i was able to book restaurant_one_seven reference number is xxz4d253	['restaurant_one_seven']
 5 sounds wonderful thank you for your help that is all i need bye	thank you for calling cambridge towninfo centre have a great day	['centre']
-
-#restaurant#
-0 travellers_rest address huntingdon_road_city_centre
-0 travellers_rest area west
-0 travellers_rest food british
-0 travellers_rest phone 01223276182
-0 travellers_rest postcode cb30df
-0 travellers_rest pricerange expensive
-0 travellers_rest type restaurant
-0 kymmoy address 52_mill_road_city_centre
-0 kymmoy area centre
-0 kymmoy food asian_oriental
-0 kymmoy phone 01223311911
-0 kymmoy postcode cb12as
-0 kymmoy pricerange expensive
-0 kymmoy type restaurant
-0 bedouin address 100_mill_road_city_centre
-0 bedouin area centre
-0 bedouin food african
-0 bedouin phone 01223367660
-0 bedouin postcode cb12bd
-0 bedouin pricerange expensive
-0 bedouin type restaurant
-0 fitzbillies_restaurant address 51_trumpington_street_city_centre
-0 fitzbillies_restaurant area centre
-0 fitzbillies_restaurant food british
-0 fitzbillies_restaurant phone 01223352500
-0 fitzbillies_restaurant postcode cb21rg
-0 fitzbillies_restaurant pricerange expensive
-0 fitzbillies_restaurant type restaurant
-0 the_copper_kettle address 4_kings_parade_city_centre
-0 the_copper_kettle area centre
-0 the_copper_kettle food british
-0 the_copper_kettle phone 01223365068
-0 the_copper_kettle postcode cb21sj
-0 the_copper_kettle pricerange moderate
-0 the_copper_kettle type restaurant
-0 the_lucky_star address cambridge_leisure_park_clifton_way_cherry_hinton
-0 the_lucky_star area south
-0 the_lucky_star food chinese
-0 the_lucky_star phone 01223244277
-0 the_lucky_star postcode cb17dy
-0 the_lucky_star pricerange cheap
-0 the_lucky_star type restaurant
-0 saint_johns_chop_house address 21_-_24_northampton_street
-0 saint_johns_chop_house area west
-0 saint_johns_chop_house food british
-0 saint_johns_chop_house phone 01223353110
-0 saint_johns_chop_house postcode cb30ad
-0 saint_johns_chop_house pricerange moderate
-0 saint_johns_chop_house type restaurant
-0 peking_restaurant address 10_homerton_street_city_centre
-0 peking_restaurant area south
-0 peking_restaurant food chinese
-0 peking_restaurant phone 01223354755
-0 peking_restaurant postcode cb28nx
-0 peking_restaurant pricerange expensive
-0 peking_restaurant type restaurant
-1 i m looking for an expensive restaurant in the center of town	certainly some choices that fit your criteria are bedouin kymmoy and fitzbillies_restaurant	['bedouin', 'kymmoy', 'fitzbillies_restaurant']
-2 what are the different food types of these restaurants ?	in the same order: african asian_oriental british do any of these fancy you ?	['asian_oriental', 'british', 'african']
-3 not actually i won t be needing anything else at this time thank you good bye	you don t need any other information ?	[]
-4 that s all i need from you today thanks	alright i hope you have a wonderful day !	[]
-5 thank you for your help	you re quite welcome ! thanks for contacting the cambridge towninfo centre and have a great day !	['centre']
 
 #attraction#
 0 scudamores_punting_co address granta_place_mill_lane
@@ -8183,279 +8849,6 @@
 3 i don t care	how about nandos ? it is a cheap restraunt on cambridge_leisure_park_clifton_way	['cambridge_leisure_park_clifton_way', 'nandos', 'cheap']
 4 sounds great what is their address ?	the address is cambridge_leisure_park_clifton_way c.b 1 7 dy	['cambridge_leisure_park_clifton_way']
 5 thank you and goodbye !	goodbye	[]
-
-#hotel#
-0 cityroomz address sleeperz_hotel_station_road
-0 cityroomz area centre
-0 cityroomz internet yes
-0 cityroomz parking no
-0 cityroomz phone 01223304050
-0 cityroomz postcode cb12tz
-0 cityroomz singleprice 47
-0 cityroomz doubleprice 67
-0 cityroomz familyprice 77
-0 cityroomz pricerange moderate
-0 cityroomz stars 0
-0 cityroomz takesbookings yes
-0 cityroomz type hotel
-0 finches_bed_and_breakfast address 144_thornton_road
-0 finches_bed_and_breakfast area west
-0 finches_bed_and_breakfast internet yes
-0 finches_bed_and_breakfast parking yes
-0 finches_bed_and_breakfast phone 01223276653
-0 finches_bed_and_breakfast postcode cb30nd
-0 finches_bed_and_breakfast singleprice 50
-0 finches_bed_and_breakfast doubleprice 50
-0 finches_bed_and_breakfast pricerange cheap
-0 finches_bed_and_breakfast stars 4
-0 finches_bed_and_breakfast takesbookings yes
-0 finches_bed_and_breakfast type guesthouse
-0 the_lensfield_hotel address 53-57_lensfield_road
-0 the_lensfield_hotel area south
-0 the_lensfield_hotel internet yes
-0 the_lensfield_hotel parking yes
-0 the_lensfield_hotel phone 01223355017
-0 the_lensfield_hotel postcode cb21en
-0 the_lensfield_hotel singleprice 65
-0 the_lensfield_hotel doubleprice 90
-0 the_lensfield_hotel familyprice 125
-0 the_lensfield_hotel pricerange expensive
-0 the_lensfield_hotel stars 3
-0 the_lensfield_hotel takesbookings yes
-0 the_lensfield_hotel type hotel
-0 kirkwood_house address 172_chesterton_road
-0 kirkwood_house area north
-0 kirkwood_house internet yes
-0 kirkwood_house parking yes
-0 kirkwood_house phone 01223306283
-0 kirkwood_house postcode cb41da
-0 kirkwood_house singleprice 50
-0 kirkwood_house doubleprice 75
-0 kirkwood_house familyprice 130
-0 kirkwood_house pricerange moderate
-0 kirkwood_house stars 4
-0 kirkwood_house takesbookings yes
-0 kirkwood_house type guesthouse
-0 avalon address 62_gilbert_road
-0 avalon area north
-0 avalon internet yes
-0 avalon parking no
-0 avalon phone 01223353071
-0 avalon postcode cb43pd
-0 avalon singleprice 45
-0 avalon doubleprice 65
-0 avalon pricerange moderate
-0 avalon stars 4
-0 avalon takesbookings yes
-0 avalon type guesthouse
-0 express_by_holiday_inn_cambridge address 15-17_norman_way_coldhams_business_park
-0 express_by_holiday_inn_cambridge area east
-0 express_by_holiday_inn_cambridge internet yes
-0 express_by_holiday_inn_cambridge parking yes
-0 express_by_holiday_inn_cambridge phone 01223866800
-0 express_by_holiday_inn_cambridge postcode cb13lh
-0 express_by_holiday_inn_cambridge singleprice 90
-0 express_by_holiday_inn_cambridge doubleprice 90
-0 express_by_holiday_inn_cambridge familyprice 90
-0 express_by_holiday_inn_cambridge pricerange expensive
-0 express_by_holiday_inn_cambridge stars 2
-0 express_by_holiday_inn_cambridge takesbookings yes
-0 express_by_holiday_inn_cambridge type hotel
-1 hello ! can you tell me about places to stay in the north area of town ? i ll be on a business trip so i do need free wifi	i have several options that meet your needs i would recommend the avalon unless you need free parking	['avalon']
-2 i do not need parking is the avalon moderately priiced ?	yes the avalon is in the moderate price range would you like to book a room ?	['moderate', 'avalon']
-3 sure ! can you book it for 2 people and 5 nights starting friday ?	sure your reference number is 8y3768bt anything else ?	[]
-4 nope that s all i need thank you !	you are very welcome thank you for calling cambridge towninfo centre goodbye	['centre']
-
-#hotel#
-0 cityroomz address sleeperz_hotel_station_road
-0 cityroomz area centre
-0 cityroomz internet yes
-0 cityroomz parking no
-0 cityroomz phone 01223304050
-0 cityroomz postcode cb12tz
-0 cityroomz singleprice 47
-0 cityroomz doubleprice 67
-0 cityroomz familyprice 77
-0 cityroomz pricerange moderate
-0 cityroomz stars 0
-0 cityroomz takesbookings yes
-0 cityroomz type hotel
-0 archway_house address 52_gilbert_road
-0 archway_house area north
-0 archway_house internet yes
-0 archway_house parking yes
-0 archway_house phone 01223575314
-0 archway_house postcode cb43pe
-0 archway_house singleprice 40
-0 archway_house doubleprice 70
-0 archway_house pricerange moderate
-0 archway_house stars 4
-0 archway_house takesbookings yes
-0 archway_house type guesthouse
-0 finches_bed_and_breakfast address 144_thornton_road
-0 finches_bed_and_breakfast area west
-0 finches_bed_and_breakfast internet yes
-0 finches_bed_and_breakfast parking yes
-0 finches_bed_and_breakfast phone 01223276653
-0 finches_bed_and_breakfast postcode cb30nd
-0 finches_bed_and_breakfast singleprice 50
-0 finches_bed_and_breakfast doubleprice 50
-0 finches_bed_and_breakfast pricerange cheap
-0 finches_bed_and_breakfast stars 4
-0 finches_bed_and_breakfast takesbookings yes
-0 finches_bed_and_breakfast type guesthouse
-0 alexander_bed_and_breakfast address 56_saint_barnabas_road
-0 alexander_bed_and_breakfast area centre
-0 alexander_bed_and_breakfast internet yes
-0 alexander_bed_and_breakfast parking yes
-0 alexander_bed_and_breakfast phone 01223525725
-0 alexander_bed_and_breakfast postcode cb12de
-0 alexander_bed_and_breakfast singleprice 40
-0 alexander_bed_and_breakfast doubleprice 50
-0 alexander_bed_and_breakfast pricerange cheap
-0 alexander_bed_and_breakfast stars 4
-0 alexander_bed_and_breakfast takesbookings yes
-0 alexander_bed_and_breakfast type guesthouse
-0 hobsons_house address 96_barton_road
-0 hobsons_house area west
-0 hobsons_house internet yes
-0 hobsons_house parking yes
-0 hobsons_house phone 01223304906
-0 hobsons_house postcode cb39lh
-0 hobsons_house singleprice 59
-0 hobsons_house doubleprice 75
-0 hobsons_house familyprice 110
-0 hobsons_house pricerange moderate
-0 hobsons_house stars 3
-0 hobsons_house takesbookings yes
-0 hobsons_house type guesthouse
-0 el_shaddai address 41_warkworth_street
-0 el_shaddai area centre
-0 el_shaddai internet yes
-0 el_shaddai parking yes
-0 el_shaddai phone 01223327978
-0 el_shaddai postcode cb11eg
-0 el_shaddai singleprice 40
-0 el_shaddai doubleprice 60
-0 el_shaddai familyprice 62
-0 el_shaddai pricerange cheap
-0 el_shaddai stars 0
-0 el_shaddai takesbookings yes
-0 el_shaddai type guesthouse
-0 aylesbray_lodge_guest_house address 5_mowbray_road
-0 aylesbray_lodge_guest_house area south
-0 aylesbray_lodge_guest_house internet yes
-0 aylesbray_lodge_guest_house parking yes
-0 aylesbray_lodge_guest_house phone 01223240089
-0 aylesbray_lodge_guest_house postcode cb17sr
-0 aylesbray_lodge_guest_house singleprice 65
-0 aylesbray_lodge_guest_house doubleprice 75
-0 aylesbray_lodge_guest_house familyprice 95
-0 aylesbray_lodge_guest_house pricerange moderate
-0 aylesbray_lodge_guest_house stars 4
-0 aylesbray_lodge_guest_house takesbookings yes
-0 aylesbray_lodge_guest_house type guesthouse
-1 i need a guesthouse with free parking	there are a few options meeting your requirements what area should the guest house be in ?	[]
-2 i would like it in the cheap price range in the west	the finches_bed_and_breakfast fits those requirements would you like me to book that for you ?	['finches_bed_and_breakfast']
-3 actually i don t care what part of town it is in i just need 4 stars does the finches offer that ?	yes they do have four stars free internet and parking may i book that for you ?	[]
-4 yes please just for 1 person for 2 nights starting on monday	i m sorry it wasn t available i did book a room at the alexander_bed_and_breakfast it is a cheap 4 star with free parking reference number b4irjdnn	['4', 'alexander_bed_and_breakfast', 'cheap']
-5 thank you for the reference number b4irjdnn goodbye	goodbye ! have a great day !	[]
-
-#restaurant#
-0 yippee_noodle_bar address 40428_king_street_city_centre
-0 yippee_noodle_bar area centre
-0 yippee_noodle_bar food asian_oriental
-0 yippee_noodle_bar phone 01223518111
-0 yippee_noodle_bar postcode cb11lh
-0 yippee_noodle_bar pricerange moderate
-0 yippee_noodle_bar type restaurant
-0 nandos address cambridge_leisure_park_clifton_way
-0 nandos area south
-0 nandos food portuguese
-0 nandos phone 01223327908
-0 nandos postcode cb17dy
-0 nandos pricerange cheap
-0 nandos type restaurant
-0 don_pasquale_pizzeria address 12_market_hill_city_centre
-0 don_pasquale_pizzeria area centre
-0 don_pasquale_pizzeria food italian
-0 don_pasquale_pizzeria phone 01223350106
-0 don_pasquale_pizzeria postcode cb23nj
-0 don_pasquale_pizzeria pricerange expensive
-0 don_pasquale_pizzeria type restaurant
-0 michaelhouse_cafe address st_michael_s_church_trinity_street_city_centre
-0 michaelhouse_cafe area centre
-0 michaelhouse_cafe food european
-0 michaelhouse_cafe phone 01223309147
-0 michaelhouse_cafe postcode cb21su
-0 michaelhouse_cafe pricerange expensive
-0 michaelhouse_cafe type restaurant
-0 cote address bridge_street_city_centre
-0 cote area centre
-0 cote food french
-0 cote phone 01223311053
-0 cote postcode cb21uf
-0 cote pricerange expensive
-0 cote type restaurant
-0 city_stop_restaurant address cambridge_city_football_club_milton_road_chesterton
-0 city_stop_restaurant area north
-0 city_stop_restaurant food european
-0 city_stop_restaurant phone 01223363270
-0 city_stop_restaurant postcode cb41uy
-0 city_stop_restaurant pricerange expensive
-0 city_stop_restaurant type restaurant
-1 i am looking for a restaurant in the south	we have nine do you have a preference as to cuisine or price range ?	[]
-2 i am looking for one that serves portuguese food and is cheap	i found one it is called nandos would you like for me to book it for you ?	['nandos']
-3 yes please we would like a table for 2 at 18:00 on saturday	i am sorry this restaurant is booked would you like to try a different place ?	['restaurant']
-4 no thank you,i will call again	have a nice day	[]
-
-#train#
-0 tr1086 day sunday
-0 tr1086 departure cambridge
-0 tr1086 destination peterborough
-0 tr1086 duration 50_minutes
-0 tr1086 leaveat 16:06
-0 tr1086 arriveby 16:56
-0 tr1086 price 13.20_pounds
-0 tr7878 day friday
-0 tr7878 departure leicester
-0 tr7878 destination cambridge
-0 tr7878 duration 105_minutes
-0 tr7878 leaveat 16:09
-0 tr7878 arriveby 17:54
-0 tr7878 price 37.80_pounds
-0 tr5054 day monday
-0 tr5054 departure leicester
-0 tr5054 destination cambridge
-0 tr5054 duration 105_minutes
-0 tr5054 leaveat 12:09
-0 tr5054 arriveby 13:54
-0 tr5054 price 37.80_pounds
-0 tr8385 day wednesday
-0 tr8385 departure kings_lynn
-0 tr8385 destination cambridge
-0 tr8385 duration 47_minutes
-0 tr8385 leaveat 22:11
-0 tr8385 arriveby 22:58
-0 tr8385 price 9.80_pounds
-0 tr8424 day wednesday
-0 tr8424 departure cambridge
-0 tr8424 destination ely
-0 tr8424 duration 17_minutes
-0 tr8424 leaveat 23:50
-0 tr8424 arriveby 24:07
-0 tr8424 price 4.40_pounds
-0 tr5953 day wednesday
-0 tr5953 departure broxbourne
-0 tr5953 destination cambridge
-0 tr5953 duration 60_minutes
-0 tr5953 leaveat 11:32
-0 tr5953 arriveby 12:32
-0 tr5953 price 17.90_pounds
-1 i d like a train from leicester to cambridge please !	on what day will you be travelling ?	[]
-2 i will be traveling on monday and need to arrive by 14:15	train tr5054 leaves leicester and arrives in cambridge at 13:54 would you like to book this train ?	['leicester', 'tr5054', 'cambridge', '13:54']
-3 sounds great can you please book it for 2 people ?	of course your total will be 75.59 gbp payable at the station your reference number is pcjmqzxo can i help you with anything else ?	[]
-4 no thank you that s all	all right have a great trip !	[]
 
 #hotel#
 0 carolina_bed_and_breakfast address 138_perne_road
@@ -8956,89 +9349,6 @@
 2 great can you please give me the travel time and price ?	yes the travel time is 51_minutes and the price is 23.60_pounds	['23.60_pounds', '51_minutes']
 3 thank you ! that s all i needed	your very welcome ! have a nice day !	[]
 4 thank you very much	okay thank you again	[]
-
-#hotel#
-0 carolina_bed_and_breakfast address 138_perne_road
-0 carolina_bed_and_breakfast area east
-0 carolina_bed_and_breakfast internet yes
-0 carolina_bed_and_breakfast parking yes
-0 carolina_bed_and_breakfast phone 01223247015
-0 carolina_bed_and_breakfast postcode cb13nx
-0 carolina_bed_and_breakfast singleprice 45
-0 carolina_bed_and_breakfast doubleprice 75
-0 carolina_bed_and_breakfast familyprice 100
-0 carolina_bed_and_breakfast pricerange moderate
-0 carolina_bed_and_breakfast stars 4
-0 carolina_bed_and_breakfast takesbookings yes
-0 carolina_bed_and_breakfast type guesthouse
-0 finches_bed_and_breakfast address 144_thornton_road
-0 finches_bed_and_breakfast area west
-0 finches_bed_and_breakfast internet yes
-0 finches_bed_and_breakfast parking yes
-0 finches_bed_and_breakfast phone 01223276653
-0 finches_bed_and_breakfast postcode cb30nd
-0 finches_bed_and_breakfast singleprice 50
-0 finches_bed_and_breakfast doubleprice 50
-0 finches_bed_and_breakfast pricerange cheap
-0 finches_bed_and_breakfast stars 4
-0 finches_bed_and_breakfast takesbookings yes
-0 finches_bed_and_breakfast type guesthouse
-0 arbury_lodge_guesthouse address 82_arbury_road
-0 arbury_lodge_guesthouse area north
-0 arbury_lodge_guesthouse internet yes
-0 arbury_lodge_guesthouse parking yes
-0 arbury_lodge_guesthouse phone 01223364319
-0 arbury_lodge_guesthouse postcode cb42je
-0 arbury_lodge_guesthouse singleprice 50
-0 arbury_lodge_guesthouse doubleprice 75
-0 arbury_lodge_guesthouse familyprice 100
-0 arbury_lodge_guesthouse pricerange moderate
-0 arbury_lodge_guesthouse stars 4
-0 arbury_lodge_guesthouse takesbookings yes
-0 arbury_lodge_guesthouse type guesthouse
-0 leverton_house address 732-734_newmarket_road
-0 leverton_house area east
-0 leverton_house internet yes
-0 leverton_house parking yes
-0 leverton_house phone 01223292094
-0 leverton_house postcode cb58rs
-0 leverton_house singleprice 40
-0 leverton_house doubleprice 60
-0 leverton_house familyprice 90
-0 leverton_house pricerange cheap
-0 leverton_house stars 4
-0 leverton_house takesbookings yes
-0 leverton_house type guesthouse
-0 alexander_bed_and_breakfast address 56_saint_barnabas_road
-0 alexander_bed_and_breakfast area centre
-0 alexander_bed_and_breakfast internet yes
-0 alexander_bed_and_breakfast parking yes
-0 alexander_bed_and_breakfast phone 01223525725
-0 alexander_bed_and_breakfast postcode cb12de
-0 alexander_bed_and_breakfast singleprice 40
-0 alexander_bed_and_breakfast doubleprice 50
-0 alexander_bed_and_breakfast pricerange cheap
-0 alexander_bed_and_breakfast stars 4
-0 alexander_bed_and_breakfast takesbookings yes
-0 alexander_bed_and_breakfast type guesthouse
-0 aylesbray_lodge_guest_house address 5_mowbray_road
-0 aylesbray_lodge_guest_house area south
-0 aylesbray_lodge_guest_house internet yes
-0 aylesbray_lodge_guest_house parking yes
-0 aylesbray_lodge_guest_house phone 01223240089
-0 aylesbray_lodge_guest_house postcode cb17sr
-0 aylesbray_lodge_guest_house singleprice 65
-0 aylesbray_lodge_guest_house doubleprice 75
-0 aylesbray_lodge_guest_house familyprice 95
-0 aylesbray_lodge_guest_house pricerange moderate
-0 aylesbray_lodge_guest_house stars 4
-0 aylesbray_lodge_guest_house takesbookings yes
-0 aylesbray_lodge_guest_house type guesthouse
-1 i am looking for a place to stay the hotel should include free parking and should be in the type of guesthouse	what area of town ?	[]
-2 it should be in the west and have a star rating of 4	how about finches_bed_and_breakfast ?	['finches_bed_and_breakfast']
-3 i d like to book for 7 people 2 nights on saturday please	booking was successful reference number is : fnajhewg	[]
-4 thank you for your help	is there anything else i can help you with ?	[]
-5 no there s nothing more	thank you for contacting us have a great day !	[]
 
 #attraction#
 0 vue_cinema address the_grafton_centre_east_road
@@ -9742,127 +10052,6 @@
 2 yes where area is it located in ? i need it to be in the west	it is in the city centre	['centre']
 3 that won t work how about an italian restaurant in the west that is moderately priced ?	prezzo is an italian restaurant in the west part of town with a moderate price range would you like to book a table ?	['west', 'prezzo', 'restaurant', 'italian', 'moderate']
 4 yes i would like to book a table for 2 people at 11:00 on friday	i have booked a table for 2 people at 11:00 on friday at prezzo	['prezzo']
-
-#restaurant#
-0 rice_boat address 37_newnham_road_newnham
-0 rice_boat area west
-0 rice_boat food indian
-0 rice_boat phone 01223302800
-0 rice_boat postcode cb39ey
-0 rice_boat pricerange expensive
-0 rice_boat type restaurant
-0 pipasha_restaurant address newmarket_road_fen_ditton
-0 pipasha_restaurant area east
-0 pipasha_restaurant food indian
-0 pipasha_restaurant phone 01223577786
-0 pipasha_restaurant postcode cb58pa
-0 pipasha_restaurant pricerange expensive
-0 pipasha_restaurant type restaurant
-0 golden_house address 12_lensfield_road_city_centre
-0 golden_house area centre
-0 golden_house food chinese
-0 golden_house phone 01842753771
-0 golden_house postcode cb21eg
-0 golden_house pricerange cheap
-0 golden_house type restaurant
-0 la_tasca address 14_-16_bridge_street
-0 la_tasca area centre
-0 la_tasca food spanish
-0 la_tasca phone 01223464630
-0 la_tasca postcode cb21uf
-0 la_tasca pricerange moderate
-0 la_tasca type restaurant
-0 zizzi_cambridge address 47-53_regent_street
-0 zizzi_cambridge area centre
-0 zizzi_cambridge food italian
-0 zizzi_cambridge phone 01223365599
-0 zizzi_cambridge postcode cb21ab
-0 zizzi_cambridge pricerange cheap
-0 zizzi_cambridge type restaurant
-0 ask_restaurant address 12_bridge_street_city_centre
-0 ask_restaurant area centre
-0 ask_restaurant food italian
-0 ask_restaurant phone 01223364917
-0 ask_restaurant postcode cb21uf
-0 ask_restaurant pricerange cheap
-0 ask_restaurant type restaurant
-1 i m looking for an upscale expensive place to eat on the west side of town	what type of food are you looking for ?	[]
-2 i m really in the mood for jamaican food	i m sorry there are no restaurants matching your criteria	[]
-3 how about some indian food ?	okay now i have many options would you like a reservation at one of them ?	[]
-4 i would can you book me a table for 1 on tuesday at 11:45 ?	i m sorry all 5 restaurants meeting your criteria are booked at this time would you like me to try a different time slot ?	[]
-5 yes can you try 10:45 ?	i was able to book you a table at rice_boat on tuesday at 10:45 the reference number is ytg3eogf	['rice_boat']
-6 thank you that s all i need	great ! enjoy your meal ! goodbye !	[]
-
-#hotel#
-0 autumn_house address 710_newmarket_road
-0 autumn_house area east
-0 autumn_house internet yes
-0 autumn_house parking yes
-0 autumn_house phone 01223575122
-0 autumn_house postcode cb58rs
-0 autumn_house singleprice 40
-0 autumn_house doubleprice 60
-0 autumn_house familyprice 90
-0 autumn_house pricerange cheap
-0 autumn_house stars 4
-0 autumn_house takesbookings yes
-0 autumn_house type guesthouse
-0 home_from_home address 78-80_milton_road
-0 home_from_home area north
-0 home_from_home internet yes
-0 home_from_home parking yes
-0 home_from_home phone 01223323555
-0 home_from_home postcode cb41la
-0 home_from_home singleprice 50
-0 home_from_home doubleprice 75
-0 home_from_home familyprice 105
-0 home_from_home pricerange moderate
-0 home_from_home stars 4
-0 home_from_home takesbookings yes
-0 home_from_home type guesthouse
-0 ashley_hotel address 74_chesterton_road
-0 ashley_hotel area north
-0 ashley_hotel internet yes
-0 ashley_hotel parking yes
-0 ashley_hotel phone 01223350059
-0 ashley_hotel postcode cb41er
-0 ashley_hotel doubleprice 75
-0 ashley_hotel familyprice 85
-0 ashley_hotel pricerange moderate
-0 ashley_hotel stars 2
-0 ashley_hotel takesbookings yes
-0 ashley_hotel type hotel
-0 the_cambridge_belfry address back_lane_cambourne
-0 the_cambridge_belfry area west
-0 the_cambridge_belfry internet yes
-0 the_cambridge_belfry parking yes
-0 the_cambridge_belfry phone 01954714600
-0 the_cambridge_belfry postcode cb236bw
-0 the_cambridge_belfry singleprice 60
-0 the_cambridge_belfry doubleprice 60
-0 the_cambridge_belfry pricerange cheap
-0 the_cambridge_belfry stars 4
-0 the_cambridge_belfry takesbookings yes
-0 the_cambridge_belfry type hotel
-0 worth_house address 152_chesterton_road
-0 worth_house area north
-0 worth_house internet yes
-0 worth_house parking yes
-0 worth_house phone 01223316074
-0 worth_house postcode cb41da
-0 worth_house singleprice 49
-0 worth_house doubleprice 60
-0 worth_house familyprice 85
-0 worth_house pricerange cheap
-0 worth_house stars 4
-0 worth_house takesbookings yes
-0 worth_house type guesthouse
-1 i need to find a four stars hotel in the north that has indoor free parking	we have seven matches for your requirements do you have any additional preferences ?	[]
-2 it doesn t need internet included	i have 7 options for you 6 are moderately priced and 1 worth_house has a cheap price would you like more information ?	['worth_house', 'cheap']
-3 does worth_house have free wifi ?	yes worth_house is a cheap four star guesthouse in the north area with free parking and internet all our options for your other preferences have wifi would you like to reserve a room ?	['guesthouse', 'north', 'worth_house', 'cheap']
-4 yes book me a stay for 4 people and 4 nights starting from wednesday please	oh i m unable to process that would you care for a shorter stay ?	[]
-5 can you see if i can get three nights ?	i was able to book a room for 3 nights your reference number is v96btdai	['3']
-6 oh thank you so much you ve been most helpful	you re welcome ! have a great day !	[]
 
 #restaurant#
 0 chiquito_restaurant_bar address 2g_cambridge_leisure_park_cherry_hinton_road_cherry_hinton
@@ -10601,86 +10790,6 @@
 4 perfect what s the price range and postcode ?	it is moderately priced and the postcode is cb41da	['cb41da']
 5 thank you that will be all good bye	you are welcome thank you for contacting cambridge towninfo centre goodbye	['centre']
 
-#hotel#
-0 cityroomz address sleeperz_hotel_station_road
-0 cityroomz area centre
-0 cityroomz internet yes
-0 cityroomz parking no
-0 cityroomz phone 01223304050
-0 cityroomz postcode cb12tz
-0 cityroomz singleprice 47
-0 cityroomz doubleprice 67
-0 cityroomz familyprice 77
-0 cityroomz pricerange moderate
-0 cityroomz stars 0
-0 cityroomz takesbookings yes
-0 cityroomz type hotel
-0 archway_house address 52_gilbert_road
-0 archway_house area north
-0 archway_house internet yes
-0 archway_house parking yes
-0 archway_house phone 01223575314
-0 archway_house postcode cb43pe
-0 archway_house singleprice 40
-0 archway_house doubleprice 70
-0 archway_house pricerange moderate
-0 archway_house stars 4
-0 archway_house takesbookings yes
-0 archway_house type guesthouse
-0 acorn_guest_house address 154_chesterton_road
-0 acorn_guest_house area north
-0 acorn_guest_house internet yes
-0 acorn_guest_house parking yes
-0 acorn_guest_house phone 01223353888
-0 acorn_guest_house postcode cb41da
-0 acorn_guest_house singleprice 50
-0 acorn_guest_house doubleprice 75
-0 acorn_guest_house familyprice 105
-0 acorn_guest_house pricerange moderate
-0 acorn_guest_house stars 4
-0 acorn_guest_house takesbookings yes
-0 acorn_guest_house type guesthouse
-0 alpha-milton_guest_house address 63_milton_road
-0 alpha-milton_guest_house area north
-0 alpha-milton_guest_house internet no
-0 alpha-milton_guest_house parking no
-0 alpha-milton_guest_house phone 01223311625
-0 alpha-milton_guest_house postcode cb41xa
-0 alpha-milton_guest_house singleprice 45
-0 alpha-milton_guest_house doubleprice 80
-0 alpha-milton_guest_house pricerange moderate
-0 alpha-milton_guest_house stars 3
-0 alpha-milton_guest_house takesbookings yes
-0 alpha-milton_guest_house type guesthouse
-0 warkworth_house address warkworth_terrace
-0 warkworth_house area east
-0 warkworth_house internet yes
-0 warkworth_house parking yes
-0 warkworth_house phone 01223363682
-0 warkworth_house postcode cb11ee
-0 warkworth_house singleprice 55
-0 warkworth_house doubleprice 75
-0 warkworth_house familyprice 95
-0 warkworth_house pricerange moderate
-0 warkworth_house stars 4
-0 warkworth_house takesbookings yes
-0 warkworth_house type guesthouse
-0 avalon address 62_gilbert_road
-0 avalon area north
-0 avalon internet yes
-0 avalon parking no
-0 avalon phone 01223353071
-0 avalon postcode cb43pd
-0 avalon singleprice 45
-0 avalon doubleprice 65
-0 avalon pricerange moderate
-0 avalon stars 4
-0 avalon takesbookings yes
-0 avalon type guesthouse
-1 i am looking for a guesthouse to stay in over the weekend i don t need internet or free parking	how about the avalon ?	['avalon']
-2 the avalon sounds good what is the address ?	the avalon is located at 62_gilbert_road cb43pd would you like me to book this for you ?	['62_gilbert_road', 'cb43pd', 'avalon']
-3 no i don t need to book right now but thanks that s all for today goodbye	okay goodbye have a nice day !	[]
-
 #train#
 0 tr0943 day friday
 0 tr0943 departure cambridge
@@ -11176,53 +11285,6 @@
 2 can i book a stay there for 1 person for 5 nights starting tuesday please ?	your booking was successful reference number is 8t4aj6p9 1 person for 5 nights starting tuesday at the el_shaddai can i help you with anything else ?	['el_shaddai']
 3 nope that ll do it thanks for your help !	thank you goodbye	[]
 
-#restaurant#
-0 golden_house address 12_lensfield_road_city_centre
-0 golden_house area centre
-0 golden_house food chinese
-0 golden_house phone 01842753771
-0 golden_house postcode cb21eg
-0 golden_house pricerange cheap
-0 golden_house type restaurant
-0 cocum address 71_castle_street_city_centre
-0 cocum area west
-0 cocum food indian
-0 cocum phone 01223366668
-0 cocum postcode cb30ah
-0 cocum pricerange expensive
-0 cocum type restaurant
-0 stazione_restaurant_and_coffee_bar address market_hill_city_centre
-0 stazione_restaurant_and_coffee_bar area centre
-0 stazione_restaurant_and_coffee_bar food italian
-0 stazione_restaurant_and_coffee_bar phone 01223352607
-0 stazione_restaurant_and_coffee_bar postcode cb23nj
-0 stazione_restaurant_and_coffee_bar pricerange expensive
-0 stazione_restaurant_and_coffee_bar type restaurant
-0 jinling_noodle_bar address 11_peas_hill_city_centre
-0 jinling_noodle_bar area centre
-0 jinling_noodle_bar food chinese
-0 jinling_noodle_bar phone 01223566188
-0 jinling_noodle_bar postcode cb23pp
-0 jinling_noodle_bar pricerange moderate
-0 jinling_noodle_bar type restaurant
-0 nandos address cambridge_leisure_park_clifton_way
-0 nandos area south
-0 nandos food portuguese
-0 nandos phone 01223327908
-0 nandos postcode cb17dy
-0 nandos pricerange cheap
-0 nandos type restaurant
-0 dojo_noodle_bar address 40210_millers_yard_city_centre
-0 dojo_noodle_bar area centre
-0 dojo_noodle_bar food asian_oriental
-0 dojo_noodle_bar phone 01223363471
-0 dojo_noodle_bar postcode cb21rq
-0 dojo_noodle_bar pricerange cheap
-0 dojo_noodle_bar type restaurant
-1 i am looking for a restaurant the restaurant should be in the south and should be in the cheap price range	how about nandos i ve heard great things !	['nandos']
-2 is that restaurant in the south ? i"d like to book for 4 people at 1330 on saturday please	nandos is indeed in the south the booking is successful with the reference number pcffz610 do you need more help ?	['nandos', 'south']
-3 thanks that s all good bye	you are more than welcome !	[]
-
 #train#
 0 tr2181 day tuesday
 0 tr2181 departure cambridge
@@ -11542,79 +11604,6 @@
 6 no that will be all for now	thank you for using our service have all of your needs been met ?	[]
 7 yes have a nice day	thank you for using cambridge towninfo centre have a nice day !	['cambridge']
 
-#hotel#
-0 carolina_bed_and_breakfast address 138_perne_road
-0 carolina_bed_and_breakfast area east
-0 carolina_bed_and_breakfast internet yes
-0 carolina_bed_and_breakfast parking yes
-0 carolina_bed_and_breakfast phone 01223247015
-0 carolina_bed_and_breakfast postcode cb13nx
-0 carolina_bed_and_breakfast singleprice 45
-0 carolina_bed_and_breakfast doubleprice 75
-0 carolina_bed_and_breakfast familyprice 100
-0 carolina_bed_and_breakfast pricerange moderate
-0 carolina_bed_and_breakfast stars 4
-0 carolina_bed_and_breakfast takesbookings yes
-0 carolina_bed_and_breakfast type guesthouse
-0 alpha-milton_guest_house address 63_milton_road
-0 alpha-milton_guest_house area north
-0 alpha-milton_guest_house internet no
-0 alpha-milton_guest_house parking no
-0 alpha-milton_guest_house phone 01223311625
-0 alpha-milton_guest_house postcode cb41xa
-0 alpha-milton_guest_house singleprice 45
-0 alpha-milton_guest_house doubleprice 80
-0 alpha-milton_guest_house pricerange moderate
-0 alpha-milton_guest_house stars 3
-0 alpha-milton_guest_house takesbookings yes
-0 alpha-milton_guest_house type guesthouse
-0 lovell_lodge address 365_milton_road
-0 lovell_lodge area north
-0 lovell_lodge internet yes
-0 lovell_lodge parking yes
-0 lovell_lodge phone 01223425478
-0 lovell_lodge postcode cb41sr
-0 lovell_lodge singleprice 50
-0 lovell_lodge doubleprice 65
-0 lovell_lodge familyprice 70
-0 lovell_lodge pricerange moderate
-0 lovell_lodge stars 2
-0 lovell_lodge takesbookings yes
-0 lovell_lodge type hotel
-0 worth_house address 152_chesterton_road
-0 worth_house area north
-0 worth_house internet yes
-0 worth_house parking yes
-0 worth_house phone 01223316074
-0 worth_house postcode cb41da
-0 worth_house singleprice 49
-0 worth_house doubleprice 60
-0 worth_house familyprice 85
-0 worth_house pricerange cheap
-0 worth_house stars 4
-0 worth_house takesbookings yes
-0 worth_house type guesthouse
-0 aylesbray_lodge_guest_house address 5_mowbray_road
-0 aylesbray_lodge_guest_house area south
-0 aylesbray_lodge_guest_house internet yes
-0 aylesbray_lodge_guest_house parking yes
-0 aylesbray_lodge_guest_house phone 01223240089
-0 aylesbray_lodge_guest_house postcode cb17sr
-0 aylesbray_lodge_guest_house singleprice 65
-0 aylesbray_lodge_guest_house doubleprice 75
-0 aylesbray_lodge_guest_house familyprice 95
-0 aylesbray_lodge_guest_house pricerange moderate
-0 aylesbray_lodge_guest_house stars 4
-0 aylesbray_lodge_guest_house takesbookings yes
-0 aylesbray_lodge_guest_house type guesthouse
-1 i m looking for a guesthouse to stay at with free wifi please	we have 23 locations like that any area preferences ?	[]
-2 in the north area please	that narrows it down to 10 locations do you have any kind of price range in mind ?	[]
-3 no i don t care about price but i do need to have free parking	i believe i would like worth_house	['worth_house']
-4 that`s fine what is their address please ?	worth_house is located at 152_chesterton_road would you like to make a reservation ?	['worth_house', '152_chesterton_road']
-5 no thank you do they offer free parking ?	yes they do	[]
-6 wonderful i just need their postcode then please	yes it is cb41da	['cb41da']
-7 that is it thanks	thank you & have a good day	[]
-
 #restaurant#
 0 restaurant_two_two address 22_chesterton_road_chesterton
 0 restaurant_two_two area north
@@ -11664,61 +11653,6 @@
 4 no thank you that does it thank you and goodbye !	goodbye	[]
 
 #restaurant#
-0 taj_tandoori address 64_cherry_hinton_road_cherry_hinton
-0 taj_tandoori area south
-0 taj_tandoori food indian
-0 taj_tandoori phone 01223412299
-0 taj_tandoori postcode cb17aa
-0 taj_tandoori pricerange expensive
-0 taj_tandoori type restaurant
-0 lan_hong_house address 12_norfolk_street_city_centre
-0 lan_hong_house area centre
-0 lan_hong_house food chinese
-0 lan_hong_house phone 01223350420
-0 lan_hong_house postcode cb12lf
-0 lan_hong_house pricerange moderate
-0 lan_hong_house type restaurant
-0 nandos address cambridge_leisure_park_clifton_way
-0 nandos area south
-0 nandos food portuguese
-0 nandos phone 01223327908
-0 nandos postcode cb17dy
-0 nandos pricerange cheap
-0 nandos type restaurant
-0 clowns_cafe address 54_king_street_city_centre
-0 clowns_cafe area centre
-0 clowns_cafe food italian
-0 clowns_cafe phone 01223355711
-0 clowns_cafe postcode cb11ln
-0 clowns_cafe pricerange expensive
-0 clowns_cafe type restaurant
-0 the_lucky_star address cambridge_leisure_park_clifton_way_cherry_hinton
-0 the_lucky_star area south
-0 the_lucky_star food chinese
-0 the_lucky_star phone 01223244277
-0 the_lucky_star postcode cb17dy
-0 the_lucky_star pricerange cheap
-0 the_lucky_star type restaurant
-0 the_missing_sock address finders_corner_newmarket_road
-0 the_missing_sock area east
-0 the_missing_sock food international
-0 the_missing_sock phone 01223812660
-0 the_missing_sock postcode cb259aq
-0 the_missing_sock pricerange cheap
-0 the_missing_sock type restaurant
-0 hk_fusion address 21_burleigh_street_city_centre
-0 hk_fusion area centre
-0 hk_fusion food chinese
-0 hk_fusion phone 01223355909
-0 hk_fusion postcode cb11dg
-0 hk_fusion pricerange expensive
-0 hk_fusion type restaurant
-1 i am looking for a cheap restaurant in the south part of town	how about nandos a portuguese place ?	['nandos', 'portuguese']
-2 is there anything else available ?	the_lucky_star is also a cheap restaurant in the south part of town it serves chinese food	['the_lucky_star', 'cheap', 'south', 'chinese', 'restaurant']
-3 ok can you give me the address of the_lucky_star ?	the_lucky_star is located at cambridge_leisure_park_clifton_way cherry hinton is there anything else i can help you with today ?	['cambridge_leisure_park_clifton_way', 'the_lucky_star']
-4 no that would be all thank you and good bye	thank you for using the cambridge restaurant system goodbye	['restaurant']
-
-#restaurant#
 0 little_seoul address 108_regent_street_city_centre
 0 little_seoul area centre
 0 little_seoul food korean
@@ -11766,55 +11700,6 @@
 3 yes i want to book a table for 3 people on tuesday at 19:45	that time slot is unavailable is there another time slot you want to book ?	[]
 4 could you try 18:45 instead ?	your table has been reserved at for 3 at 18:45 on tuesday the reference number is ie3wwfdn	[]
 5 thank you very much have a great day	you re quite welcome thanks for contacting the cambridge towninfo centre and have a great day !	['centre']
-
-#train#
-0 tr9629 day friday
-0 tr9629 departure leicester
-0 tr9629 destination cambridge
-0 tr9629 duration 105_minutes
-0 tr9629 leaveat 18:09
-0 tr9629 arriveby 19:54
-0 tr9629 price 37.80_pounds
-0 tr9236 day wednesday
-0 tr9236 departure cambridge
-0 tr9236 destination birmingham_new_street
-0 tr9236 duration 163_minutes
-0 tr9236 leaveat 19:01
-0 tr9236 arriveby 21:44
-0 tr9236 price 75.10_pounds
-0 tr1575 day thursday
-0 tr1575 departure leicester
-0 tr1575 destination cambridge
-0 tr1575 duration 105_minutes
-0 tr1575 leaveat 15:09
-0 tr1575 arriveby 16:54
-0 tr1575 price 37.80_pounds
-0 tr2000 day friday
-0 tr2000 departure cambridge
-0 tr2000 destination london_kings_cross
-0 tr2000 duration 51_minutes
-0 tr2000 leaveat 09:00
-0 tr2000 arriveby 09:51
-0 tr2000 price 23.60_pounds
-0 tr7043 day saturday
-0 tr7043 departure cambridge
-0 tr7043 destination norwich
-0 tr7043 duration 79_minutes
-0 tr7043 leaveat 18:36
-0 tr7043 arriveby 19:55
-0 tr7043 price 14.08_pounds
-0 tr7046 day tuesday
-0 tr7046 departure peterborough
-0 tr7046 destination cambridge
-0 tr7046 duration 50_minutes
-0 tr7046 leaveat 07:48
-0 tr7046 arriveby 08:38
-0 tr7046 price 16.50_pounds
-1 hi ! i need a train to leicester i want to leave after 14:45	no problem what day will that be for ?	[]
-2 for thursday please and i want to go to cambridge	tr939 leaves cambridge and goes to leicester at 15:21 would that work for you ?	['leicester', 'cambridge', '15:21']
-3 actually i need a train leaving leicester going to cambridge not the reverse	i m sorry yes train tr1575 will arrive in cambridge by 16:54 it leaves leicester at 15:09 can i book it for you ?	['cambridge', 'tr1575', 'leicester', '16:54', '15:09']
-4 yes please i need tickets for 5 people and a reference number if possible	you got it 5 tickets were booked reference number is 2ycgd64v	[]
-5 thank you for your help	no problem glad to be of assistance	[]
 
 #hotel#
 0 cityroomz address sleeperz_hotel_station_road
@@ -12221,57 +12106,6 @@
 4 friday at 14:15	they do not have a table for 8 available at 14:15 friday would you like to try for another day or time slot ?	[]
 5 can you try to book it for 13:15 ?	that time worked your reservation was successful and your reference number is x4u272ec can i help you with anything else ?	[]
 6 no that s all i needed thanks for your help !	excellent have a good one !	[]
-
-#train#
-0 tr1764 day monday
-0 tr1764 departure cambridge
-0 tr1764 destination london_liverpool_street
-0 tr1764 duration 88_minutes
-0 tr1764 leaveat 13:59
-0 tr1764 arriveby 15:27
-0 tr1764 price 16.60_pounds
-0 tr9839 day thursday
-0 tr9839 departure cambridge
-0 tr9839 destination leicester
-0 tr9839 duration 105_minutes
-0 tr9839 leaveat 15:21
-0 tr9839 arriveby 17:06
-0 tr9839 price 37.80_pounds
-0 tr6351 day friday
-0 tr6351 departure birmingham_new_street
-0 tr6351 destination cambridge
-0 tr6351 duration 163_minutes
-0 tr6351 leaveat 20:40
-0 tr6351 arriveby 23:23
-0 tr6351 price 75.10_pounds
-0 tr8476 day saturday
-0 tr8476 departure cambridge
-0 tr8476 destination stansted_airport
-0 tr8476 duration 28_minutes
-0 tr8476 leaveat 12:40
-0 tr8476 arriveby 13:08
-0 tr8476 price 8.08_pounds
-0 tr7299 day tuesday
-0 tr7299 departure cambridge
-0 tr7299 destination london_liverpool_street
-0 tr7299 duration 88_minutes
-0 tr7299 leaveat 05:59
-0 tr7299 arriveby 07:27
-0 tr7299 price 16.60_pounds
-0 tr5358 day sunday
-0 tr5358 departure stansted_airport
-0 tr5358 destination cambridge
-0 tr5358 duration 28_minutes
-0 tr5358 leaveat 12:24
-0 tr5358 arriveby 12:52
-0 tr5358 price 8.08_pounds
-1 wow sounds like you might be able to help me then can you find me a train going into leicester ?	certainly there are many trains going to leicester where is your departure location ?	['leicester']
-2 i will need to leave from cambridge	when would you like to travel ?	[]
-3 i would like to travel on a thursday	okay and is there a particular departure or arrival time you prefer ?	[]
-4 i just need to arrive by 17:45	i have train tr9839 that leaves cambridge at 15:21 and arrives in leicester at 17:06 would that suit your needs ? if so i can book you a ticket	['cambridge', '15:21', '17:06', 'tr9839', 'leicester']
-5 what is the total travel time and price on that ?	price is 37.80_pounds and travel time is 105_minutes	['37.80_pounds', '105_minutes']
-6 that sounds perfect thanks for all your help	you re very welcome would you like me to book a ticket for you on that train ?	[]
-7 that s not needed thank you !	okay have a great day !	[]
 
 #restaurant#
 0 curry_queen address 106_mill_road_city_centre
@@ -12837,153 +12671,6 @@
 6 thank you i think that s all i need	you re welcome have a safe trip goodbye	[]
 
 #restaurant#
-0 bedouin address 100_mill_road_city_centre
-0 bedouin area centre
-0 bedouin food african
-0 bedouin phone 01223367660
-0 bedouin postcode cb12bd
-0 bedouin pricerange expensive
-0 bedouin type restaurant
-0 curry_prince address 451_newmarket_road_fen_ditton
-0 curry_prince area east
-0 curry_prince food indian
-0 curry_prince phone 01223566388
-0 curry_prince postcode cb58jj
-0 curry_prince pricerange moderate
-0 curry_prince type restaurant
-0 the_missing_sock address finders_corner_newmarket_road
-0 the_missing_sock area east
-0 the_missing_sock food international
-0 the_missing_sock phone 01223812660
-0 the_missing_sock postcode cb259aq
-0 the_missing_sock pricerange cheap
-0 the_missing_sock type restaurant
-0 saffron_brasserie address hills_road_city_centre
-0 saffron_brasserie area centre
-0 saffron_brasserie food indian
-0 saffron_brasserie phone 01223354679
-0 saffron_brasserie postcode cb21la
-0 saffron_brasserie pricerange expensive
-0 saffron_brasserie type restaurant
-0 graffiti address hotel_felix_whitehouse_lane_huntingdon_road
-0 graffiti area west
-0 graffiti food british
-0 graffiti phone 01223277977
-0 graffiti postcode cb30lx
-0 graffiti pricerange expensive
-0 graffiti type restaurant
-0 rice_boat address 37_newnham_road_newnham
-0 rice_boat area west
-0 rice_boat food indian
-0 rice_boat phone 01223302800
-0 rice_boat postcode cb39ey
-0 rice_boat pricerange expensive
-0 rice_boat type restaurant
-1 i would like to find an expensive restaurant in the centre of town please	there are quite a few choices for you what kind of cuisine do you enjoy ?	[]
-2 i don t care choose a restaurant you recommend !	how about bedouin an african restaurant ?	['bedouin', 'african', 'restaurant']
-3 sounds great could you book me a table for 8 on wednesday at 15:30 ?	i sure can i have a table for 8 booked for you at the bedouin for 15:30 they will hold that for fifteen minutes	['bedouin']
-4 may i have the booking reference number ?	certainly the reference number is 922yorfc	[]
-5 thank you very much for your help	is there anything else i can help you with today ?	[]
-6 no that s all i need today thank you !	you are welcome	[]
-
-#hotel#
-0 el_shaddai address 41_warkworth_street
-0 el_shaddai area centre
-0 el_shaddai internet yes
-0 el_shaddai parking yes
-0 el_shaddai phone 01223327978
-0 el_shaddai postcode cb11eg
-0 el_shaddai singleprice 40
-0 el_shaddai doubleprice 60
-0 el_shaddai familyprice 62
-0 el_shaddai pricerange cheap
-0 el_shaddai stars 0
-0 el_shaddai takesbookings yes
-0 el_shaddai type guesthouse
-0 gonville_hotel address gonville_place
-0 gonville_hotel area centre
-0 gonville_hotel internet yes
-0 gonville_hotel parking yes
-0 gonville_hotel phone 01223366611
-0 gonville_hotel postcode cb11ly
-0 gonville_hotel singleprice 79
-0 gonville_hotel doubleprice 95
-0 gonville_hotel familyprice 119
-0 gonville_hotel pricerange expensive
-0 gonville_hotel stars 3
-0 gonville_hotel takesbookings yes
-0 gonville_hotel type hotel
-0 warkworth_house address warkworth_terrace
-0 warkworth_house area east
-0 warkworth_house internet yes
-0 warkworth_house parking yes
-0 warkworth_house phone 01223363682
-0 warkworth_house postcode cb11ee
-0 warkworth_house singleprice 55
-0 warkworth_house doubleprice 75
-0 warkworth_house familyprice 95
-0 warkworth_house pricerange moderate
-0 warkworth_house stars 4
-0 warkworth_house takesbookings yes
-0 warkworth_house type guesthouse
-0 acorn_guest_house address 154_chesterton_road
-0 acorn_guest_house area north
-0 acorn_guest_house internet yes
-0 acorn_guest_house parking yes
-0 acorn_guest_house phone 01223353888
-0 acorn_guest_house postcode cb41da
-0 acorn_guest_house singleprice 50
-0 acorn_guest_house doubleprice 75
-0 acorn_guest_house familyprice 105
-0 acorn_guest_house pricerange moderate
-0 acorn_guest_house stars 4
-0 acorn_guest_house takesbookings yes
-0 acorn_guest_house type guesthouse
-0 bridge_guest_house address 151_hills_road
-0 bridge_guest_house area south
-0 bridge_guest_house internet yes
-0 bridge_guest_house parking yes
-0 bridge_guest_house phone 01223247942
-0 bridge_guest_house postcode cb28rj
-0 bridge_guest_house singleprice 50
-0 bridge_guest_house doubleprice 75
-0 bridge_guest_house familyprice 90
-0 bridge_guest_house pricerange moderate
-0 bridge_guest_house stars 3
-0 bridge_guest_house takesbookings yes
-0 bridge_guest_house type guesthouse
-0 worth_house address 152_chesterton_road
-0 worth_house area north
-0 worth_house internet yes
-0 worth_house parking yes
-0 worth_house phone 01223316074
-0 worth_house postcode cb41da
-0 worth_house singleprice 49
-0 worth_house doubleprice 60
-0 worth_house familyprice 85
-0 worth_house pricerange cheap
-0 worth_house stars 4
-0 worth_house takesbookings yes
-0 worth_house type guesthouse
-0 the_cambridge_belfry address back_lane_cambourne
-0 the_cambridge_belfry area west
-0 the_cambridge_belfry internet yes
-0 the_cambridge_belfry parking yes
-0 the_cambridge_belfry phone 01954714600
-0 the_cambridge_belfry postcode cb236bw
-0 the_cambridge_belfry singleprice 60
-0 the_cambridge_belfry doubleprice 60
-0 the_cambridge_belfry pricerange cheap
-0 the_cambridge_belfry stars 4
-0 the_cambridge_belfry takesbookings yes
-0 the_cambridge_belfry type hotel
-1 i m looking for information on a hotel called warkworth_house	i got it may i get the day youd like to move in so i can book	[]
-2 yes that would be on tuesday please	how many days will you be staying ?	[]
-3 i ll be staying for 3 nights starting on tuesday	for how many guests please sir ?	[]
-4 one guest for three nights	booking was successful reference number is : tucgj6dx	[]
-5 thank you that s all i need	thanks for contacting us please let us know if you need any further assistance	[]
-
-#restaurant#
 0 da_vinci_pizzeria address 20_milton_road_chesterton
 0 da_vinci_pizzeria area north
 0 da_vinci_pizzeria food italian
@@ -13166,48 +12853,6 @@
 2 sure i would like to go on saturday and arrive by 20:20 as close to that time as i can arrive	i have a 19:17 from london that arrives at 20:08 would that work for you ?	['19:17', '20:08']
 3 yes let me have 7 tickets please	booking was successful the total fee is 132.16 gbp payable at the station reference number is : qmd5p3eg is there anything else i can help you with ?	[]
 4 no that s all i need thanks	thank you for contacting cambridge towninfo centre have a wonderful day !	['cambridge']
-
-#train#
-0 tr3433 day thursday
-0 tr3433 departure cambridge
-0 tr3433 destination london_kings_cross
-0 tr3433 duration 51_minutes
-0 tr3433 leaveat 11:00
-0 tr3433 arriveby 11:51
-0 tr3433 price 23.60_pounds
-0 tr9593 day thursday
-0 tr9593 departure peterborough
-0 tr9593 destination cambridge
-0 tr9593 duration 50_minutes
-0 tr9593 leaveat 06:48
-0 tr9593 arriveby 07:38
-0 tr9593 price 16.50_pounds
-0 tr0247 day saturday
-0 tr0247 departure birmingham_new_street
-0 tr0247 destination cambridge
-0 tr0247 duration 163_minutes
-0 tr0247 leaveat 21:40
-0 tr0247 arriveby 24:23
-0 tr0247 price 60.08_pounds
-0 tr7918 day saturday
-0 tr7918 departure cambridge
-0 tr7918 destination peterborough
-0 tr7918 duration 50_minutes
-0 tr7918 leaveat 18:06
-0 tr7918 arriveby 18:56
-0 tr7918 price 13.20_pounds
-0 tr7143 day saturday
-0 tr7143 departure peterborough
-0 tr7143 destination cambridge
-0 tr7143 duration 50_minutes
-0 tr7143 leaveat 19:48
-0 tr7143 arriveby 20:38
-0 tr7143 price 13.20_pounds
-1 can i get a train from cambridge to bishops_stortford ?	certainly when would you like to depart ?	[]
-2 on thursday after 20:15	there is a train leaving cambridge and heading to bishops_stortford at 21:29 on thursday would you like more information or to book a ticket ?	['thursday', 'bishops_stortford', 'cambridge', '21:29']
-3 no i need to depart from bishops_stortford and go to cambridge on thursday after 20:15	i have one train that leaves at 21:29 and arrives by 22:07 on thursday do you want me to book tickets ?	['thursday', '22:07', '21:29']
-4 yes that train would work better for me can you book tickets for 7 people please ?	booked ! reference number is s6s3ln7b you will pay 70.7 gbp at the station	[]
-5 great ! thank you !	thank you ! i am glad i could help	[]
 
 #restaurant#
 0 cambridge_lodge_restaurant address cambridge_lodge_hotel_139_huntingdon_road_city_centre
