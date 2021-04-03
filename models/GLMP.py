@@ -313,7 +313,17 @@ class GLMP(nn.Module):
         acc_score = acc / float(total)
         print("ACC SCORE:\t"+str(acc_score))
 
-        if args['dataset'] == 'multiwoz':
+        if args['dataset'] == 'kvr':
+            F1_score = F1_pred / float(F1_count)
+            cal_f1 = 0.0 if F1_restaurant_count == 0 else (F1_cal_pred / float(F1_cal_count))
+            nav_f1 = 0.0 if F1_hotel_count == 0 else (F1_nav_pred / float(F1_nav_count))
+            wet_f1 = 0.0 if F1_attraction_count == 0 else (F1_wet_pred / float(F1_wet_count))
+            print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
+            print("CAL F1:\t{:.4f}".format(cal_f1))
+            print("NAV F1:\t{:.4f}".format(nav_f1))
+            print("WET F1:\t{:.4f}".format(wet_f1))
+            print("BLEU SCORE:\t" + str(bleu_score))
+        elif args['dataset'] == 'multiwoz':
             F1_score = F1_pred / float(F1_count)
             rest_f1 = 0.0 if F1_restaurant_count == 0 else (F1_restaurant_pred / float(F1_restaurant_count))
             hotel_f1 = 0.0 if F1_hotel_count == 0 else (F1_hotel_pred / float(F1_hotel_count))
