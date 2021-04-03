@@ -16,7 +16,7 @@ L = directory[2].split('L')[1].split('lr')[0].split("-")[0]
 decoder = directory[1].split('-')[0] 
 BSZ = int(directory[2].split('BSZ')[1].split('DR')[0])
 DS = 'kvr' if 'kvr' in directory[1].split('-')[1].lower() else 'babi'
-DS = 'multiwoz'
+DS = 'kvr'
 
 if DS=='kvr': 
     from utils.utils_Ent_kvr import *
