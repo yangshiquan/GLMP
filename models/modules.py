@@ -171,7 +171,7 @@ class LocalMemoryDecoder(nn.Module):
             all_decoder_outputs_topv[t] = topvi
 
             # compute bert input for kb entity prediction
-            input_ids, input_mask, kb_arr_ids = self.compute_bert_input(extKnow.classifier_debias.bert_classifier.tokenizer,
+            input_ids, input_mask, kb_arr_ids = self.compute_bert_input(extKnow.bert_classifier.tokenizer,
                                                                         conv_arr_plain,
                                                                         all_decoder_outputs_topv,
                                                                         t,
