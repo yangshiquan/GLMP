@@ -49,7 +49,7 @@ class GLMP(nn.Module):
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
 
-        model_ckpt = "/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-phase2-models/entity-prediction_ckpt_epoch_1.ckpt"
+        model_ckpt = "/home/yimeng/shiquan/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-models-from-DST-UI-Treated/entity-prediction-models-from-DST-UI-Treated/entity-prediction_ckpt_epoch_15.ckpt"
         self.debiasedKnow = LightningBertPretrainedClassifier.load_from_checkpoint(model_ckpt)
         self.debiasedKnow.freeze()
 
