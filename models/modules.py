@@ -3,7 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils.config import *
 from utils.utils_general import _cuda
-import pdb
+import random
+
+MAX_KB_LEN = 100
+MAX_INPUT_LEN = 500
 
 
 class ContextRNN(nn.Module):
@@ -139,31 +142,46 @@ class LocalMemoryDecoder(nn.Module):
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
 
-    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden, target_batches, max_target_length, batch_size, use_teacher_forcing, get_decoded_words, global_pointer):
+    def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden,
+                target_batches, max_target_length, batch_size, use_teacher_forcing,
+                get_decoded_words, global_pointer, conv_arr_plain, kb_arr_plain, ent_labels):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
+        all_decoder_outputs_topv = _cuda(torch.zeros(max_target_length, batch_size, 1))
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
-        memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
+        # memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
+        kb_lens = [len(ele) for ele in kb_arr_plain]
+        memory_mask_for_step = _cuda(torch.ones(batch_size, MAX_KB_LEN))
         decoded_fine, decoded_coarse = [], []
         
         hidden = self.relu(self.projector(encode_hidden)).unsqueeze(0)
 
         # Start to generate word-by-word
         for t in range(max_target_length):
-            temp = self.C(decoder_input)
+            # temp = self.C(decoder_input)
             embed_q = self.dropout_layer(self.C(decoder_input)) # b * e
             if len(embed_q.size()) == 1: embed_q = embed_q.unsqueeze(0)
             _, hidden = self.sketch_rnn(embed_q.unsqueeze(0), hidden)
-            query_vector = hidden[0] 
+            # query_vector = hidden[0]
             # pdb.set_trace()
             p_vocab = self.attend_vocab(self.C.weight, hidden.squeeze(0))
             all_decoder_outputs_vocab[t] = p_vocab
             _, topvi = p_vocab.data.topk(1)
+            all_decoder_outputs_topv[t] = topvi
+
+            # compute bert input for kb entity prediction
+            input_ids, input_mask, kb_arr_ids = self.compute_bert_input(extKnow.classifier_debias.bert_classifier.tokenizer,
+                                                                        conv_arr_plain,
+                                                                        all_decoder_outputs_topv,
+                                                                        t,
+                                                                        batch_size,
+                                                                        kb_arr_plain)
+            _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
             
-            # query the external konwledge using the hidden state of sketch RNN
-            prob_soft, prob_logits = extKnow(query_vector, global_pointer)
-            all_decoder_outputs_ptr[t] = prob_logits
+            # # query the external knowledge using the hidden state of sketch RNN
+            # prob_soft, prob_logits = extKnow(query_vector, global_pointer)
+            # all_decoder_outputs_ptr[t] = prob_logits
 
             if use_teacher_forcing:
                 decoder_input = target_batches[:,t] 
@@ -184,8 +202,9 @@ class LocalMemoryDecoder(nn.Module):
                     if '@' in self.lang.index2word[token]:
                         cw = 'UNK'
                         for i in range(search_len):
-                            if toppi[:,i][bi] < story_lengths[bi]-1: 
-                                cw = copy_list[bi][toppi[:,i][bi].item()]            
+                            # if toppi[:,i][bi] < story_lengths[bi]-1:
+                            if toppi[:, i][bi] < kb_lens[bi] - 1:
+                                cw = copy_list[bi][toppi[:,i][bi].item()]
                                 break
                         temp_f.append(cw)
                         
@@ -198,6 +217,50 @@ class LocalMemoryDecoder(nn.Module):
                 decoded_coarse.append(temp_c)
 
         return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse
+
+    def compute_bert_input(self, tokenzier, conv_arr_plain,
+                           all_decoder_outputs_topv, current_step,
+                           batch_size, kb_arr_plain):  # conv_arr_plain: batch_size * conv_arr_len, all_decoder_outputs_topv: max_target_len * batch_size * 1
+        bert_input_arr = []
+        for bt in range(batch_size):
+            conv_arr_plain_t = conv_arr_plain[bt]
+            output_plain_t = all_decoder_outputs_topv[:(current_step+1), bt, 0]
+            for t in range(current_step+1):
+                conv_arr_plain_t.append(self.lang.index2word[output_plain_t[t].item()])
+            bert_input = " ".join(conv_arr_plain_t)
+            bert_input_arr.append(bert_input)
+
+        # convert to id and padding
+        lens = [len(ele.split(" ")) for ele in bert_input_arr]
+        max_len = max(lens)
+        padded_seqs = torch.zeros(batch_size, min(max_len, MAX_INPUT_LEN)).long()
+        input_mask = torch.zeros(batch_size, min(max_len, MAX_INPUT_LEN))
+        kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
+        for i, seq in enumerate(bert_input_arr):
+            end = min(lens[i], MAX_INPUT_LEN)
+            tokens = tokenzier.tokenize(seq)
+            tokens = self.trunc_seq(tokens, MAX_INPUT_LEN)
+            seq_id = tokenzier.convert_tokens_to_ids(tokens)
+            padded_seqs[i, :end] = torch.Tensor(seq_id[:end])
+            input_mask[i, :end] = 1
+        for i, ele in enumerate(kb_arr_plain):
+            kb_arr_id = tokenzier.convert_tokens_to_ids(ele)
+            kb_arr_padded[i, :len(kb_arr_id)] = torch.Tensor(kb_arr_id)
+        return padded_seqs, input_mask, kb_arr_padded
+
+    def trunc_seq(self, tokens, max_num_tokens):
+        """Truncates a pair of sequences to a maximum sequence length. Lifted from Google's BERT repo."""
+        l = 0
+        r = len(tokens)
+        trunc_tokens = list(tokens)
+        while r - l > max_num_tokens:
+            # We want to sometimes truncate from the front and sometimes from the
+            # back to add more randomness and avoid biases.
+            if random.random() < 0.5:
+                l += 1
+            else:
+                r -= 1
+        return trunc_tokens[l:r]
 
     def attend_vocab(self, seq, cond):
         scores_ = cond.matmul(seq.transpose(1,0))

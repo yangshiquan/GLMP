@@ -14,6 +14,7 @@ from utils.measures import wer, moses_multi_bleu
 from utils.masked_cross_entropy import *
 from utils.config import *
 from models.modules import *
+from .bert_classifier import LightningBertPretrainedClassifier
 
 
 class GLMP(nn.Module):
@@ -47,6 +48,10 @@ class GLMP(nn.Module):
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
+
+        model_ckpt = "/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-phase2-models/entity-prediction_ckpt_epoch_1.ckpt"
+        self.debiasedKnow = LightningBertPretrainedClassifier.load_from_checkpoint(model_ckpt)
+        self.debiasedKnow.freeze()
 
         # # FOR DEBUG
         # # pdb.set_trace()
@@ -131,7 +136,8 @@ class GLMP(nn.Module):
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(), 
             data['ptr_index'].contiguous(), 
             data['response_lengths'])
-        loss = loss_g + loss_v + loss_l
+        # loss = loss_g + loss_v + loss_l
+        loss = loss_g + loss_v
         loss.backward()
 
         # Clip gradient norms
@@ -174,13 +180,14 @@ class GLMP(nn.Module):
 
         # Get the words that can be copy from the memory
         batch_size = len(data['context_arr_lengths'])
-        self.copy_list = []
-        for elm in data['context_arr_plain']:
-            elm_temp = [ word_arr[0] for word_arr in elm ]
-            self.copy_list.append(elm_temp) 
-        
+        self.copy_list = data['kb_arr_plain_new']
+        # for elm in data['context_arr_plain']:
+        #     elm_temp = [ word_arr[0] for word_arr in elm ]
+        #     self.copy_list.append(elm_temp)
+
         outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse = self.decoder(
-            self.extKnow, 
+            # self.extKnow,
+            self.debiasedKnow,
             story.size(), 
             data['context_arr_lengths'],
             self.copy_list, 
@@ -190,7 +197,10 @@ class GLMP(nn.Module):
             batch_size, 
             use_teacher_forcing, 
             get_decoded_words, 
-            global_pointer) 
+            global_pointer,
+            data['conv_arr_plain'],
+            data['kb_arr_plain_new'],
+            torch.Tensor(data['ent_labels']).long())
 
         return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer
 

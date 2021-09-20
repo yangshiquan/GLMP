@@ -6,7 +6,7 @@ from utils.utils_general import *
 
 def read_langs(file_name, max_line=None):
     print(("Reading lines from {}".format(file_name)))
-    data, context_arr, conv_arr, kb_arr, conv_arr_plain = [], [], [], [], []
+    data, context_arr, conv_arr, kb_arr, conv_arr_plain, kb_arr_plain = [], [], [], [], [], []
     max_resp_len = 0
 
     with open('data/multiwoz/multiwoz_entities.json') as f:
@@ -64,6 +64,15 @@ def read_langs(file_name, max_line=None):
 
                     sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
 
+                    # obtain gt entity labels
+                    if len(gold_ent) == 0:
+                        ent_labels = len(kb_arr_plain)
+                    elif len(gold_ent) >= 1:
+                        for idx, ent in enumerate(kb_arr_plain):
+                            if ent in gold_ent:
+                                ent_labels = idx
+                                break
+
                     data_detail = {
                         'context_arr': list(context_arr + [['$$$$'] * MEM_TOKEN_SIZE]),  # $$$$ is NULL token
                         'response': r,
@@ -84,7 +93,9 @@ def read_langs(file_name, max_line=None):
                         'ent_idx_hotel': list(set(ent_idx_hotel)),
                         'ent_idx_attraction': list(set(ent_idx_attraction)),
                         'ent_idx_train': list(set(ent_idx_train)),
-                        'ent_idx_hospital': list(set(ent_idx_hospital))}
+                        'ent_idx_hospital': list(set(ent_idx_hospital)),
+                        'kb_arr_plain': list(kb_arr_plain + ["[NULL]"]),
+                        'ent_labels': ent_labels}
                     data.append(data_detail)
 
                     gen_r = generate_memory(r, "$s", str(nid))
@@ -97,6 +108,11 @@ def read_langs(file_name, max_line=None):
                 else:
                     # deal with knowledge graph
                     r = line
+                    line_list = line.split(" ")
+                    if line_list[0] not in kb_arr_plain:
+                        kb_arr_plain.append(line_list[0])
+                    if line_list[2] not in kb_arr_plain:
+                        kb_arr_plain.append(line_list[2])
                     kb_info = generate_memory(r, "", str(nid))
                     if len(kb_info[0]) > 4:
                         print(kb_info)
@@ -105,7 +121,7 @@ def read_langs(file_name, max_line=None):
                     kb_arr += kb_info
             else:
                 cnt_lin += 1
-                context_arr, conv_arr, kb_arr, conv_arr_plain = [], [], [], []
+                context_arr, conv_arr, kb_arr, conv_arr_plain, kb_arr_plain = [], [], [], [], []
                 if (max_line and cnt_lin >= max_line):
                     break
 
@@ -149,12 +165,12 @@ def generate_memory(sent, speaker, time):
 
 
 def prepare_data_seq(task, batch_size=100):
-    # file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train.txt'
-    # file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid.txt'
-    # file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test.txt'
-    file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train_modified.txt'
-    file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid_modified.txt'
-    file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test_modified.txt'
+    file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_modified.txt'
+    file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/valid_modified.txt'
+    file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_modified.txt'
+    # file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train_modified.txt'
+    # file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid_modified.txt'
+    # file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test_modified.txt'
 
     pair_train, train_max_len = read_langs(file_train, max_line=None)
     pair_dev, dev_max_len = read_langs(file_dev, max_line=None)

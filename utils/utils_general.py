@@ -73,6 +73,9 @@ class Dataset(data.Dataset):
         data_info['context_arr_plain'] = self.data_info['context_arr'][index]
         data_info['response_plain'] = self.data_info['response'][index]
         data_info['kb_arr_plain'] = self.data_info['kb_arr'][index]
+        data_info['conv_arr_plain'] = self.data_info['conv_arr_plain'][index]
+        data_info['kb_arr_plain_new'] = self.data_info['kb_arr_plain'][index]
+        data_info['ent_labels'] = self.data_info['ent_labels'][index]
 
         return data_info
 
