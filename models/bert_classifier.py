@@ -10,6 +10,9 @@ from typing import Callable, List
 from transformers import BertModel, BertConfig
 from utils_bert import load_new_tokens
 import os
+import random
+
+MAX_INPUT_LEN = 500
 
 
 class LightningHyperparameters:
@@ -142,13 +145,26 @@ class BertPretrainedClassifier(nn.Module):
             p.requires_grad = False
         return bert
 
-    def forward(self, input_ids, input_mask, labels, kb_arr):  # kb_arr需要添加到日志解析中去！同时labels是否需要padding以对齐？
+    def forward(self, input_tokens, input_mask=None, labels=None, kb_arr=None):  # kb_arr需要添加到日志解析中去！同时labels是否需要padding以对齐？
+        batch_size = len(input_tokens)
+        input_ids, input_mask = self.compute_bert_input(input_tokens, batch_size)
+        # Masking pad input tokens
+        # max_len = max(input_lens)
+        # m1 = torch.range(0, max_len-1)
+        # m2 = m1.unsqueeze(0).expand_as(input_ids)
+        # m3 = input_lens.unsqueeze(0).expand_as(input_ids)
+        # input_mask = torch.lt(m2, m3)
+        # comparison_tensor = torch.ones_like(kb_arr, dtype=torch.int64) * EntityPredictionDataset.PAD_TOKEN_IDX  # Matrix to compare
+        # mask = torch.eq(kb_arr, comparison_tensor)  # The mask
+        # dummy_scores = torch.ones_like(prob_logit) * -99999.0
+        # masked_prob_logit = torch.where(mask, dummy_scores, prob_logit)
+
         last_hidden_states_seq, _ = self.bert(input_ids, attention_mask=input_mask)
         pooled_seq_vector, attention_weights = self.pooler(last_hidden_states_seq, input_mask)
-        kb_emb = self.embeddings(kb_arr)
+        # kb_emb = self.embeddings(kb_arr)
 
-        u_temp = pooled_seq_vector.unsqueeze(1).expand_as(kb_emb)
-        prob_logit = torch.sum(kb_emb*u_temp, dim=2)
+        # u_temp = pooled_seq_vector.unsqueeze(1).expand_as(kb_emb)
+        # prob_logit = torch.sum(kb_emb*u_temp, dim=2)
 
         # # Masking pad kb tokens
         # comparison_tensor = torch.ones_like(kb_arr, dtype=torch.int64) * EntityPredictionDataset.PAD_TOKEN_IDX  # Matrix to compare
@@ -157,9 +173,40 @@ class BertPretrainedClassifier(nn.Module):
         # masked_prob_logit = torch.where(mask, dummy_scores, prob_logit)
 
         # scores = self.sigmoid(masked_prob_logit)
-        scores = self.softmax(prob_logit)
-        loss = self.loss_func_ce(prob_logit.view(-1, MAX_KB_ARR_LENGTH), labels.view(-1))
-        return loss, prob_logit
+        # scores = self.softmax(prob_logit)
+        # loss = self.loss_func_ce(prob_logit.view(-1, MAX_KB_ARR_LENGTH), labels.view(-1))
+        # return loss, prob_logit
+        return last_hidden_states_seq, pooled_seq_vector
+
+    def compute_bert_input(self, conv_arr_plain, batch_size):  # conv_arr_plain: batch_size * conv_arr_len, all_decoder_outputs_topv: max_target_len * batch_size * 1
+        # convert to id and padding
+        bert_input = [" ".join(elm) for elm in conv_arr_plain]
+        lens = [len(ele.split(" ")) for ele in bert_input]
+        max_len = max(lens)
+        padded_seqs = torch.zeros(batch_size, min(max_len, MAX_INPUT_LEN)).long()
+        input_mask = torch.zeros(batch_size, min(max_len, MAX_INPUT_LEN))
+        for i, seq in enumerate(bert_input):
+            end = min(lens[i], MAX_INPUT_LEN)
+            tokens = self.tokenizer.tokenize(seq)
+            tokens = self.trunc_seq(tokens, MAX_INPUT_LEN)
+            seq_id = self.tokenizer.convert_tokens_to_ids(tokens)
+            padded_seqs[i, :end] = torch.Tensor(seq_id[:end])
+            input_mask[i, :end] = 1
+        return padded_seqs, input_mask
+
+    def trunc_seq(self, tokens, max_num_tokens):
+        """Truncates a pair of sequences to a maximum sequence length. Lifted from Google's BERT repo."""
+        l = 0
+        r = len(tokens)
+        trunc_tokens = list(tokens)
+        while r - l > max_num_tokens:
+            # We want to sometimes truncate from the front and sometimes from the
+            # back to add more randomness and avoid biases.
+            if random.random() < 0.5:
+                l += 1
+            else:
+                r -= 1
+        return trunc_tokens[l:r]
 
     def get_trainable_params(self, recurse: bool = True) -> (List[nn.Parameter], int):
         parameters = list(filter(lambda p: p.requires_grad, self.parameters(recurse)))

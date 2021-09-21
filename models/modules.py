@@ -64,6 +64,8 @@ class ExternalKnowledge(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
+        self.projector = nn.Linear(768, embedding_dim)
+        self.projector2 = nn.Linear(768, embedding_dim)
 
     def add_lm_embedding(self, full_memory, kb_len, conv_len, hiddens):
         for bi in range(full_memory.size(0)):
@@ -73,6 +75,8 @@ class ExternalKnowledge(nn.Module):
 
     def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs):
         # Forward multiple hop mechanism
+        hidden = self.projector(hidden)
+        dh_outputs = self.projector2(dh_outputs)
         u = [hidden.squeeze(0)]
         story_size = story.size()
         self.m_story = []
@@ -138,7 +142,7 @@ class LocalMemoryDecoder(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.sketch_rnn = nn.GRU(embedding_dim, embedding_dim, dropout=dropout)
         self.relu = nn.ReLU()
-        self.projector = nn.Linear(2*embedding_dim, embedding_dim)
+        self.projector = nn.Linear(2*768, embedding_dim)
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
 
@@ -163,7 +167,7 @@ class LocalMemoryDecoder(nn.Module):
             embed_q = self.dropout_layer(self.C(decoder_input)) # b * e
             if len(embed_q.size()) == 1: embed_q = embed_q.unsqueeze(0)
             _, hidden = self.sketch_rnn(embed_q.unsqueeze(0), hidden)
-            # query_vector = hidden[0]
+            query_vector = hidden[0]
             # pdb.set_trace()
             p_vocab = self.attend_vocab(self.C.weight, hidden.squeeze(0))
             all_decoder_outputs_vocab[t] = p_vocab
@@ -171,17 +175,17 @@ class LocalMemoryDecoder(nn.Module):
             all_decoder_outputs_topv[t] = topvi
 
             # compute bert input for kb entity prediction
-            input_ids, input_mask, kb_arr_ids = self.compute_bert_input(extKnow.bert_classifier.tokenizer,
-                                                                        conv_arr_plain,
-                                                                        all_decoder_outputs_topv,
-                                                                        t,
-                                                                        batch_size,
-                                                                        kb_arr_plain)
-            _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
+            # input_ids, input_mask, kb_arr_ids = self.compute_bert_input(extKnow.bert_classifier.tokenizer,
+            #                                                             conv_arr_plain,
+            #                                                             all_decoder_outputs_topv,
+            #                                                             t,
+            #                                                             batch_size,
+            #                                                             kb_arr_plain)
+            # _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
             
-            # # query the external knowledge using the hidden state of sketch RNN
-            # prob_soft, prob_logits = extKnow(query_vector, global_pointer)
-            # all_decoder_outputs_ptr[t] = prob_logits
+            # query the external knowledge using the hidden state of sketch RNN
+            prob_soft, prob_logits = extKnow(query_vector, global_pointer)
+            all_decoder_outputs_ptr[t] = prob_logits
 
             if use_teacher_forcing:
                 decoder_input = target_batches[:,t] 
@@ -202,8 +206,8 @@ class LocalMemoryDecoder(nn.Module):
                     if '@' in self.lang.index2word[token]:
                         cw = 'UNK'
                         for i in range(search_len):
-                            # if toppi[:,i][bi] < story_lengths[bi]-1:
-                            if toppi[:, i][bi] < kb_lens[bi] - 1:
+                            if toppi[:,i][bi] < story_lengths[bi]-1:
+                            # if toppi[:, i][bi] < kb_lens[bi] - 1:
                                 cw = copy_list[bi][toppi[:,i][bi].item()]
                                 break
                         temp_f.append(cw)

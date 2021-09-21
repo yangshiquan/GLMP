@@ -49,29 +49,10 @@ class GLMP(nn.Module):
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
 
+        # model_ckpt = "/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-models-from-scratch/entity-prediction_ckpt_epoch_1.ckpt"
         model_ckpt = "/home/yimeng/shiquan/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-models-from-DST-UI-Treated/entity-prediction-models-from-DST-UI-Treated/entity-prediction_ckpt_epoch_15.ckpt"
         self.debiasedKnow = LightningBertPretrainedClassifier.load_from_checkpoint(model_ckpt)
         self.debiasedKnow.freeze()
-
-        # # FOR DEBUG
-        # # pdb.set_trace()
-        # if path:
-        #     enc_embedding = self.encoder.embedding.weight.data.numpy()
-        #     for name, params in self.encoder.gru.named_parameters():
-        #         name = name
-        #         params = params
-        #         if name == 'weight_ih_l0':
-        #             t1 = name
-        #             t2 = params
-        #         if name == 'weight_ih_l0_reverse':
-        #             t3 = name
-        #             t4 = params
-        #         else:
-        #             continue
-        #     pdb.set_trace()
-        #     for name, params in self.encoder.W.named_parameters():
-        #         t5 = name
-        #         t6 = params
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
@@ -136,8 +117,8 @@ class GLMP(nn.Module):
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(), 
             data['ptr_index'].contiguous(), 
             data['response_lengths'])
-        # loss = loss_g + loss_v + loss_l
-        loss = loss_g + loss_v
+        loss = loss_g + loss_v + loss_l
+        # loss = loss_g + loss_v
         loss.backward()
 
         # Clip gradient norms
@@ -173,21 +154,23 @@ class GLMP(nn.Module):
             story, conv_story = data['context_arr'], data['conv_arr']
         
         # Encode dialog history and KB to vectors
-        dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
+        # dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
+        dh_outputs, dh_hidden = self.debiasedKnow(data['conv_arr_plain'])
         global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs)
         # encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1)
         encoded_hidden = torch.cat((dh_hidden.squeeze(0), dh_hidden.squeeze(0)), dim=1)
 
         # Get the words that can be copy from the memory
         batch_size = len(data['context_arr_lengths'])
-        self.copy_list = data['kb_arr_plain_new']
-        # for elm in data['context_arr_plain']:
-        #     elm_temp = [ word_arr[0] for word_arr in elm ]
-        #     self.copy_list.append(elm_temp)
+        # self.copy_list = data['kb_arr_plain_new']
+        self.copy_list = []
+        for elm in data['context_arr_plain']:
+            elm_temp = [ word_arr[0] for word_arr in elm ]
+            self.copy_list.append(elm_temp)
 
         outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse = self.decoder(
-            # self.extKnow,
-            self.debiasedKnow,
+            self.extKnow,
+            # self.debiasedKnow,
             story.size(), 
             data['context_arr_lengths'],
             self.copy_list, 
