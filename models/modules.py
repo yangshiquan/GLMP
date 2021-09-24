@@ -259,8 +259,9 @@ class LocalMemoryDecoder(nn.Module):
             # _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
 
             # compute bert input for kb entity prediction
-            input_ids, input_lens, kb_arr_ids = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
-            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids, global_pointer)
+            input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
+            # entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids, global_pointer)
+            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
             all_decoder_outputs_ptr[t] = entity_logits
             all_decoder_outputs_intents[t] = intent_logits
             prob_soft = entity_logits
@@ -325,7 +326,7 @@ class LocalMemoryDecoder(nn.Module):
         padded_seqs = torch.zeros(batch_size, max_len).long()
         # lengths = [len(seq) for seq in kb_arr_plain]
         # max_kb_len = 1 if max(lengths) == 0 else max(lengths)
-        kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
+        # kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
         for i, seq in enumerate(bert_input_arr):
             end = lens[i]
             word_ids = []
@@ -334,13 +335,13 @@ class LocalMemoryDecoder(nn.Module):
                 word_id = self.lang.word2index[word] if word in self.lang.word2index else UNK_token
                 word_ids.append(word_id)
             padded_seqs[i, :end] = torch.Tensor(word_ids[:end])
-        for i, ele in enumerate(kb_arr_plain):
-            kb_arr_ids = []
-            for ent in ele:
-                kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
-                kb_arr_ids.append(kb_arr_id)
-            kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
-        return padded_seqs, lens, kb_arr_padded
+        # for i, ele in enumerate(kb_arr_plain):
+        #     kb_arr_ids = []
+        #     for ent in ele:
+        #         kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
+        #         kb_arr_ids.append(kb_arr_id)
+        #     kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
+        return padded_seqs, lens
 
     def compute_bert_input(self,
                            tokenzier,

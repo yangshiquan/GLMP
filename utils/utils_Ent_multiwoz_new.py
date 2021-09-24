@@ -131,6 +131,7 @@ def read_langs(file_name, lang, task, max_line=None):
                         'annotator_id_labels': annotator_id_labels,
                         'user_intent_labels': list(user_intent_labels),
                         'dialogue_state_labels': dialogue_state_labels,
+                        'kb_arr_new': list(kb_arr_plain + ["[NULL]"]),
                     }
                     data.append(data_detail)
 

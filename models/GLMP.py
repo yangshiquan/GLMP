@@ -193,8 +193,8 @@ class GLMP(nn.Module):
             get_decoded_words, 
             global_pointer,
             data['conv_arr_plain'],
-            data['kb_arr_plain_new'],
-            # data['kb_arr_new'],
+            # data['kb_arr_plain_new'],
+            data['kb_arr_new'],
             torch.Tensor(data['ent_labels']).long())
 
         return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_intents
