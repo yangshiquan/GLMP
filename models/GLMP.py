@@ -39,25 +39,24 @@ class GLMP(nn.Module):
                 self.encoder = torch.load(str(path)+'/enc.th')
                 self.extKnow = torch.load(str(path)+'/enc_kb.th')
                 self.decoder = torch.load(str(path)+'/dec.th')
+                self.entPred = torch.load(str(path)+'/ent_pred.th')
             else:
                 print("MODEL {} LOADED".format(str(path)))
                 self.encoder = torch.load(str(path)+'/enc.th',lambda storage, loc: storage)
                 self.extKnow = torch.load(str(path)+'/enc_kb.th',lambda storage, loc: storage)
                 self.decoder = torch.load(str(path)+'/dec.th',lambda storage, loc: storage)
+                self.entPred = torch.load(str(path) + '/ent_pred.th', lambda storage, loc: storage)
         else:
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
-
-        # model_ckpt = "/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-models-from-scratch/entity-prediction_ckpt_epoch_1.ckpt"
-        model_ckpt = "/home/yimeng/shiquan/deBiasing-Dialogue/Dialogue_Annotator/pipeline/entity-prediction-models-from-DST-UI-Treated/entity-prediction-models-from-DST-UI-Treated/entity-prediction_ckpt_epoch_15.ckpt"
-        self.debiasedKnow = LightningBertPretrainedClassifier.load_from_checkpoint(model_ckpt)
-        self.debiasedKnow.freeze()
+            self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators)
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
         self.extKnow_optimizer = optim.Adam(self.extKnow.parameters(), lr=lr)
         self.decoder_optimizer = optim.Adam(self.decoder.parameters(), lr=lr)
+        self.entPred_optimizer = optim.Adam(self.decoder.parameters(), lr=lr)
         self.scheduler = lr_scheduler.ReduceLROnPlateau(self.decoder_optimizer, mode='max', factor=0.5, patience=1, min_lr=0.0001, verbose=True)
         self.criterion_bce = nn.BCELoss()
         self.reset()
@@ -66,6 +65,7 @@ class GLMP(nn.Module):
             self.encoder.cuda()
             self.extKnow.cuda()
             self.decoder.cuda()
+            self.entPred.cuda()
 
     def print_loss(self):    
         print_loss_avg = self.loss / self.print_every
@@ -84,6 +84,7 @@ class GLMP(nn.Module):
         torch.save(self.encoder, directory + '/enc.th')
         torch.save(self.extKnow, directory + '/enc_kb.th')
         torch.save(self.decoder, directory + '/dec.th')
+        torch.save(self.entPred, directory + '/ent_pred.th')
 
     def reset(self):
         self.loss, self.print_every, self.loss_g, self.loss_v, self.loss_l = 0, 1, 0, 0, 0
@@ -100,15 +101,22 @@ class GLMP(nn.Module):
         self.encoder_optimizer.zero_grad()
         self.extKnow_optimizer.zero_grad()
         self.decoder_optimizer.zero_grad()
+        self.entPred_optimizer.zero_grad()
         
         # Encode and Decode
         use_teacher_forcing = random.random() < args['teacher_forcing_ratio'] 
         max_target_length = max(data['response_lengths'])
-        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
+        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, outputs_intents = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
         
         # Loss calculation and backpropagation
         # pdb.set_trace()
-        loss_g = self.criterion_bce(global_pointer, data['selector_index'])
+        # loss_g = self.criterion_bce(global_pointer, data['selector_index'])
+        # loss_g = self.criterion_bce(outputs_intents[0], data['selector_index'])
+        loss_g = masked_cross_entropy(
+            outputs_intents.transpose(0, 1).contiguous(),
+            data['annotator_id_labels'].contiguous(),
+            data['response_lengths']
+        )
         loss_v = masked_cross_entropy(
             all_decoder_outputs_vocab.transpose(0, 1).contiguous(), 
             data['sketch_response'].contiguous(), 
@@ -125,11 +133,13 @@ class GLMP(nn.Module):
         ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
         kc = torch.nn.utils.clip_grad_norm_(self.extKnow.parameters(), clip)
         dc = torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), clip)
+        pc = torch.nn.utils.clip_grad_norm_(self.entPred.parameters(), clip)
 
         # Update parameters with optimizers
         self.encoder_optimizer.step()
         self.extKnow_optimizer.step()
         self.decoder_optimizer.step()
+        self.entPred_optimizer.step()
         self.loss += loss.item()
         self.loss_g += loss_g.item()
         self.loss_v += loss_v.item()
@@ -154,22 +164,21 @@ class GLMP(nn.Module):
             story, conv_story = data['context_arr'], data['conv_arr']
         
         # Encode dialog history and KB to vectors
-        # dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
-        dh_outputs, dh_hidden = self.debiasedKnow(data['conv_arr_plain'])
-        global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs)
+        dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
+        # global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs)
         # encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1)
         encoded_hidden = torch.cat((dh_hidden.squeeze(0), dh_hidden.squeeze(0)), dim=1)
 
         # Get the words that can be copy from the memory
         batch_size = len(data['context_arr_lengths'])
-        # self.copy_list = data['kb_arr_plain_new']
-        self.copy_list = []
-        for elm in data['context_arr_plain']:
-            elm_temp = [ word_arr[0] for word_arr in elm ]
-            self.copy_list.append(elm_temp)
+        self.copy_list = data['kb_arr_plain_new']
+        # self.copy_list = []
+        # for elm in data['context_arr_plain']:
+        #     elm_temp = [ word_arr[0] for word_arr in elm ]
+        #     self.copy_list.append(elm_temp)
 
-        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse = self.decoder(
-            self.extKnow,
+        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, outputs_intents = self.decoder(
+            self.entPred,
             # self.debiasedKnow,
             story.size(), 
             data['context_arr_lengths'],
@@ -180,19 +189,20 @@ class GLMP(nn.Module):
             batch_size, 
             use_teacher_forcing, 
             get_decoded_words, 
-            global_pointer,
+            None,
             data['conv_arr_plain'],
             data['kb_arr_plain_new'],
             torch.Tensor(data['ent_labels']).long())
 
-        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer
+        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, None, outputs_intents
 
     def evaluate(self, dev, matric_best, early_stop=None):
         print("STARTING EVALUATION")
         # Set to not-training mode to disable dropout
         self.encoder.train(False)
         self.extKnow.train(False)
-        self.decoder.train(False)  
+        self.decoder.train(False)
+        self.entPred.train(False)
         
         ref, hyp = [], []
         acc, total = 0, 0
@@ -225,7 +235,8 @@ class GLMP(nn.Module):
 
         for j, data_dev in pbar:
             # Encode and Decode
-            _, _, decoded_fine, decoded_coarse, global_pointer = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
+            max_target_length = max(data_dev['response_lengths'])
+            _, _, decoded_fine, decoded_coarse, global_pointer, _ = self.encode_and_decode(data_dev, max_target_length, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
             decoded_fine = np.transpose(decoded_fine)
             for bi, row in enumerate(decoded_fine):
@@ -301,6 +312,7 @@ class GLMP(nn.Module):
         self.encoder.train(True)
         self.extKnow.train(True)
         self.decoder.train(True)
+        self.entPred.train(True)
 
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
         acc_score = acc / float(total)

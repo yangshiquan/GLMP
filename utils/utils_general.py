@@ -17,6 +17,15 @@ class Lang:
         self.index2word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS", UNK_token: 'UNK'}
         self.n_words = len(self.index2word) # Count default tokens
         self.word2index = dict([(v, k) for k, v in self.index2word.items()])
+        self.intent2index = {}
+        self.state2index = {}
+        self.annotator2index = {}
+        self.index2intent = {}
+        self.index2state = {}
+        self.index2annotator = {}
+        self.n_intents = 0
+        self.n_state_values = {}
+        self.n_annotators = 0
       
     def index_words(self, story, trg=False):
         if trg:
@@ -32,6 +41,28 @@ class Lang:
             self.word2index[word] = self.n_words
             self.index2word[self.n_words] = word
             self.n_words += 1
+
+    def index_intent(self, intent):
+        if intent not in self.intent2index:
+            self.intent2index[intent] = self.n_intents
+            self.index2intent[self.n_intents] = intent
+            self.n_intents += 1
+
+    def index_state_values(self, state, value):
+        if state not in self.state2index:
+            self.state2index[state] = {}
+            self.index2state[state] = {}
+            self.n_state_values[state] = 0
+        if value not in self.state2index[state]:
+            self.state2index[state][value] = self.n_state_values[state]
+            self.index2state[state][self.n_state_values[state]] = value
+            self.n_state_values[state] += 1
+
+    def index_annotator(self, annotator_id):
+        if annotator_id not in self.annotator2index:
+            self.annotator2index[annotator_id] = self.n_annotators
+            self.index2annotator[self.n_annotators] = annotator_id
+            self.n_annotators += 1
 
 
 class Dataset(data.Dataset):
@@ -53,6 +84,7 @@ class Dataset(data.Dataset):
         response = self.data_info['response'][index]
         response = self.preprocess(response, self.trg_word2id)
         ptr_index = torch.Tensor(self.data_info['ptr_index'][index])
+        annotator_id_labels = torch.Tensor(self.data_info['annotator_id_labels'][index])
         selector_index = torch.Tensor(self.data_info['selector_index'][index])
         conv_arr = self.data_info['conv_arr'][index]
         conv_arr = self.preprocess(conv_arr, self.src_word2id, trg=False)
@@ -76,6 +108,7 @@ class Dataset(data.Dataset):
         data_info['conv_arr_plain'] = self.data_info['conv_arr_plain'][index]
         data_info['kb_arr_plain_new'] = self.data_info['kb_arr_plain'][index]
         data_info['ent_labels'] = self.data_info['ent_labels'][index]
+        # data_info['annotator_id_labels'] = torch.Tensor(self.data_info['annotator_id_labels'][index])
 
         return data_info
 
@@ -135,6 +168,7 @@ class Dataset(data.Dataset):
         conv_arr, conv_arr_lengths = merge(item_info['conv_arr'], True)
         sketch_response, _ = merge(item_info['sketch_response'], False)
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
+        annotator_id_labels, _ = merge(item_info['annotator_id_labels'], False)
         
         # convert to contiguous and cuda
         context_arr = _cuda(context_arr.contiguous())
@@ -144,6 +178,7 @@ class Dataset(data.Dataset):
         conv_arr = _cuda(conv_arr.transpose(0,1).contiguous())
         sketch_response = _cuda(sketch_response.contiguous())
         if(len(list(kb_arr.size()))>1): kb_arr = _cuda(kb_arr.transpose(0,1).contiguous())
+        annotator_id_labels = _cuda(annotator_id_labels.contiguous())
         
         # processed information
         data_info = {}
@@ -174,6 +209,7 @@ def get_seq(pairs, lang, batch_size, type):
             lang.index_words(pair['context_arr'])
             lang.index_words(pair['response'], trg=True)
             lang.index_words(pair['sketch_response'], trg=True)
+            lang.index_word('[NULL]')
     
     dataset = Dataset(data_info, lang.word2index, lang.word2index)
     data_loader = torch.utils.data.DataLoader(dataset = dataset,

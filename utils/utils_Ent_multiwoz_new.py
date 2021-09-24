@@ -4,7 +4,7 @@ import ast
 from utils.utils_general import *
 
 
-def read_langs(file_name, max_line=None):
+def read_langs(file_name, lang, task, max_line=None):
     print(("Reading lines from {}".format(file_name)))
     data, context_arr, conv_arr, kb_arr, conv_arr_plain, kb_arr_plain = [], [], [], [], [], []
     max_resp_len = 0
@@ -12,8 +12,24 @@ def read_langs(file_name, max_line=None):
     with open('data/multiwoz/multiwoz_entities.json') as f:
         global_entity = json.load(f)
 
+    # dialogue_id_path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_dialogue_ids.txt'.format(task, task)
+    # intents_states_path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
+    dialogue_id_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_dialogue_ids.txt'.format(task, task)
+    intents_states_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states'.format(task, task)
+    # dialogue_id_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_dialogue_ids.txt'.format(task, task)
+    # intents_states_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_intents_states.json'.format(task, task)
+    dialogue_ids = {}
+    with open(dialogue_id_path, 'r') as f:
+        line_cnt = 0
+        for line in f:
+            dialogue_ids[line_cnt] = line.strip()
+            line_cnt += 1
+
+    with open(intents_states_path, 'r') as f:
+        intents_and_states = json.load(f)
+
     with open(file_name) as fin:
-        cnt_lin, sample_counter = 1, 1
+        cnt_lin, sample_counter, turn_cnt = 0, 1, 1
         for line in fin:
             line = line.strip()
             if line:
@@ -30,6 +46,20 @@ def read_langs(file_name, max_line=None):
                     context_arr += gen_u
                     conv_arr += gen_u
                     conv_arr_plain.append(u)
+
+                    annotator_id = u.rsplit(' ', 1)[-1]
+                    if annotator_id not in lang.annotator2index.keys():
+                        annotator_id_labels = [lang.annotator2index['NULL']] * (len(r.split())+1)
+                    else:
+                        annotator_id_labels = [lang.annotator2index[annotator_id]] * (len(r.split())+1)
+
+                    dialogue_id = dialogue_ids[cnt_lin]
+                    intents = intents_and_states[dialogue_id][str(turn_cnt)]['user_intents']
+                    states = intents_and_states[dialogue_id][str(turn_cnt)]['dialogue_states']
+                    if len(states) != 35:
+                        continue
+                    user_intent_labels = [1 if key in intents else 0 for key in lang.intent2index]
+                    dialogue_state_labels = [[lang.state2index[key][states[key]]] for key in states]
 
                     # Get gold entity for each domain
                     gold_ent = ast.literal_eval(gold_ent)
@@ -51,11 +81,11 @@ def read_langs(file_name, max_line=None):
                     # Get local pointer position for each word in system response
                     ptr_index = []
                     for key in r.split():
-                        index = [loc for loc, val in enumerate(context_arr) if (val[0] == key and key in ent_index)]
+                        index = [loc for loc, val in enumerate(kb_arr_plain) if (val == key and key in ent_index)]
                         if (index):
                             index = max(index)
                         else:
-                            index = len(context_arr)
+                            index = len(kb_arr_plain)
                         ptr_index.append(index)
 
                     # Get global pointer labels for words in system response, the 1 in the end is for the NULL token
@@ -77,7 +107,9 @@ def read_langs(file_name, max_line=None):
                         'context_arr': list(context_arr + [['$$$$'] * MEM_TOKEN_SIZE]),  # $$$$ is NULL token
                         'response': r,
                         'sketch_response': sketch_response,
-                        'ptr_index': ptr_index + [len(context_arr)],
+                        # 'ptr_index': ptr_index + [len(context_arr)],
+                        'ptr_index': ptr_index + [len(kb_arr_plain)],
+                        # 'ptr_index': ptr_index,
                         'selector_index': selector_index,
                         'ent_index': ent_index,
                         'ent_idx_cal': list(set(ent_idx_cal)),
@@ -95,7 +127,11 @@ def read_langs(file_name, max_line=None):
                         'ent_idx_train': list(set(ent_idx_train)),
                         'ent_idx_hospital': list(set(ent_idx_hospital)),
                         'kb_arr_plain': list(kb_arr_plain + ["[NULL]"]),
-                        'ent_labels': ent_labels}
+                        'ent_labels': ent_labels,
+                        'annotator_id_labels': annotator_id_labels,
+                        'user_intent_labels': list(user_intent_labels),
+                        'dialogue_state_labels': dialogue_state_labels
+                    }
                     data.append(data_detail)
 
                     gen_r = generate_memory(r, "$s", str(nid))
@@ -105,6 +141,7 @@ def read_langs(file_name, max_line=None):
                     if max_resp_len < len(r.split()):
                         max_resp_len = len(r.split())
                     sample_counter += 1
+                    turn_cnt += 1
                 else:
                     # deal with knowledge graph
                     r = line
@@ -121,6 +158,7 @@ def read_langs(file_name, max_line=None):
                     kb_arr += kb_info
             else:
                 cnt_lin += 1
+                turn_cnt = 1
                 context_arr, conv_arr, kb_arr, conv_arr_plain, kb_arr_plain = [], [], [], [], []
                 if (max_line and cnt_lin >= max_line):
                     break
@@ -164,20 +202,49 @@ def generate_memory(sent, speaker, time):
     return sent_new
 
 
-def prepare_data_seq(task, batch_size=100):
-    file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_modified.txt'
-    file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/valid_modified.txt'
-    file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_modified.txt'
-    # file_train = '/home/yimeng/shiquan/GLMP/data/multiwoz/train_modified.txt'
-    # file_dev = '/home/yimeng/shiquan/GLMP/data/multiwoz/valid_modified.txt'
-    # file_test = '/home/yimeng/shiquan/GLMP/data/multiwoz/test_modified.txt'
+def initialize_lang(lang, task):
+    # path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
+    path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
+    # path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_intents_states.json'.format(task, task)
+    with open(path, 'r') as f:
+        data = json.load(f)
+        for id in data.keys():
+            turns_data = data[id]
+            for turn in turns_data.keys():
+                dialogue_states = turns_data[turn]['dialogue_states']
+                user_intents = turns_data[turn]['user_intents']
+                for ele in user_intents:
+                    lang.index_intent(ele)
+                for key in dialogue_states:
+                    lang.index_state_values(key, dialogue_states[key])
+    if task == 'train':
+        # annotator_id_info_path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/MultiWOZ_2.2_Bias_ID.json'
+        annotator_id_info_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/MultiWOZ_2.2_Bias_ID.json'
+        # annotator_id_info_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/MultiWOZ_2.2_Bias_ID_p=0_5.json'
+        with open(annotator_id_info_path, 'r') as f:
+            data = json.load(f)
+            for key in data:
+                annotator_id = data[key]
+                lang.index_annotator(annotator_id)
+        lang.index_annotator('NULL')
 
-    pair_train, train_max_len = read_langs(file_train, max_line=None)
-    pair_dev, dev_max_len = read_langs(file_dev, max_line=None)
-    pair_test, test_max_len = read_langs(file_test, max_line=None)
-    max_resp_len = max(train_max_len, dev_max_len, test_max_len) + 1
+
+def prepare_data_seq(task, batch_size=100):
+    # file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    # file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    # file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    file_train = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/train/train_utterances_w_kb_w_gold_w_bias.txt'
+    file_dev = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/dev/dev_utterances_w_kb_w_gold.txt'
+    file_test = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/test/test_utterances_w_kb_w_gold.txt'
 
     lang = Lang()
+    for dataset in ('train', 'dev', 'test'):
+        initialize_lang(lang, dataset)
+
+    pair_train, train_max_len = read_langs(file_train, lang, 'train', max_line=None)
+    pair_dev, dev_max_len = read_langs(file_dev, lang, 'dev', max_line=None)
+    pair_test, test_max_len = read_langs(file_test, lang, 'test', max_line=None)
+    max_resp_len = max(train_max_len, dev_max_len, test_max_len) + 1
 
     train = get_seq(pair_train, lang, batch_size, True)
     dev = get_seq(pair_dev, lang, batch_size, False)

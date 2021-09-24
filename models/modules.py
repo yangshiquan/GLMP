@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils.config import *
 from utils.utils_general import _cuda
+from .grad_reverse_layer import GradReverseLayerFunction
 import random
 
 MAX_KB_LEN = 100
@@ -46,6 +47,74 @@ class ContextRNN(nn.Module):
         return outputs.transpose(0,1), hidden
 
 
+class EntityPredictionRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, dropout, shared_emb, num_labels, n_layers=1):
+        super(EntityPredictionRNN, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.n_layers = n_layers
+        self.dropout = dropout
+        self.dropout_layer = nn.Dropout(dropout)
+        self.embedding = shared_emb
+        self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=dropout, bidirectional=False)
+        self.W = nn.Linear(2*hidden_size, hidden_size)
+        self.intent_prediction = UserIntentPredictionHead(hidden_size, num_labels)
+        self.entity_prediction = EntityPredictionHead(hidden_size, shared_emb)
+
+    def get_state(self, bsz):
+        """Get cell states and hidden states."""
+        return _cuda(torch.zeros(1, bsz, self.hidden_size))
+
+    def forward(self, input_seqs, input_lengths, kb_arr, hidden=None):
+        # Note: we run this all at once (over multiple batches of multiple sequences)
+        # print("input_seqs in size: ", input_seqs.size())
+        input_seqs = input_seqs.transpose(0, 1)
+        embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
+        embedded = embedded.view(input_seqs.size()+(embedded.size(-1),))
+        # embedded = torch.sum(embedded, 2).squeeze(2)
+        embedded = self.dropout_layer(embedded)
+        hidden = self.get_state(input_seqs.size(1))
+        # print("input_seqs out size: ", input_seqs.size())
+        # print("embedded size: ", embedded.size())
+        if input_lengths:
+            embedded = nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=False)
+        outputs, hidden = self.gru(embedded, hidden)
+        if input_lengths:
+           outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=False)
+        # pdb.set_trace()
+        intent_logits = self.intent_prediction(hidden.squeeze(0))
+        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr)
+        # hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1)).unsqueeze(0)
+        # outputs = self.W(outputs)
+        return entity_logits, intent_logits
+
+
+class EntityPredictionHead(nn.Module):
+    def __init__(self, hidden_size, shared_emb):
+        super(EntityPredictionHead, self).__init__()
+        self.classifier = nn.Linear(hidden_size, hidden_size)
+        self.embeddings = shared_emb
+
+    def forward(self, hidden_state, kb_arr):
+        kb_emb = self.embeddings(kb_arr)
+        u_temp = hidden_state.unsqueeze(1).expand_as(kb_emb)
+        prob_logits = torch.sum(kb_emb * u_temp, dim=2)
+        return prob_logits
+
+
+class UserIntentPredictionHead(nn.Module):
+    def __init__(self, hidden_size, num_labels):
+        super(UserIntentPredictionHead, self).__init__()
+        self.classifier = nn.Linear(hidden_size, num_labels)
+        self.sigmoid = nn.Sigmoid()
+        self.alpha = 1.
+
+    def forward(self, hidden_state):
+        reversed_hidden_state = GradReverseLayerFunction.apply(hidden_state, self.alpha)
+        output = self.classifier(reversed_hidden_state)
+        return output
+
+
 class ExternalKnowledge(nn.Module):
     def __init__(self, vocab, embedding_dim, hop, dropout):
         super(ExternalKnowledge, self).__init__()
@@ -75,8 +144,6 @@ class ExternalKnowledge(nn.Module):
 
     def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs):
         # Forward multiple hop mechanism
-        hidden = self.projector(hidden)
-        dh_outputs = self.projector2(dh_outputs)
         u = [hidden.squeeze(0)]
         story_size = story.size()
         self.m_story = []
@@ -142,7 +209,7 @@ class LocalMemoryDecoder(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.sketch_rnn = nn.GRU(embedding_dim, embedding_dim, dropout=dropout)
         self.relu = nn.ReLU()
-        self.projector = nn.Linear(2*768, embedding_dim)
+        self.projector = nn.Linear(2*embedding_dim, embedding_dim)
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
 
@@ -151,8 +218,10 @@ class LocalMemoryDecoder(nn.Module):
                 get_decoded_words, global_pointer, conv_arr_plain, kb_arr_plain, ent_labels):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
-        all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
+        # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
+        all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, MAX_KB_LEN))
         all_decoder_outputs_topv = _cuda(torch.zeros(max_target_length, batch_size, 1))
+        all_decoder_outputs_intents = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_annotators))
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
         # memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
         kb_lens = [len(ele) for ele in kb_arr_plain]
@@ -182,10 +251,17 @@ class LocalMemoryDecoder(nn.Module):
             #                                                             batch_size,
             #                                                             kb_arr_plain)
             # _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
+
+            # compute bert input for kb entity prediction
+            input_ids, input_lens, kb_arr_ids = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
+            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids)
+            all_decoder_outputs_ptr[t] = entity_logits
+            all_decoder_outputs_intents[t] = intent_logits
+            prob_soft = entity_logits
             
             # query the external knowledge using the hidden state of sketch RNN
-            prob_soft, prob_logits = extKnow(query_vector, global_pointer)
-            all_decoder_outputs_ptr[t] = prob_logits
+            # prob_soft, prob_logits = extKnow(query_vector, global_pointer)
+            # all_decoder_outputs_ptr[t] = prob_logits
 
             if use_teacher_forcing:
                 decoder_input = target_batches[:,t] 
@@ -206,8 +282,8 @@ class LocalMemoryDecoder(nn.Module):
                     if '@' in self.lang.index2word[token]:
                         cw = 'UNK'
                         for i in range(search_len):
-                            if toppi[:,i][bi] < story_lengths[bi]-1:
-                            # if toppi[:, i][bi] < kb_lens[bi] - 1:
+                            # if toppi[:,i][bi] < story_lengths[bi]-1:
+                            if toppi[:, i][bi] < kb_lens[bi] - 1:
                                 cw = copy_list[bi][toppi[:,i][bi].item()]
                                 break
                         temp_f.append(cw)
@@ -220,11 +296,51 @@ class LocalMemoryDecoder(nn.Module):
                 decoded_fine.append(temp_f)
                 decoded_coarse.append(temp_c)
 
-        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse
+        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_intents
 
-    def compute_bert_input(self, tokenzier, conv_arr_plain,
-                           all_decoder_outputs_topv, current_step,
-                           batch_size, kb_arr_plain):  # conv_arr_plain: batch_size * conv_arr_len, all_decoder_outputs_topv: max_target_len * batch_size * 1
+    def compute_entity_prediction_input(self,
+                                        conv_arr_plain,
+                                        target_batches,
+                                        current_step,
+                                        batch_size,
+                                        kb_arr_plain):
+        bert_input_arr = []
+        for bt in range(batch_size):
+            conv_arr_plain_t = conv_arr_plain[bt]
+            output_plain_t = target_batches[bt, :(current_step + 1)]
+            for t in range(current_step + 1):
+                conv_arr_plain_t.append(self.lang.index2word[output_plain_t[t].item()])
+            bert_input = " ".join(conv_arr_plain_t)
+            bert_input_arr.append(bert_input)
+
+        # convert to id and padding
+        lens = [len(ele.split(" ")) for ele in bert_input_arr]
+        max_len = max(lens)
+        padded_seqs = torch.zeros(batch_size, max_len).long()
+        kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
+        for i, seq in enumerate(bert_input_arr):
+            end = lens[i]
+            word_ids = []
+            word_list = seq.split(" ")
+            for word in word_list:
+                word_id = self.lang.word2index[word] if word in self.lang.word2index else UNK_token
+                word_ids.append(word_id)
+            padded_seqs[i, :end] = torch.Tensor(word_ids[:end])
+        for i, ele in enumerate(kb_arr_plain):
+            kb_arr_ids = []
+            for ent in ele:
+                kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
+                kb_arr_ids.append(kb_arr_id)
+            kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
+        return padded_seqs, lens, kb_arr_padded
+
+    def compute_bert_input(self,
+                           tokenzier,
+                           conv_arr_plain,
+                           all_decoder_outputs_topv,
+                           current_step,
+                           batch_size,
+                           kb_arr_plain):  # conv_arr_plain: batch_size * conv_arr_len, all_decoder_outputs_topv: max_target_len * batch_size * 1
         bert_input_arr = []
         for bt in range(batch_size):
             conv_arr_plain_t = conv_arr_plain[bt]
