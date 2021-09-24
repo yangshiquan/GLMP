@@ -68,7 +68,7 @@ class EntityPredictionRNN(nn.Module):
     def forward(self, input_seqs, input_lengths, kb_arr, hidden=None):
         # Note: we run this all at once (over multiple batches of multiple sequences)
         # print("input_seqs in size: ", input_seqs.size())
-        input_seqs = input_seqs.transpose(0, 1)
+        input_seqs = input_seqs.transpose(0, 1).cuda()
         embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
         embedded = embedded.view(input_seqs.size()+(embedded.size(-1),))
         # embedded = torch.sum(embedded, 2).squeeze(2)
