@@ -99,7 +99,7 @@ class EntityPredictionHead(nn.Module):
 
     def forward(self, hidden_state, kb_arr, global_pointer):
         kb_emb = self.embeddings(kb_arr)
-        kb_emb = kb_emb * global_pointer.unsqueeze(2).expand_as(kb_emb)
+        # kb_emb = kb_emb * global_pointer.unsqueeze(2).expand_as(kb_emb)
         u_temp = hidden_state.unsqueeze(1).expand_as(kb_emb)
         prob_logits = torch.sum(kb_emb * u_temp, dim=2)
         return prob_logits
@@ -113,8 +113,9 @@ class UserIntentPredictionHead(nn.Module):
         self.alpha = 1.
 
     def forward(self, hidden_state):
-        reversed_hidden_state = GradReverseLayerFunction.apply(hidden_state, self.alpha)
-        output = self.classifier(reversed_hidden_state)
+        # reversed_hidden_state = GradReverseLayerFunction.apply(hidden_state, self.alpha)
+        # output = self.classifier(reversed_hidden_state)
+        output = self.classifier(hidden_state)
         return output
 
 
@@ -222,15 +223,15 @@ class LocalMemoryDecoder(nn.Module):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
-        # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, MAX_KB_LEN))
-        all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, kb_arr_plain.shape[1]))
+        all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, MAX_KB_LEN))
+        # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, kb_arr_plain.shape[1]))
         all_decoder_outputs_topv = _cuda(torch.zeros(max_target_length, batch_size, 1))
         all_decoder_outputs_intents = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_annotators))
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
         # memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
         kb_lens = [len(ele) for ele in kb_arr_plain]
-        # memory_mask_for_step = _cuda(torch.ones(batch_size, MAX_KB_LEN))
-        memory_mask_for_step = _cuda(torch.ones(batch_size, kb_arr_plain.shape[1]))
+        memory_mask_for_step = _cuda(torch.ones(batch_size, MAX_KB_LEN))
+        # memory_mask_for_step = _cuda(torch.ones(batch_size, kb_arr_plain.shape[1]))
         decoded_fine, decoded_coarse = [], []
         
         hidden = self.relu(self.projector(encode_hidden)).unsqueeze(0)
@@ -258,8 +259,8 @@ class LocalMemoryDecoder(nn.Module):
             # _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
 
             # compute bert input for kb entity prediction
-            input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
-            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
+            input_ids, input_lens, kb_arr_ids = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
+            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids, global_pointer)
             all_decoder_outputs_ptr[t] = entity_logits
             all_decoder_outputs_intents[t] = intent_logits
             prob_soft = entity_logits
@@ -324,7 +325,7 @@ class LocalMemoryDecoder(nn.Module):
         padded_seqs = torch.zeros(batch_size, max_len).long()
         # lengths = [len(seq) for seq in kb_arr_plain]
         # max_kb_len = 1 if max(lengths) == 0 else max(lengths)
-        # kb_arr_padded = torch.zeros(batch_size, max_kb_len).long()
+        kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
         for i, seq in enumerate(bert_input_arr):
             end = lens[i]
             word_ids = []
@@ -333,13 +334,13 @@ class LocalMemoryDecoder(nn.Module):
                 word_id = self.lang.word2index[word] if word in self.lang.word2index else UNK_token
                 word_ids.append(word_id)
             padded_seqs[i, :end] = torch.Tensor(word_ids[:end])
-        # for i, ele in enumerate(kb_arr_plain):
-        #     kb_arr_ids = []
-        #     for ent in ele:
-        #         kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
-        #         kb_arr_ids.append(kb_arr_id)
-        #     kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
-        return padded_seqs, lens
+        for i, ele in enumerate(kb_arr_plain):
+            kb_arr_ids = []
+            for ent in ele:
+                kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
+                kb_arr_ids.append(kb_arr_id)
+            kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
+        return padded_seqs, lens, kb_arr_padded
 
     def compute_bert_input(self,
                            tokenzier,

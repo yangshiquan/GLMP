@@ -14,10 +14,10 @@ def read_langs(file_name, lang, task, max_line=None):
 
     # dialogue_id_path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_dialogue_ids.txt'.format(task, task)
     # intents_states_path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
-    dialogue_id_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_dialogue_ids.txt'.format(task, task)
-    intents_states_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
-    # dialogue_id_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_dialogue_ids.txt'.format(task, task)
-    # intents_states_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_intents_states.json'.format(task, task)
+    # dialogue_id_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_dialogue_ids.txt'.format(task, task)
+    # intents_states_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
+    dialogue_id_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_dialogue_ids.txt'.format(task, task)
+    intents_states_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_intents_states.json'.format(task, task)
     dialogue_ids = {}
     with open(dialogue_id_path, 'r') as f:
         line_cnt = 0
@@ -131,7 +131,6 @@ def read_langs(file_name, lang, task, max_line=None):
                         'annotator_id_labels': annotator_id_labels,
                         'user_intent_labels': list(user_intent_labels),
                         'dialogue_state_labels': dialogue_state_labels,
-                        'kb_arr_new': list(kb_arr_plain + ["[NULL]"]),
                     }
                     data.append(data_detail)
 
@@ -205,8 +204,8 @@ def generate_memory(sent, speaker, time):
 
 def initialize_lang(lang, task):
     # path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
-    path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
-    # path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_intents_states.json'.format(task, task)
+    # path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
+    path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/{}_intents_states.json'.format(task, task)
     with open(path, 'r') as f:
         data = json.load(f)
         for id in data.keys():
@@ -220,8 +219,8 @@ def initialize_lang(lang, task):
                     lang.index_state_values(key, dialogue_states[key])
     if task == 'train':
         # annotator_id_info_path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/MultiWOZ_2.2_Bias_ID.json'
-        annotator_id_info_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/MultiWOZ_2.2_Bias_ID.json'
-        # annotator_id_info_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/MultiWOZ_2.2_Bias_ID_p=0_5.json'
+        # annotator_id_info_path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/MultiWOZ_2.2_Bias_ID.json'
+        annotator_id_info_path = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/MultiWOZ_2.2_Bias_ID_p=0_5.json'
         with open(annotator_id_info_path, 'r') as f:
             data = json.load(f)
             for key in data:
@@ -231,12 +230,12 @@ def initialize_lang(lang, task):
 
 
 def prepare_data_seq(task, batch_size=100):
-    # file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    # file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    # file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    file_train = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/train/train_utterances_w_kb_w_gold_w_bias.txt'
-    file_dev = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/dev/dev_utterances_w_kb_w_gold.txt'
-    file_test = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/test/test_utterances_w_kb_w_gold.txt'
+    file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    # file_train = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/train/train_utterances_w_kb_w_gold_w_bias.txt'
+    # file_dev = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/dev/dev_utterances_w_kb_w_gold.txt'
+    # file_test = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/test/test_utterances_w_kb_w_gold.txt'
 
     lang = Lang()
     for dataset in ('train', 'dev', 'test'):
