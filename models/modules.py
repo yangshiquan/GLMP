@@ -83,7 +83,7 @@ class EntityPredictionRNN(nn.Module):
            outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=False)
         # pdb.set_trace()
         intent_logits = self.intent_prediction(hidden.squeeze(0))
-        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr)
+        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr.cuda())
         # hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1)).unsqueeze(0)
         # outputs = self.W(outputs)
         return entity_logits, intent_logits
