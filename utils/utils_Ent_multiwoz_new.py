@@ -89,8 +89,8 @@ def read_langs(file_name, lang, task, max_line=None):
                         ptr_index.append(index)
 
                     # Get global pointer labels for words in system response, the 1 in the end is for the NULL token
-                    selector_index = [1 if (word_arr[0] in ent_index or word_arr[0] in r.split()) else 0 for word_arr in
-                                      context_arr] + [1]
+                    selector_index = [1 if (word_arr in ent_index or word_arr in r.split()) else 0 for word_arr in
+                                      kb_arr_plain] + [1]
 
                     sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
 
@@ -130,7 +130,8 @@ def read_langs(file_name, lang, task, max_line=None):
                         'ent_labels': ent_labels,
                         'annotator_id_labels': annotator_id_labels,
                         'user_intent_labels': list(user_intent_labels),
-                        'dialogue_state_labels': dialogue_state_labels
+                        'dialogue_state_labels': dialogue_state_labels,
+                        'kb_arr_new': list(kb_arr_plain + ["[NULL]"]),
                     }
                     data.append(data_detail)
 

@@ -72,8 +72,9 @@ class GLMP(nn.Module):
         print_loss_g = self.loss_g / self.print_every
         print_loss_v = self.loss_v / self.print_every
         print_loss_l = self.loss_l / self.print_every
+        print_loss_g2 = self.loss_g2 / self.print_every
         self.print_every += 1     
-        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l)
+        return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f},LG2:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l, print_loss_g2)
     
     def save_model(self, dec_type):
         name_data = "KVR/" if self.task=='' else "BABI/"
@@ -87,7 +88,7 @@ class GLMP(nn.Module):
         torch.save(self.entPred, directory + '/ent_pred.th')
 
     def reset(self):
-        self.loss, self.print_every, self.loss_g, self.loss_v, self.loss_l = 0, 1, 0, 0, 0
+        self.loss, self.print_every, self.loss_g, self.loss_v, self.loss_l, self.loss_g2 = 0, 1, 0, 0, 0, 0
     
     def _cuda(self, x):
         if USE_CUDA:
@@ -110,7 +111,7 @@ class GLMP(nn.Module):
         
         # Loss calculation and backpropagation
         # pdb.set_trace()
-        # loss_g = self.criterion_bce(global_pointer, data['selector_index'])
+        loss_g2 = self.criterion_bce(global_pointer, data['selector_index'])
         # loss_g = self.criterion_bce(outputs_intents[0], data['selector_index'])
         loss_g = masked_cross_entropy(
             outputs_intents.transpose(0, 1).contiguous(),
@@ -125,7 +126,7 @@ class GLMP(nn.Module):
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(), 
             data['ptr_index'].contiguous(), 
             data['response_lengths'])
-        loss = loss_g + loss_v + loss_l
+        loss = loss_g + loss_v + loss_l + loss_g2
         # loss = loss_g + loss_v
         loss.backward()
 
@@ -144,6 +145,7 @@ class GLMP(nn.Module):
         self.loss_g += loss_g.item()
         self.loss_v += loss_v.item()
         self.loss_l += loss_l.item()
+        self.loss_g2 += loss_g2.item()
     
     def encode_and_decode(self, data, max_target_length, use_teacher_forcing, get_decoded_words):
         # Build unknown mask for memory
@@ -166,6 +168,7 @@ class GLMP(nn.Module):
         # Encode dialog history and KB to vectors
         dh_outputs, dh_hidden = self.encoder(conv_story, data['conv_arr_lengths'])
         # global_pointer, kb_readout = self.extKnow.load_memory(story, data['kb_arr_lengths'], data['conv_arr_lengths'], dh_hidden, dh_outputs)
+        global_pointer, kb_readout = self.extKnow.load_memory(data['kb_arr_new'], dh_hidden)
         # encoded_hidden = torch.cat((dh_hidden.squeeze(0), kb_readout), dim=1)
         encoded_hidden = torch.cat((dh_hidden.squeeze(0), dh_hidden.squeeze(0)), dim=1)
 
@@ -189,12 +192,13 @@ class GLMP(nn.Module):
             batch_size, 
             use_teacher_forcing, 
             get_decoded_words, 
-            None,
+            global_pointer,
             data['conv_arr_plain'],
-            data['kb_arr_plain_new'],
+            # data['kb_arr_plain_new'],
+            data['kb_arr_new'],
             torch.Tensor(data['ent_labels']).long())
 
-        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, None, outputs_intents
+        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_intents
 
     def evaluate(self, dev, matric_best, early_stop=None):
         print("STARTING EVALUATION")

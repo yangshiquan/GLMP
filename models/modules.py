@@ -65,10 +65,11 @@ class EntityPredictionRNN(nn.Module):
         """Get cell states and hidden states."""
         return _cuda(torch.zeros(1, bsz, self.hidden_size))
 
-    def forward(self, input_seqs, input_lengths, kb_arr, hidden=None):
+    def forward(self, input_seqs, input_lengths, kb_arr, global_pointer, hidden=None):
         # Note: we run this all at once (over multiple batches of multiple sequences)
         # print("input_seqs in size: ", input_seqs.size())
         input_seqs = input_seqs.transpose(0, 1).cuda()
+        # input_seqs = input_seqs.transpose(0, 1)
         embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
         embedded = embedded.view(input_seqs.size()+(embedded.size(-1),))
         # embedded = torch.sum(embedded, 2).squeeze(2)
@@ -83,7 +84,8 @@ class EntityPredictionRNN(nn.Module):
            outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=False)
         # pdb.set_trace()
         intent_logits = self.intent_prediction(hidden.squeeze(0))
-        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr.cuda())
+        # entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr, global_pointer)
+        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr.cuda(), global_pointer)
         # hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1)).unsqueeze(0)
         # outputs = self.W(outputs)
         return entity_logits, intent_logits
@@ -95,8 +97,9 @@ class EntityPredictionHead(nn.Module):
         self.classifier = nn.Linear(hidden_size, hidden_size)
         self.embeddings = shared_emb
 
-    def forward(self, hidden_state, kb_arr):
+    def forward(self, hidden_state, kb_arr, global_pointer):
         kb_emb = self.embeddings(kb_arr)
+        kb_emb = kb_emb * global_pointer.unsqueeze(2).expand_as(kb_emb)
         u_temp = hidden_state.unsqueeze(1).expand_as(kb_emb)
         prob_logits = torch.sum(kb_emb * u_temp, dim=2)
         return prob_logits
@@ -142,7 +145,7 @@ class ExternalKnowledge(nn.Module):
             full_memory[bi, start:end, :] = full_memory[bi, start:end, :] + hiddens[bi, :conv_len[bi], :]
         return full_memory
 
-    def load_memory(self, story, kb_len, conv_len, hidden, dh_outputs):
+    def load_memory(self, story, hidden):
         # Forward multiple hop mechanism
         u = [hidden.squeeze(0)]
         story_size = story.size()
@@ -150,9 +153,9 @@ class ExternalKnowledge(nn.Module):
         for hop in range(self.max_hops):
             embed_A = self.C[hop](story.contiguous().view(story_size[0], -1))#.long()) # b * (m * s) * e
             embed_A = embed_A.view(story_size+(embed_A.size(-1),)) # b * m * s * e
-            embed_A = torch.sum(embed_A, 2).squeeze(2) # b * m * e
-            if not args["ablationH"]:
-                embed_A = self.add_lm_embedding(embed_A, kb_len, conv_len, dh_outputs)
+            # embed_A = torch.sum(embed_A, 2).squeeze(2) # b * m * e
+            # if not args["ablationH"]:
+            #     embed_A = self.add_lm_embedding(embed_A, kb_len, conv_len, dh_outputs)
             embed_A = self.dropout_layer(embed_A)
             
             if(len(list(u[-1].size()))==1): 
@@ -163,9 +166,9 @@ class ExternalKnowledge(nn.Module):
             
             embed_C = self.C[hop+1](story.contiguous().view(story_size[0], -1).long())
             embed_C = embed_C.view(story_size+(embed_C.size(-1),)) 
-            embed_C = torch.sum(embed_C, 2).squeeze(2)
-            if not args["ablationH"]:
-                embed_C = self.add_lm_embedding(embed_C, kb_len, conv_len, dh_outputs)
+            # embed_C = torch.sum(embed_C, 2).squeeze(2)
+            # if not args["ablationH"]:
+            #     embed_C = self.add_lm_embedding(embed_C, kb_len, conv_len, dh_outputs)
 
             prob = prob_.unsqueeze(2).expand_as(embed_C)
             o_k  = torch.sum(embed_C*prob, 1)
@@ -219,13 +222,15 @@ class LocalMemoryDecoder(nn.Module):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
-        all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, MAX_KB_LEN))
+        # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, MAX_KB_LEN))
+        all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, kb_arr_plain.shape[1]))
         all_decoder_outputs_topv = _cuda(torch.zeros(max_target_length, batch_size, 1))
         all_decoder_outputs_intents = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_annotators))
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
         # memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
         kb_lens = [len(ele) for ele in kb_arr_plain]
-        memory_mask_for_step = _cuda(torch.ones(batch_size, MAX_KB_LEN))
+        # memory_mask_for_step = _cuda(torch.ones(batch_size, MAX_KB_LEN))
+        memory_mask_for_step = _cuda(torch.ones(batch_size, kb_arr_plain.shape[1]))
         decoded_fine, decoded_coarse = [], []
         
         hidden = self.relu(self.projector(encode_hidden)).unsqueeze(0)
@@ -253,8 +258,8 @@ class LocalMemoryDecoder(nn.Module):
             # _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
 
             # compute bert input for kb entity prediction
-            input_ids, input_lens, kb_arr_ids = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
-            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids)
+            input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
+            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
             all_decoder_outputs_ptr[t] = entity_logits
             all_decoder_outputs_intents[t] = intent_logits
             prob_soft = entity_logits
@@ -317,7 +322,9 @@ class LocalMemoryDecoder(nn.Module):
         lens = [len(ele.split(" ")) for ele in bert_input_arr]
         max_len = max(lens)
         padded_seqs = torch.zeros(batch_size, max_len).long()
-        kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
+        # lengths = [len(seq) for seq in kb_arr_plain]
+        # max_kb_len = 1 if max(lengths) == 0 else max(lengths)
+        # kb_arr_padded = torch.zeros(batch_size, max_kb_len).long()
         for i, seq in enumerate(bert_input_arr):
             end = lens[i]
             word_ids = []
@@ -326,13 +333,13 @@ class LocalMemoryDecoder(nn.Module):
                 word_id = self.lang.word2index[word] if word in self.lang.word2index else UNK_token
                 word_ids.append(word_id)
             padded_seqs[i, :end] = torch.Tensor(word_ids[:end])
-        for i, ele in enumerate(kb_arr_plain):
-            kb_arr_ids = []
-            for ent in ele:
-                kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
-                kb_arr_ids.append(kb_arr_id)
-            kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
-        return padded_seqs, lens, kb_arr_padded
+        # for i, ele in enumerate(kb_arr_plain):
+        #     kb_arr_ids = []
+        #     for ent in ele:
+        #         kb_arr_id = self.lang.word2index[ent] if ent in self.lang.word2index else UNK_token
+        #         kb_arr_ids.append(kb_arr_id)
+        #     kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
+        return padded_seqs, lens
 
     def compute_bert_input(self,
                            tokenzier,

@@ -92,6 +92,8 @@ class Dataset(data.Dataset):
         kb_arr = self.preprocess(kb_arr, self.src_word2id, trg=False)
         sketch_response = self.data_info['sketch_response'][index]
         sketch_response = self.preprocess(sketch_response, self.trg_word2id)
+        kb_arr_new = self.data_info['kb_arr_new'][index]
+        kb_arr_new = self.preprocess(kb_arr_new, self.src_word2id, trg=False)
         
         # processed information
         data_info = {}
@@ -122,10 +124,14 @@ class Dataset(data.Dataset):
         else:
             story = []
             for i, word_triple in enumerate(sequence):
-                story.append([])
-                for ii, word in enumerate(word_triple):
-                    temp = word2id[word] if word in word2id else UNK_token
-                    story[i].append(temp)
+                if isinstance(word_triple, list):
+                    story.append([])
+                    for ii, word in enumerate(word_triple):
+                        temp = word2id[word] if word in word2id else UNK_token
+                        story[i].append(temp)
+                else:
+                    temp = word2id[word_triple] if word_triple in word2id else UNK_token
+                    story.append(temp)
         story = torch.Tensor(story)
         return story
 
@@ -169,6 +175,7 @@ class Dataset(data.Dataset):
         sketch_response, _ = merge(item_info['sketch_response'], False)
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
         annotator_id_labels, _ = merge(item_info['annotator_id_labels'], False)
+        kb_arr_new, kb_arr_new_lengths = merge(item_info['kb_arr_new'], False)
         
         # convert to contiguous and cuda
         context_arr = _cuda(context_arr.contiguous())
@@ -179,6 +186,7 @@ class Dataset(data.Dataset):
         sketch_response = _cuda(sketch_response.contiguous())
         if(len(list(kb_arr.size()))>1): kb_arr = _cuda(kb_arr.transpose(0,1).contiguous())
         annotator_id_labels = _cuda(annotator_id_labels.contiguous())
+        kb_arr_new = _cuda(kb_arr_new.contiguous())
         
         # processed information
         data_info = {}
