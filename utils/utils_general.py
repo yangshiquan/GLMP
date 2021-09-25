@@ -152,9 +152,16 @@ class Dataset(data.Dataset):
                     padded_seqs[i, :end] = seq[:end]
             return padded_seqs, lengths
 
+        def merge_kb(sequences):
+            padded_seqs = torch.ones(len(sequences), 100).long()
+            for i, seq in enumerate(sequences):
+                end = len(seq)
+                padded_seqs[i, :end] = seq[:end]
+            return padded_seqs
+
         def merge_index(sequences):
             lengths = [len(seq) for seq in sequences]
-            padded_seqs = torch.zeros(len(sequences), max(lengths)).float()
+            padded_seqs = torch.zeros(len(sequences), 100).float()
             for i, seq in enumerate(sequences):
                 end = lengths[i]
                 padded_seqs[i, :end] = seq[:end]    
@@ -175,7 +182,7 @@ class Dataset(data.Dataset):
         sketch_response, _ = merge(item_info['sketch_response'], False)
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
         annotator_id_labels, _ = merge(item_info['annotator_id_labels'], False)
-        kb_arr_new, kb_arr_new_lengths = merge(item_info['kb_arr_new'], False)
+        kb_arr_new = merge_kb(item_info['kb_arr_new'])
         
         # convert to contiguous and cuda
         context_arr = _cuda(context_arr.contiguous())
