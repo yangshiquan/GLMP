@@ -126,7 +126,7 @@ class GLMP(nn.Module):
             data['ptr_index'].contiguous(), 
             data['response_lengths'])
         # loss = 0.5 * loss_g + loss_v + 0.5 * loss_l
-        loss = loss_l + loss_v
+        loss = loss_l + loss_v + loss_g
         loss.backward()
 
         # Clip gradient norms
