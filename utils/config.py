@@ -8,7 +8,7 @@ EOS_token = 2
 UNK_token = 0
 
 if (os.cpu_count() > 8):
-    USE_CUDA = True
+    USE_CUDA = False
 else:
     USE_CUDA = False
 MAX_LENGTH = 10
