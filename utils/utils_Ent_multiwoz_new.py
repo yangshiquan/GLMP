@@ -59,7 +59,7 @@ def read_langs(file_name, lang, task, max_line=None):
                     if len(states) != 35:
                         continue
                     user_intent_labels = [1 if key in intents else 0 for key in lang.intent2index]
-                    dialogue_state_labels = [[lang.state2index[key][states[key]]] for key in states]
+                    dialogue_state_labels = [[lang.state2index[key][states[key]]]*(len(r.split())+1) for key in states]
 
                     # Get gold entity for each domain
                     gold_ent = ast.literal_eval(gold_ent)

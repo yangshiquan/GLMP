@@ -48,10 +48,11 @@ class ContextRNN(nn.Module):
 
 
 class EntityPredictionRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, dropout, shared_emb, num_labels, n_layers=1):
+    def __init__(self, input_size, hidden_size, dropout, shared_emb, num_labels, lang, n_layers=1):
         super(EntityPredictionRNN, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
+        self.lang = lang
         self.n_layers = n_layers
         self.dropout = dropout
         self.dropout_layer = nn.Dropout(dropout)
@@ -60,6 +61,7 @@ class EntityPredictionRNN(nn.Module):
         self.W = nn.Linear(2*hidden_size, hidden_size)
         self.intent_prediction = UserIntentPredictionHead(hidden_size, num_labels)
         self.entity_prediction = EntityPredictionHead(hidden_size, shared_emb)
+        self.dst_prediction = DialogueStatePredictionHeads(hidden_size, lang)
 
     def get_state(self, bsz):
         """Get cell states and hidden states."""
@@ -87,8 +89,9 @@ class EntityPredictionRNN(nn.Module):
         # entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr, global_pointer)
         entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr.cuda(), global_pointer)
         # hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1)).unsqueeze(0)
+        dst_logits = self.dst_prediction(hidden.squeeze(0))
         # outputs = self.W(outputs)
-        return entity_logits, intent_logits
+        return entity_logits, intent_logits, dst_logits
 
 
 class EntityPredictionHead(nn.Module):
@@ -117,6 +120,129 @@ class UserIntentPredictionHead(nn.Module):
         # output = self.classifier(reversed_hidden_state)
         output = self.classifier(hidden_state)
         return output
+
+
+class DSTPredictionHead(nn.Module):
+    def __init__(self, hidden_size, output_size):
+        super(DSTPredictionHead, self).__init__()
+        self.decoder = nn.Linear(hidden_size, output_size)
+        self.alpha = 1.
+
+    def forward(self, hidden_state):
+        output = self.decoder(hidden_state)
+        return output
+
+
+class DialogueStatePredictionHeads(nn.Module):
+    def __init__(self, hidden_size, lang):
+        super(DialogueStatePredictionHeads, self).__init__()
+        self.bus_leaveat_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['bus-leaveat'])
+        self.train_arriveby_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['train-arriveby'])
+        self.bus_departure_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['bus-departure'])
+        self.train_departure_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['train-departure'])
+        self.hotel_internet_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-internet'])
+        self.attraction_type_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['attraction-type'])
+        self.taxi_leaveat_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['taxi-leaveat'])
+        self.hotel_parking_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-parking'])
+        self.train_bookpeople_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['train-bookpeople'])
+        self.taxi_arriveby_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['taxi-arriveby'])
+        self.hotel_bookstay_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-bookstay'])
+        self.hotel_stars_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-stars'])
+        self.hospital_department_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hospital-department'])
+        self.hotel_bookday_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-bookday'])
+        self.attraction_area_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['attraction-area'])
+        self.hotel_type_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-type'])
+        self.restaurant_area_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-area'])
+        self.restaurant_booktime_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-booktime'])
+        self.hotel_pricerange_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-pricerange'])
+        self.restaurant_food_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-food'])
+        self.hotel_area_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-area'])
+        self.restaurant_bookday_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-bookday'])
+        self.hotel_bookpeople_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-bookpeople'])
+        self.attraction_name_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['attraction-name'])
+        self.train_destination_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['train-destination'])
+        self.restaurant_bookpeople_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-bookpeople'])
+        self.bus_destination_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['bus-destination'])
+        self.restaurant_name_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-name'])
+        self.train_leaveat_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['train-leaveat'])
+        self.taxi_destination_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['taxi-destination'])
+        self.hotel_name_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['hotel-name'])
+        self.restaurant_pricerange_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['restaurant-pricerange'])
+        self.bus_day_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['bus-day'])
+        self.taxi_departure_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['taxi-departure'])
+        self.train_day_predictions = DSTPredictionHead(hidden_size, lang.n_state_values['train-day'])
+
+    def forward(self, hidden_state):
+        bus_leaveat_prediction_scores = self.bus_leaveat_predictions(hidden_state)
+        train_arriveby_prediction_scores = self.train_arriveby_predictions(hidden_state)
+        bus_departure_prediction_scores = self.bus_departure_predictions(hidden_state)
+        train_departure_prediction_scores = self.train_departure_predictions(hidden_state)
+        hotel_internet_prediction_scores = self.hotel_internet_predictions(hidden_state)
+        attraction_type_prediction_scores = self.attraction_type_predictions(hidden_state)
+        taxi_leaveat_prediction_scores = self.taxi_leaveat_predictions(hidden_state)
+        hotel_parking_prediction_scores = self.hotel_parking_predictions(hidden_state)
+        train_bookpeople_prediction_scores = self.train_bookpeople_predictions(hidden_state)
+        taxi_arriveby_prediction_scores = self.taxi_arriveby_predictions(hidden_state)
+        hotel_bookstay_prediction_scores = self.hotel_bookstay_predictions(hidden_state)
+        hotel_stars_prediction_scores = self.hotel_stars_predictions(hidden_state)
+        hospital_department_prediction_scores = self.hospital_department_predictions(hidden_state)
+        hotel_bookday_prediction_scores = self.hotel_bookday_predictions(hidden_state)
+        attraction_area_prediction_scores = self.attraction_area_predictions(hidden_state)
+        hotel_type_prediction_scores = self.hotel_type_predictions(hidden_state)
+        restaurant_area_prediction_scores = self.restaurant_area_predictions(hidden_state)
+        restaurant_booktime_prediction_scores = self.restaurant_booktime_predictions(hidden_state)
+        hotel_pricerange_prediction_scores = self.hotel_pricerange_predictions(hidden_state)
+        restaurant_food_prediction_scores = self.restaurant_food_predictions(hidden_state)
+        hotel_area_prediction_scores = self.hotel_area_predictions(hidden_state)
+        restaurant_bookday_prediction_scores = self.restaurant_bookday_predictions(hidden_state)
+        hotel_bookpeople_prediction_scores = self.hotel_bookpeople_predictions(hidden_state)
+        attraction_name_prediction_scores = self.attraction_name_predictions(hidden_state)
+        train_destination_prediction_scores = self.train_destination_predictions(hidden_state)
+        restaurant_bookpeople_prediction_scores = self.restaurant_bookpeople_predictions(hidden_state)
+        bus_destination_prediction_scores = self.bus_destination_predictions(hidden_state)
+        restaurant_name_prediction_scores = self.restaurant_name_predictions(hidden_state)
+        train_leaveat_prediction_scores = self.train_leaveat_predictions(hidden_state)
+        taxi_destination_prediction_scores = self.taxi_destination_predictions(hidden_state)
+        hotel_name_prediction_scores = self.hotel_name_predictions(hidden_state)
+        restaurant_pricerange_prediction_scores = self.restaurant_pricerange_predictions(hidden_state)
+        bus_day_prediction_scores = self.bus_day_predictions(hidden_state)
+        taxi_departure_prediction_scores = self.taxi_departure_predictions(hidden_state)
+        train_day_prediction_scores = self.train_day_predictions(hidden_state)
+        return (bus_leaveat_prediction_scores,
+                train_arriveby_prediction_scores,
+                bus_departure_prediction_scores,
+                train_departure_prediction_scores,
+                hotel_internet_prediction_scores,
+                attraction_type_prediction_scores,
+                taxi_leaveat_prediction_scores,
+                hotel_parking_prediction_scores,
+                train_bookpeople_prediction_scores,
+                taxi_arriveby_prediction_scores,
+                hotel_bookstay_prediction_scores,
+                hotel_stars_prediction_scores,
+                hospital_department_prediction_scores,
+                hotel_bookday_prediction_scores,
+                attraction_area_prediction_scores,
+                hotel_type_prediction_scores,
+                restaurant_area_prediction_scores,
+                restaurant_booktime_prediction_scores,
+                hotel_pricerange_prediction_scores,
+                restaurant_food_prediction_scores,
+                hotel_area_prediction_scores,
+                restaurant_bookday_prediction_scores,
+                hotel_bookpeople_prediction_scores,
+                attraction_name_prediction_scores,
+                train_destination_prediction_scores,
+                restaurant_bookpeople_prediction_scores,
+                bus_destination_prediction_scores,
+                restaurant_name_prediction_scores,
+                train_leaveat_prediction_scores,
+                taxi_destination_prediction_scores,
+                hotel_name_prediction_scores,
+                restaurant_pricerange_prediction_scores,
+                bus_day_prediction_scores,
+                taxi_departure_prediction_scores,
+                train_day_prediction_scores)
 
 
 class ExternalKnowledge(nn.Module):
@@ -227,6 +353,42 @@ class LocalMemoryDecoder(nn.Module):
         # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, kb_arr_plain.shape[1]))
         all_decoder_outputs_topv = _cuda(torch.zeros(max_target_length, batch_size, 1))
         all_decoder_outputs_intents = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_annotators))
+        all_decoder_outputs_bus_leaveat = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['bus-leaveat']))
+        all_decoder_outputs_train_arriveby = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['train-arriveby']))
+        all_decoder_outputs_bus_departure = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['bus-departure']))
+        all_decoder_outputs_train_departure = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['train-departure']))
+        all_decoder_outputs_hotel_internet = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-internet']))
+        all_decoder_outputs_attraction_type = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['attraction-type']))
+        all_decoder_outputs_taxi_leaveat = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['taxi-leaveat']))
+        all_decoder_outputs_hotel_parking = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-parking']))
+        all_decoder_outputs_train_bookpeople = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['train-bookpeople']))
+        all_decoder_outputs_taxi_arriveby = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['taxi-arriveby']))
+        all_decoder_outputs_hotel_bookstay = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-bookstay']))
+        all_decoder_outputs_hotel_stars = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-stars']))
+        all_decoder_outputs_hospital_department = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hospital-department']))
+        all_decoder_outputs_hotel_bookday = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-bookday']))
+        all_decoder_outputs_attraction_area = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['attraction-area']))
+        all_decoder_outputs_hotel_type = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-type']))
+        all_decoder_outputs_restaurant_area = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-area']))
+        all_decoder_outputs_restaurant_booktime = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-booktime']))
+        all_decoder_outputs_hotel_pricerange = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-pricerange']))
+        all_decoder_outputs_restaurant_food = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-food']))
+        all_decoder_outputs_hotel_area = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-area']))
+        all_decoder_outputs_restaurant_bookday = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-bookday']))
+        all_decoder_outputs_hotel_bookpeople = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-bookpeople']))
+        all_decoder_outputs_attraction_name = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['attraction-name']))
+        all_decoder_outputs_train_destination = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['train-destination']))
+        all_decoder_outputs_restaurant_bookpeople = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-bookpeople']))
+        all_decoder_outputs_bus_destination = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['bus-destination']))
+        all_decoder_outputs_restaurant_name = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-name']))
+        all_decoder_outputs_train_leaveat = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['train-leaveat']))
+        all_decoder_outputs_taxi_destination = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['taxi-destination']))
+        all_decoder_outputs_hotel_name = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['hotel-name']))
+        all_decoder_outputs_restaurant_pricerange = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['restaurant-pricerange']))
+        all_decoder_outputs_bus_day = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['bus-day']))
+        all_decoder_outputs_taxi_departure = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['taxi-departure']))
+        all_decoder_outputs_train_day = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_state_values['train-day']))
+
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
         # memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
         kb_lens = [len(ele) for ele in kb_arr_plain]
@@ -261,9 +423,44 @@ class LocalMemoryDecoder(nn.Module):
             # compute bert input for kb entity prediction
             input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
             # entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids, global_pointer)
-            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
+            entity_logits, intent_logits, dst_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
             all_decoder_outputs_ptr[t] = entity_logits
             all_decoder_outputs_intents[t] = intent_logits
+            all_decoder_outputs_bus_leaveat[t] = dst_logits[0]
+            all_decoder_outputs_train_arriveby[t] = dst_logits[1]
+            all_decoder_outputs_bus_departure[t] =  dst_logits[2]
+            all_decoder_outputs_train_departure[t] =  dst_logits[3]
+            all_decoder_outputs_hotel_internet[t] = dst_logits[4]
+            all_decoder_outputs_attraction_type[t] = dst_logits[5]
+            all_decoder_outputs_taxi_leaveat[t] = dst_logits[6]
+            all_decoder_outputs_hotel_parking[t] = dst_logits[7]
+            all_decoder_outputs_train_bookpeople[t] = dst_logits[8]
+            all_decoder_outputs_taxi_arriveby[t] = dst_logits[9]
+            all_decoder_outputs_hotel_bookstay[t] = dst_logits[10]
+            all_decoder_outputs_hotel_stars[t] = dst_logits[11]
+            all_decoder_outputs_hospital_department[t] = dst_logits[12]
+            all_decoder_outputs_hotel_bookday[t] = dst_logits[13]
+            all_decoder_outputs_attraction_area[t] = dst_logits[14]
+            all_decoder_outputs_hotel_type[t] = dst_logits[15]
+            all_decoder_outputs_restaurant_area[t] = dst_logits[16]
+            all_decoder_outputs_restaurant_booktime[t] = dst_logits[17]
+            all_decoder_outputs_hotel_pricerange[t] = dst_logits[18]
+            all_decoder_outputs_restaurant_food[t] = dst_logits[19]
+            all_decoder_outputs_hotel_area[t] = dst_logits[20]
+            all_decoder_outputs_restaurant_bookday[t] = dst_logits[21]
+            all_decoder_outputs_hotel_bookpeople[t] = dst_logits[22]
+            all_decoder_outputs_attraction_name[t] = dst_logits[23]
+            all_decoder_outputs_train_destination[t] = dst_logits[24]
+            all_decoder_outputs_restaurant_bookpeople[t] = dst_logits[25]
+            all_decoder_outputs_bus_destination[t] = dst_logits[26]
+            all_decoder_outputs_restaurant_name[t] = dst_logits[27]
+            all_decoder_outputs_train_leaveat[t] = dst_logits[28]
+            all_decoder_outputs_taxi_destination[t] = dst_logits[29]
+            all_decoder_outputs_hotel_name[t] = dst_logits[30]
+            all_decoder_outputs_restaurant_pricerange[t] = dst_logits[31]
+            all_decoder_outputs_bus_day[t] = dst_logits[32]
+            all_decoder_outputs_taxi_departure[t] = dst_logits[33]
+            all_decoder_outputs_train_day[t] = dst_logits[34]
             prob_soft = entity_logits
             
             # query the external knowledge using the hidden state of sketch RNN
@@ -303,7 +500,43 @@ class LocalMemoryDecoder(nn.Module):
                 decoded_fine.append(temp_f)
                 decoded_coarse.append(temp_c)
 
-        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_intents
+        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, \
+                all_decoder_outputs_intents, \
+                all_decoder_outputs_bus_leaveat, \
+                all_decoder_outputs_train_arriveby, \
+                all_decoder_outputs_bus_departure , \
+                all_decoder_outputs_train_departure, \
+                all_decoder_outputs_hotel_internet, \
+                all_decoder_outputs_attraction_type, \
+                all_decoder_outputs_taxi_leaveat, \
+                all_decoder_outputs_hotel_parking, \
+                all_decoder_outputs_train_bookpeople, \
+                all_decoder_outputs_taxi_arriveby, \
+                all_decoder_outputs_hotel_bookstay, \
+                all_decoder_outputs_hotel_stars, \
+                all_decoder_outputs_hospital_department, \
+                all_decoder_outputs_hotel_bookday, \
+                all_decoder_outputs_attraction_area, \
+                all_decoder_outputs_hotel_type, \
+                all_decoder_outputs_restaurant_area, \
+                all_decoder_outputs_restaurant_booktime, \
+                all_decoder_outputs_hotel_pricerange, \
+                all_decoder_outputs_restaurant_food, \
+                all_decoder_outputs_hotel_area, \
+                all_decoder_outputs_restaurant_bookday, \
+                all_decoder_outputs_hotel_bookpeople, \
+                all_decoder_outputs_attraction_name, \
+                all_decoder_outputs_train_destination, \
+                all_decoder_outputs_restaurant_bookpeople, \
+                all_decoder_outputs_bus_destination, \
+                all_decoder_outputs_restaurant_name, \
+                all_decoder_outputs_train_leaveat, \
+                all_decoder_outputs_taxi_destination, \
+                all_decoder_outputs_hotel_name, \
+                all_decoder_outputs_restaurant_pricerange, \
+                all_decoder_outputs_bus_day, \
+                all_decoder_outputs_taxi_departure, \
+                all_decoder_outputs_train_day
 
     def compute_entity_prediction_input(self,
                                         conv_arr_plain,

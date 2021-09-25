@@ -50,7 +50,7 @@ class GLMP(nn.Module):
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
-            self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators)
+            self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators, lang)
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
@@ -106,7 +106,42 @@ class GLMP(nn.Module):
         # Encode and Decode
         use_teacher_forcing = random.random() < args['teacher_forcing_ratio'] 
         max_target_length = max(data['response_lengths'])
-        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, outputs_intents = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
+        all_decoder_outputs_vocab, all_decoder_outputs_ptr, _, _, global_pointer, outputs_intents, \
+        all_decoder_outputs_bus_leaveat, \
+        all_decoder_outputs_train_arriveby, \
+        all_decoder_outputs_bus_departure , \
+        all_decoder_outputs_train_departure, \
+        all_decoder_outputs_hotel_internet, \
+        all_decoder_outputs_attraction_type, \
+        all_decoder_outputs_taxi_leaveat, \
+        all_decoder_outputs_hotel_parking, \
+        all_decoder_outputs_train_bookpeople, \
+        all_decoder_outputs_taxi_arriveby, \
+        all_decoder_outputs_hotel_bookstay, \
+        all_decoder_outputs_hotel_stars, \
+        all_decoder_outputs_hospital_department, \
+        all_decoder_outputs_hotel_bookday, \
+        all_decoder_outputs_attraction_area, \
+        all_decoder_outputs_hotel_type, \
+        all_decoder_outputs_restaurant_area, \
+        all_decoder_outputs_restaurant_booktime, \
+        all_decoder_outputs_hotel_pricerange, \
+        all_decoder_outputs_restaurant_food, \
+        all_decoder_outputs_hotel_area, \
+        all_decoder_outputs_restaurant_bookday, \
+        all_decoder_outputs_hotel_bookpeople, \
+        all_decoder_outputs_attraction_name, \
+        all_decoder_outputs_train_destination, \
+        all_decoder_outputs_restaurant_bookpeople, \
+        all_decoder_outputs_bus_destination, \
+        all_decoder_outputs_restaurant_name, \
+        all_decoder_outputs_train_leaveat, \
+        all_decoder_outputs_taxi_destination, \
+        all_decoder_outputs_hotel_name, \
+        all_decoder_outputs_restaurant_pricerange, \
+        all_decoder_outputs_bus_day, \
+        all_decoder_outputs_taxi_departure, \
+        all_decoder_outputs_train_day = self.encode_and_decode(data, max_target_length, use_teacher_forcing, False)
         
         # Loss calculation and backpropagation
         # pdb.set_trace()
@@ -117,16 +152,80 @@ class GLMP(nn.Module):
             data['annotator_id_labels'].contiguous(),
             data['response_lengths']
         )
+        # loss_g1 = masked_cross_entropy(all_decoder_outputs_bus_leaveat.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 0, :].contiguous(), data['response_lengths'])
+        loss_g2 = masked_cross_entropy(all_decoder_outputs_train_arriveby.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 1, :].contiguous(), data['response_lengths'])
+        # loss_g3 = masked_cross_entropy(all_decoder_outputs_bus_departure.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 2, :].contiguous(), data['response_lengths'])
+        loss_g4 = masked_cross_entropy(all_decoder_outputs_train_departure.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 3, :].contiguous(), data['response_lengths'])
+        loss_g5 = masked_cross_entropy(all_decoder_outputs_hotel_internet.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 4, :].contiguous(), data['response_lengths'])
+        loss_g6 = masked_cross_entropy(all_decoder_outputs_attraction_type.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 5, :].contiguous(), data['response_lengths'])
+        # loss_g7 = masked_cross_entropy(all_decoder_outputs_taxi_leaveat.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 6, :].contiguous(), data['response_lengths'])
+        loss_g8 = masked_cross_entropy(all_decoder_outputs_hotel_parking.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 7, :].contiguous(), data['response_lengths'])
+        loss_g9 = masked_cross_entropy(all_decoder_outputs_train_bookpeople.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 8, :].contiguous(), data['response_lengths'])
+        # loss_g10 = masked_cross_entropy(all_decoder_outputs_taxi_arriveby.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 9, :].contiguous(), data['response_lengths'])
+        loss_g11 = masked_cross_entropy(all_decoder_outputs_hotel_bookstay.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 10, :].contiguous(), data['response_lengths'])
+        loss_g12 = masked_cross_entropy(all_decoder_outputs_hotel_stars.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 11, :].contiguous(), data['response_lengths'])
+        # loss_g13 = masked_cross_entropy(all_decoder_outputs_hospital_department.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 12, :].contiguous(), data['response_lengths'])
+        loss_g14 = masked_cross_entropy(all_decoder_outputs_hotel_bookday.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 13, :].contiguous(), data['response_lengths'])
+        loss_g15 = masked_cross_entropy(all_decoder_outputs_attraction_area.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 14, :].contiguous(), data['response_lengths'])
+        loss_g16 = masked_cross_entropy(all_decoder_outputs_hotel_type.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 15, :].contiguous(), data['response_lengths'])
+        loss_g17 = masked_cross_entropy(all_decoder_outputs_restaurant_area.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 16, :].contiguous(), data['response_lengths'])
+        loss_g18 = masked_cross_entropy(all_decoder_outputs_restaurant_booktime.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 17, :].contiguous(), data['response_lengths'])
+        loss_g19 = masked_cross_entropy(all_decoder_outputs_hotel_pricerange.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 18, :].contiguous(), data['response_lengths'])
+        loss_g20 = masked_cross_entropy(all_decoder_outputs_restaurant_food.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 19, :].contiguous(), data['response_lengths'])
+        loss_g21 = masked_cross_entropy(all_decoder_outputs_hotel_area.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 20, :].contiguous(), data['response_lengths'])
+        loss_g22 = masked_cross_entropy(all_decoder_outputs_restaurant_bookday.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 21, :].contiguous(), data['response_lengths'])
+        loss_g23 = masked_cross_entropy(all_decoder_outputs_hotel_bookpeople.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 22, :].contiguous(), data['response_lengths'])
+        loss_g24 = masked_cross_entropy(all_decoder_outputs_attraction_name.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 23, :].contiguous(), data['response_lengths'])
+        loss_g25 = masked_cross_entropy(all_decoder_outputs_train_destination.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 24, :].contiguous(), data['response_lengths'])
+        loss_g26 = masked_cross_entropy(all_decoder_outputs_restaurant_bookpeople.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 25, :].contiguous(), data['response_lengths'])
+        # loss_g27 = masked_cross_entropy(all_decoder_outputs_bus_destination.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 26, :].contiguous(), data['response_lengths'])
+        loss_g28 = masked_cross_entropy(all_decoder_outputs_restaurant_name.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 27, :].contiguous(), data['response_lengths'])
+        loss_g29 = masked_cross_entropy(all_decoder_outputs_train_leaveat.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 28, :].contiguous(), data['response_lengths'])
+        # loss_g30 = masked_cross_entropy(all_decoder_outputs_taxi_destination.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 29, :].contiguous(), data['response_lengths'])
+        loss_g31 = masked_cross_entropy(all_decoder_outputs_hotel_name.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 30, :].contiguous(), data['response_lengths'])
+        loss_g32 = masked_cross_entropy(all_decoder_outputs_restaurant_pricerange.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 31, :].contiguous(), data['response_lengths'])
+        # loss_g33 = masked_cross_entropy(all_decoder_outputs_bus_day.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 32, :].contiguous(), data['response_lengths'])
+        # loss_g34 = masked_cross_entropy(all_decoder_outputs_taxi_departure.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 33, :].contiguous(), data['response_lengths'])
+        loss_g35 = masked_cross_entropy(all_decoder_outputs_train_day.transpose(0, 1).contiguous(), data['dialogue_state_labels'][:, 34, :].contiguous(), data['response_lengths'])
+
+
         loss_v = masked_cross_entropy(
             all_decoder_outputs_vocab.transpose(0, 1).contiguous(), 
             data['sketch_response'].contiguous(), 
             data['response_lengths'])
         loss_l = masked_cross_entropy(
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(), 
-            data['ptr_index'].contiguous(), 
+            data['ptr_index'].contiguous(),
             data['response_lengths'])
         # loss = 0.5 * loss_g + loss_v + 0.5 * loss_l
-        loss = loss_l + loss_v + loss_g
+        loss = loss_l + loss_v + loss_g + \
+               loss_g2 + \
+               loss_g4 + \
+               loss_g5 + \
+               loss_g6 + \
+               loss_g8 + \
+               loss_g9 + \
+               loss_g11 + \
+               loss_g12 + \
+               loss_g14 + \
+               loss_g15 + \
+               loss_g16 + \
+               loss_g17 + \
+               loss_g18 + \
+               loss_g19 + \
+               loss_g20 + \
+               loss_g21 + \
+               loss_g22 + \
+               loss_g23 + \
+               loss_g24 + \
+               loss_g25 + \
+               loss_g26 + \
+               loss_g28 + \
+               loss_g29 + \
+               loss_g31 + \
+               loss_g32 + \
+               loss_g35
+
         loss.backward()
 
         # Clip gradient norms
@@ -179,7 +278,42 @@ class GLMP(nn.Module):
         #     elm_temp = [ word_arr[0] for word_arr in elm ]
         #     self.copy_list.append(elm_temp)
 
-        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, outputs_intents = self.decoder(
+        outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, outputs_intents, \
+        all_decoder_outputs_bus_leaveat, \
+        all_decoder_outputs_train_arriveby, \
+        all_decoder_outputs_bus_departure , \
+        all_decoder_outputs_train_departure, \
+        all_decoder_outputs_hotel_internet, \
+        all_decoder_outputs_attraction_type, \
+        all_decoder_outputs_taxi_leaveat, \
+        all_decoder_outputs_hotel_parking, \
+        all_decoder_outputs_train_bookpeople, \
+        all_decoder_outputs_taxi_arriveby, \
+        all_decoder_outputs_hotel_bookstay, \
+        all_decoder_outputs_hotel_stars, \
+        all_decoder_outputs_hospital_department, \
+        all_decoder_outputs_hotel_bookday, \
+        all_decoder_outputs_attraction_area, \
+        all_decoder_outputs_hotel_type, \
+        all_decoder_outputs_restaurant_area, \
+        all_decoder_outputs_restaurant_booktime, \
+        all_decoder_outputs_hotel_pricerange, \
+        all_decoder_outputs_restaurant_food, \
+        all_decoder_outputs_hotel_area, \
+        all_decoder_outputs_restaurant_bookday, \
+        all_decoder_outputs_hotel_bookpeople, \
+        all_decoder_outputs_attraction_name, \
+        all_decoder_outputs_train_destination, \
+        all_decoder_outputs_restaurant_bookpeople, \
+        all_decoder_outputs_bus_destination, \
+        all_decoder_outputs_restaurant_name, \
+        all_decoder_outputs_train_leaveat, \
+        all_decoder_outputs_taxi_destination, \
+        all_decoder_outputs_hotel_name, \
+        all_decoder_outputs_restaurant_pricerange, \
+        all_decoder_outputs_bus_day, \
+        all_decoder_outputs_taxi_departure, \
+        all_decoder_outputs_train_day = self.decoder(
             self.entPred,
             # self.debiasedKnow,
             story.size(), 
@@ -197,7 +331,42 @@ class GLMP(nn.Module):
             data['kb_arr_new'],
             torch.Tensor(data['ent_labels']).long())
 
-        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_intents
+        return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_intents, \
+                all_decoder_outputs_bus_leaveat, \
+                all_decoder_outputs_train_arriveby, \
+                all_decoder_outputs_bus_departure , \
+                all_decoder_outputs_train_departure, \
+                all_decoder_outputs_hotel_internet, \
+                all_decoder_outputs_attraction_type, \
+                all_decoder_outputs_taxi_leaveat, \
+                all_decoder_outputs_hotel_parking, \
+                all_decoder_outputs_train_bookpeople, \
+                all_decoder_outputs_taxi_arriveby, \
+                all_decoder_outputs_hotel_bookstay, \
+                all_decoder_outputs_hotel_stars, \
+                all_decoder_outputs_hospital_department, \
+                all_decoder_outputs_hotel_bookday, \
+                all_decoder_outputs_attraction_area, \
+                all_decoder_outputs_hotel_type, \
+                all_decoder_outputs_restaurant_area, \
+                all_decoder_outputs_restaurant_booktime, \
+                all_decoder_outputs_hotel_pricerange, \
+                all_decoder_outputs_restaurant_food, \
+                all_decoder_outputs_hotel_area, \
+                all_decoder_outputs_restaurant_bookday, \
+                all_decoder_outputs_hotel_bookpeople, \
+                all_decoder_outputs_attraction_name, \
+                all_decoder_outputs_train_destination, \
+                all_decoder_outputs_restaurant_bookpeople, \
+                all_decoder_outputs_bus_destination, \
+                all_decoder_outputs_restaurant_name, \
+                all_decoder_outputs_train_leaveat, \
+                all_decoder_outputs_taxi_destination, \
+                all_decoder_outputs_hotel_name, \
+                all_decoder_outputs_restaurant_pricerange, \
+                all_decoder_outputs_bus_day, \
+                all_decoder_outputs_taxi_departure, \
+                all_decoder_outputs_train_day
 
     def evaluate(self, dev, matric_best, early_stop=None):
         print("STARTING EVALUATION")
@@ -239,7 +408,42 @@ class GLMP(nn.Module):
         for j, data_dev in pbar:
             # Encode and Decode
             max_target_length = max(data_dev['response_lengths'])
-            _, _, decoded_fine, decoded_coarse, global_pointer, _ = self.encode_and_decode(data_dev, max_target_length, False, True)
+            _, _, decoded_fine, decoded_coarse, global_pointer, _, \
+            all_decoder_outputs_bus_leaveat, \
+            all_decoder_outputs_train_arriveby, \
+            all_decoder_outputs_bus_departure, \
+            all_decoder_outputs_train_departure, \
+            all_decoder_outputs_hotel_internet, \
+            all_decoder_outputs_attraction_type, \
+            all_decoder_outputs_taxi_leaveat, \
+            all_decoder_outputs_hotel_parking, \
+            all_decoder_outputs_train_bookpeople, \
+            all_decoder_outputs_taxi_arriveby, \
+            all_decoder_outputs_hotel_bookstay, \
+            all_decoder_outputs_hotel_stars, \
+            all_decoder_outputs_hospital_department, \
+            all_decoder_outputs_hotel_bookday, \
+            all_decoder_outputs_attraction_area, \
+            all_decoder_outputs_hotel_type, \
+            all_decoder_outputs_restaurant_area, \
+            all_decoder_outputs_restaurant_booktime, \
+            all_decoder_outputs_hotel_pricerange, \
+            all_decoder_outputs_restaurant_food, \
+            all_decoder_outputs_hotel_area, \
+            all_decoder_outputs_restaurant_bookday, \
+            all_decoder_outputs_hotel_bookpeople, \
+            all_decoder_outputs_attraction_name, \
+            all_decoder_outputs_train_destination, \
+            all_decoder_outputs_restaurant_bookpeople, \
+            all_decoder_outputs_bus_destination, \
+            all_decoder_outputs_restaurant_name, \
+            all_decoder_outputs_train_leaveat, \
+            all_decoder_outputs_taxi_destination, \
+            all_decoder_outputs_hotel_name, \
+            all_decoder_outputs_restaurant_pricerange, \
+            all_decoder_outputs_bus_day, \
+            all_decoder_outputs_taxi_departure, \
+            all_decoder_outputs_train_day = self.encode_and_decode(data_dev, max_target_length, False, True)
             decoded_coarse = np.transpose(decoded_coarse)
             decoded_fine = np.transpose(decoded_fine)
             for bi, row in enumerate(decoded_fine):

@@ -94,6 +94,7 @@ class Dataset(data.Dataset):
         sketch_response = self.preprocess(sketch_response, self.trg_word2id)
         kb_arr_new = self.data_info['kb_arr_new'][index]
         kb_arr_new = self.preprocess(kb_arr_new, self.src_word2id, trg=False)
+        dialogue_state_labels = torch.Tensor(self.data_info['dialogue_state_labels'][index])
         
         # processed information
         data_info = {}
@@ -159,6 +160,18 @@ class Dataset(data.Dataset):
                 padded_seqs[i, :end] = seq[:end]
             return padded_seqs
 
+        def merge_dst(sequences):
+            lengths = [len(seq) for seq in sequences]
+            max_len = 1 if max(lengths) == 0 else max(lengths)
+            len1 = [seq.shape[1] for seq in sequences]
+            max_len1 = 1 if max(len1) == 0 else max(len1)
+            padded_seqs = torch.ones(len(sequences), max_len, max_len1).long()
+            for i, seq in enumerate(sequences):
+                for ii, num in enumerate(seq):
+                    for iii, d in enumerate(num):
+                        padded_seqs[i, ii, iii] = d
+            return padded_seqs
+
         def merge_index(sequences):
             lengths = [len(seq) for seq in sequences]
             padded_seqs = torch.zeros(len(sequences), max(lengths)).float()
@@ -182,6 +195,7 @@ class Dataset(data.Dataset):
         sketch_response, _ = merge(item_info['sketch_response'], False)
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
         annotator_id_labels, _ = merge(item_info['annotator_id_labels'], False)
+        dialogue_state_labels = merge_dst(item_info['dialogue_state_labels'])
         kb_arr_new = merge_kb(item_info['kb_arr_new'])
         
         # convert to contiguous and cuda
@@ -193,6 +207,7 @@ class Dataset(data.Dataset):
         sketch_response = _cuda(sketch_response.contiguous())
         if(len(list(kb_arr.size()))>1): kb_arr = _cuda(kb_arr.transpose(0,1).contiguous())
         annotator_id_labels = _cuda(annotator_id_labels.contiguous())
+        dialogue_state_labels = _cuda(dialogue_state_labels.contiguous())
         kb_arr_new = _cuda(kb_arr_new.contiguous())
         
         # processed information
