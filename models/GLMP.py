@@ -199,14 +199,15 @@ class GLMP(nn.Module):
         # Set to not-training mode to disable dropout
         self.encoder.train(False)
         self.extKnow.train(False)
-        self.decoder.train(False)  
-        
+        self.decoder.train(False)
+        self.entPred.train(False)
+
         ref, hyp = [], []
         acc, total = 0, 0
         dialog_acc_dict = {}
-        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred, F1_restaurant_pred, F1_hotel_pred, F1_attraction_pred, F1_train_pred = 0, 0, 0, 0, 0, 0, 0, 0
-        F1_count, F1_cal_count, F1_nav_count, F1_wet_count, F1_restaurant_count, F1_hotel_count, F1_attraction_count, F1_train_count = 0, 0, 0, 0, 0, 0, 0, 0
-        pbar = tqdm(enumerate(dev),total=len(dev))
+        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred, F1_restaurant_pred, F1_hotel_pred, F1_attraction_pred, F1_train_pred, F1_travel_pred, F1_events_pred, F1_weather_pred, F1_others_pred = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        F1_count, F1_cal_count, F1_nav_count, F1_wet_count, F1_restaurant_count, F1_hotel_count, F1_attraction_count, F1_train_count, F1_travel_count, F1_events_count, F1_weather_count, F1_others_count = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        pbar = tqdm(enumerate(dev), total=len(dev))
         new_precision, new_recall, new_f1_score = 0, 0, 0
         global_entity_list = []
 
@@ -230,62 +231,117 @@ class GLMP(nn.Module):
                     global_entity_list += [item.lower().replace(' ', '_') for item in global_entity[key]]
                 global_entity_list = list(set(global_entity_list))
 
+        if args['dataset'] == 'sgd':
+            with open('data/sgd/sgd_entities.json') as f:
+                global_entity = json.load(f)
+                global_entity_list = []
+                for key in global_entity.keys():
+                    global_entity_list += [item.lower().replace(' ', '_') for item in global_entity[key]]
+                global_entity_list = list(set(global_entity_list))
+
         for j, data_dev in pbar:
             # Encode and Decode
-            _, _, decoded_fine, decoded_coarse, global_pointer = self.encode_and_decode(data_dev, self.max_resp_len, False, True)
+            max_target_length = max(data_dev['response_lengths'])
+            _, _, decoded_fine, decoded_coarse, global_pointer, _ = self.encode_and_decode(data_dev, max_target_length,
+                                                                                           False, True)
             decoded_coarse = np.transpose(decoded_coarse)
             decoded_fine = np.transpose(decoded_fine)
             for bi, row in enumerate(decoded_fine):
                 st = ''
                 for e in row:
-                    if e == 'EOS': break
-                    else: st += e + ' '
+                    if e == 'EOS':
+                        break
+                    else:
+                        st += e + ' '
                 st_c = ''
                 for e in decoded_coarse[bi]:
-                    if e == 'EOS': break
-                    else: st_c += e + ' '
+                    if e == 'EOS':
+                        break
+                    else:
+                        st_c += e + ' '
                 pred_sent = st.lstrip().rstrip()
                 pred_sent_coarse = st_c.lstrip().rstrip()
                 gold_sent = data_dev['response_plain'][bi].lstrip().rstrip()
                 ref.append(gold_sent)
                 hyp.append(pred_sent)
-                
+
                 if args['dataset'] == 'kvr':
                     # compute F1 SCORE
-                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
+                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])
                     F1_pred += single_f1
                     F1_count += count
-                    single_f1, count = self.compute_prf(data_dev['ent_idx_cal'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_cal'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])
                     F1_cal_pred += single_f1
                     F1_cal_count += count
-                    single_f1, count = self.compute_prf(data_dev['ent_idx_nav'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_nav'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])
                     F1_nav_pred += single_f1
                     F1_nav_count += count
-                    single_f1, count = self.compute_prf(data_dev['ent_idx_wet'][bi], pred_sent.split(), global_entity_list, data_dev['kb_arr_plain'][bi])
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_wet'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])
                     F1_wet_pred += single_f1
                     F1_wet_count += count
                 elif args['dataset'] == 'multiwoz':
                     # compute F1 SCORE
                     single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
                     F1_pred += single_f1
                     F1_count += count
                     single_f1, count = self.compute_prf(data_dev['ent_idx_restaurant'][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
                     F1_restaurant_pred += single_f1
                     F1_restaurant_count += count
                     single_f1, count = self.compute_prf(data_dev['ent_idx_hotel'][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
                     F1_hotel_pred += single_f1
                     F1_hotel_count += count
                     single_f1, count = self.compute_prf(data_dev['ent_idx_attraction'][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
                     F1_attraction_pred += single_f1
                     F1_attraction_count += count
                     single_f1, count = self.compute_prf(data_dev['ent_idx_train'][bi], pred_sent.split(),
-                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
                     F1_train_pred += single_f1
                     F1_train_count += count
+                elif args['dataset'] == 'sgd':
+                    # compute F1 SCORE
+                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
+                    F1_pred += single_f1
+                    F1_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_travel'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
+                    F1_travel_pred += single_f1
+                    F1_travel_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_hotel'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
+                    F1_hotel_pred += single_f1
+                    F1_hotel_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_events'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
+                    F1_events_pred += single_f1
+                    F1_events_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_weather'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                    F1_weather_pred += single_f1
+                    F1_weather_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_others'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][
+                                                            bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                    F1_others_pred += single_f1
+                    F1_others_count += count
                 else:
                     # compute Dialogue Accuracy Score
                     current_id = data_dev['ID'][bi]
@@ -308,16 +364,17 @@ class GLMP(nn.Module):
         self.encoder.train(True)
         self.extKnow.train(True)
         self.decoder.train(True)
+        self.entPred.train(True)
 
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
         acc_score = acc / float(total)
-        print("ACC SCORE:\t"+str(acc_score))
+        print("ACC SCORE:\t" + str(acc_score))
 
         if args['dataset'] == 'kvr':
             F1_score = F1_pred / float(F1_count)
-            cal_f1 = 0.0 if F1_cal_count == 0 else (F1_cal_pred / float(F1_cal_count))
+            cal_f1 = 0.0 if F1_travel_count == 0 else (F1_cal_pred / float(F1_cal_count))
             nav_f1 = 0.0 if F1_nav_count == 0 else (F1_nav_pred / float(F1_nav_count))
-            wet_f1 = 0.0 if F1_wet_count == 0 else (F1_wet_pred / float(F1_wet_count))
+            wet_f1 = 0.0 if F1_events_count == 0 else (F1_wet_pred / float(F1_wet_count))
             print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
             print("CAL F1:\t{:.4f}".format(cal_f1))
             print("NAV F1:\t{:.4f}".format(nav_f1))
@@ -335,22 +392,36 @@ class GLMP(nn.Module):
             print("Attraction F1:\t{:.4f}".format(attraction_f1))
             print("Train F1:\t{:.4f}".format(train_f1))
             print("BLEU SCORE:\t" + str(bleu_score))
+        elif args['dataset'] == 'sgd':
+            F1_score = F1_pred / float(F1_count)
+            travel_f1 = 0.0 if F1_travel_count == 0 else (F1_restaurant_pred / float(F1_travel_count))
+            hotel_f1 = 0.0 if F1_hotel_count == 0 else (F1_hotel_pred / float(F1_hotel_count))
+            events_f1 = 0.0 if F1_events_count == 0 else (F1_events_pred / float(F1_events_count))
+            weather_f1 = 0.0 if F1_weather_count == 0 else (F1_weather_pred / float(F1_weather_count))
+            others_f1 = 0.0 if F1_others_count == 0 else (F1_others_pred / float(F1_others_count))
+            print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
+            print("Travel F1:\t{:.4f}".format(travel_f1))
+            print("Hotel F1:\t{:.4f}".format(hotel_f1))
+            print("Events F1:\t{:.4f}".format(events_f1))
+            print("Weather F1:\t{:.4f}".format(weather_f1))
+            print("Others F1:\t{:.4f}".format(others_f1))
+            print("BLEU SCORE:\t" + str(bleu_score))
         else:
             dia_acc = 0
             for k in dialog_acc_dict.keys():
-                if len(dialog_acc_dict[k])==sum(dialog_acc_dict[k]):
+                if len(dialog_acc_dict[k]) == sum(dialog_acc_dict[k]):
                     dia_acc += 1
-            print("Dialog Accuracy:\t"+str(dia_acc*1.0/len(dialog_acc_dict.keys())))
-        
+            print("Dialog Accuracy:\t" + str(dia_acc * 1.0 / len(dialog_acc_dict.keys())))
+
         if (early_stop == 'BLEU'):
             if (bleu_score >= matric_best):
-                self.save_model('BLEU-'+str(bleu_score))
+                self.save_model('BLEU-' + str(bleu_score))
                 print("MODEL SAVED")
             return bleu_score
         elif (early_stop == 'ENTF1'):
             if (F1_score >= matric_best):
                 self.save_model('ENTF1-{:.4f}'.format(F1_score))
-                print("MODEL SAVED")  
+                print("MODEL SAVED")
             return F1_score
         else:
             if (acc_score >= matric_best):
