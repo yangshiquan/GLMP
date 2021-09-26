@@ -15,9 +15,18 @@ class Lang:
     def __init__(self):
         self.word2index = {}
         self.index2word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS", UNK_token: 'UNK'}
-        self.n_words = len(self.index2word) # Count default tokens
+        self.n_words = len(self.index2word)  # Count default tokens
         self.word2index = dict([(v, k) for k, v in self.index2word.items()])
-      
+        self.intent2index = {}
+        self.state2index = {}
+        self.annotator2index = {}
+        self.index2intent = {}
+        self.index2state = {}
+        self.index2annotator = {}
+        self.n_intents = 0
+        self.n_state_values = {}
+        self.n_annotators = 0
+
     def index_words(self, story, trg=False):
         if trg:
             for word in story.split(' '):
@@ -32,6 +41,28 @@ class Lang:
             self.word2index[word] = self.n_words
             self.index2word[self.n_words] = word
             self.n_words += 1
+
+    def index_intent(self, intent):
+        if intent not in self.intent2index:
+            self.intent2index[intent] = self.n_intents
+            self.index2intent[self.n_intents] = intent
+            self.n_intents += 1
+
+    def index_state_values(self, state, value):
+        if state not in self.state2index:
+            self.state2index[state] = {}
+            self.index2state[state] = {}
+            self.n_state_values[state] = 0
+        if value not in self.state2index[state]:
+            self.state2index[state][value] = self.n_state_values[state]
+            self.index2state[state][self.n_state_values[state]] = value
+            self.n_state_values[state] += 1
+
+    def index_annotator(self, annotator_id):
+        if annotator_id not in self.annotator2index:
+            self.annotator2index[annotator_id] = self.n_annotators
+            self.index2annotator[self.n_annotators] = annotator_id
+            self.n_annotators += 1
 
 
 class Dataset(data.Dataset):
