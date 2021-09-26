@@ -50,8 +50,8 @@ class GLMP(nn.Module):
             self.encoder = ContextRNN(lang.n_words, hidden_size, dropout)
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
-            # self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators)
-            self.entPred = torch.load('/home/shiquan/Projects/debias-glmp/GLMP/save/GLMP-KVR/HDD128BSZ4DR0.2L1lr0.001PRETRAINED/ent_pred.th')
+            self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators)
+            # self.entPred = torch.load('/home/shiquan/Projects/debias-glmp/GLMP/save/GLMP-KVR/HDD128BSZ4DR0.2L1lr0.001PRETRAINED/ent_pred.th')
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
@@ -237,8 +237,8 @@ class GLMP(nn.Module):
         ref, hyp = [], []
         acc, total = 0, 0
         dialog_acc_dict = {}
-        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred, F1_restaurant_pred, F1_hotel_pred, F1_attraction_pred, F1_train_pred = 0, 0, 0, 0, 0, 0, 0, 0
-        F1_count, F1_cal_count, F1_nav_count, F1_wet_count, F1_restaurant_count, F1_hotel_count, F1_attraction_count, F1_train_count = 0, 0, 0, 0, 0, 0, 0, 0
+        F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred, F1_restaurant_pred, F1_hotel_pred, F1_attraction_pred, F1_train_pred, F1_travel_pred, F1_events_pred, F1_weather_pred, F1_others_pred = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        F1_count, F1_cal_count, F1_nav_count, F1_wet_count, F1_restaurant_count, F1_hotel_count, F1_attraction_count, F1_train_count, F1_travel_count, F1_events_count, F1_weather_count, F1_others_count = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         pbar = tqdm(enumerate(dev),total=len(dev))
         new_precision, new_recall, new_f1_score = 0, 0, 0
         global_entity_list = []
@@ -257,6 +257,14 @@ class GLMP(nn.Module):
 
         if args['dataset'] == 'multiwoz':
             with open('data/multiwoz/multiwoz_entities.json') as f:
+                global_entity = json.load(f)
+                global_entity_list = []
+                for key in global_entity.keys():
+                    global_entity_list += [item.lower().replace(' ', '_') for item in global_entity[key]]
+                global_entity_list = list(set(global_entity_list))
+
+        if args['dataset'] == 'sgd':
+            with open('data/sgd/sgd_entities.json') as f:
                 global_entity = json.load(f)
                 global_entity_list = []
                 for key in global_entity.keys():
@@ -320,6 +328,32 @@ class GLMP(nn.Module):
                                                         global_entity_list, data_dev['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
                     F1_train_pred += single_f1
                     F1_train_count += count
+                elif args['dataset'] == 'sgd':
+                    # compute F1 SCORE
+                    single_f1, count = self.compute_prf(data_dev['ent_index'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
+                    F1_pred += single_f1
+                    F1_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_travel'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
+                    F1_travel_pred += single_f1
+                    F1_travel_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_hotel'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
+                    F1_hotel_pred += single_f1
+                    F1_hotel_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_events'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
+                    F1_events_pred += single_f1
+                    F1_events_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_weather'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                    F1_weather_pred += single_f1
+                    F1_weather_count += count
+                    single_f1, count = self.compute_prf(data_dev['ent_idx_others'][bi], pred_sent.split(),
+                                                        global_entity_list, data_dev['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+                    F1_others_pred += single_f1
+                    F1_others_count += count
                 else:
                     # compute Dialogue Accuracy Score
                     current_id = data_dev['ID'][bi]
@@ -350,9 +384,9 @@ class GLMP(nn.Module):
 
         if args['dataset'] == 'kvr':
             F1_score = F1_pred / float(F1_count)
-            cal_f1 = 0.0 if F1_cal_count == 0 else (F1_cal_pred / float(F1_cal_count))
+            cal_f1 = 0.0 if F1_travel_count == 0 else (F1_cal_pred / float(F1_cal_count))
             nav_f1 = 0.0 if F1_nav_count == 0 else (F1_nav_pred / float(F1_nav_count))
-            wet_f1 = 0.0 if F1_wet_count == 0 else (F1_wet_pred / float(F1_wet_count))
+            wet_f1 = 0.0 if F1_events_count == 0 else (F1_wet_pred / float(F1_wet_count))
             print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
             print("CAL F1:\t{:.4f}".format(cal_f1))
             print("NAV F1:\t{:.4f}".format(nav_f1))
@@ -369,6 +403,20 @@ class GLMP(nn.Module):
             print("Hotel F1:\t{:.4f}".format(hotel_f1))
             print("Attraction F1:\t{:.4f}".format(attraction_f1))
             print("Train F1:\t{:.4f}".format(train_f1))
+            print("BLEU SCORE:\t" + str(bleu_score))
+        elif args['dataset'] == 'sgd':
+            F1_score = F1_pred / float(F1_count)
+            travel_f1 = 0.0 if F1_travel_count == 0 else (F1_restaurant_pred / float(F1_travel_count))
+            hotel_f1 = 0.0 if F1_hotel_count == 0 else (F1_hotel_pred / float(F1_hotel_count))
+            events_f1 = 0.0 if F1_events_count == 0 else (F1_events_pred / float(F1_events_count))
+            weather_f1 = 0.0 if F1_weather_count == 0 else (F1_weather_pred / float(F1_weather_count))
+            others_f1 = 0.0 if F1_others_count == 0 else (F1_others_pred / float(F1_others_count))
+            print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
+            print("Travel F1:\t{:.4f}".format(travel_f1))
+            print("Hotel F1:\t{:.4f}".format(hotel_f1))
+            print("Events F1:\t{:.4f}".format(events_f1))
+            print("Weather F1:\t{:.4f}".format(weather_f1))
+            print("Others F1:\t{:.4f}".format(others_f1))
             print("BLEU SCORE:\t" + str(bleu_score))
         else:
             dia_acc = 0

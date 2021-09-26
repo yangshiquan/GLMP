@@ -20,6 +20,9 @@ elif args['dataset']=='multiwoz':
     # from utils.utils_Ent_multiwoz_new_memory_using_kb_arr import *
     from utils.utils_Ent_multiwoz_new import *
     early_stop = 'BLEU'
+elif args['dataset']=='sgd':
+    from utils.utils_Ent_sgd_new import *
+    early_stop = 'BLEU'
 elif args['dataset']=='babi':
     from utils.utils_Ent_babi import *
     early_stop = None 
