@@ -153,8 +153,8 @@ def print_final_metrics(name: str, metrics: Dict, logger=None):
 
 
 def load_new_tokens():
-    # path = "/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/MultiWOZ_Entities.txt"
-    path = "/home/yimeng/shiquan/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/MultiWOZ_Entities_p=0_5.txt"
+    path = "/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/MultiWOZ_Entities.txt"
+    # path = "/home/yimeng/shiquan/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/MultiWOZ_Entities_p=0_5.txt"
     new_tokens = []
     with open(path, "r") as f:
         for line in f:
