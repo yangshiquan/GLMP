@@ -200,7 +200,6 @@ class GLMP(nn.Module):
         self.encoder.train(False)
         self.extKnow.train(False)
         self.decoder.train(False)
-        self.entPred.train(False)
 
         ref, hyp = [], []
         acc, total = 0, 0
@@ -364,7 +363,6 @@ class GLMP(nn.Module):
         self.encoder.train(True)
         self.extKnow.train(True)
         self.decoder.train(True)
-        self.entPred.train(True)
 
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
         acc_score = acc / float(total)
