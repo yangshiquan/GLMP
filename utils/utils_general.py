@@ -64,6 +64,17 @@ class Lang:
             self.index2annotator[self.n_annotators] = annotator_id
             self.n_annotators += 1
 
+    def re_initialize(self):
+        self.intent2index = {}
+        self.state2index = {}
+        self.annotator2index = {}
+        self.index2intent = {}
+        self.index2state = {}
+        self.index2annotator = {}
+        self.n_intents = 0
+        self.n_state_values = {}
+        self.n_annotators = 0
+
 
 class Dataset(data.Dataset):
     """Custom data.Dataset compatible with data.DataLoader."""
