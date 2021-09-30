@@ -115,7 +115,7 @@ class UserIntentPredictionHead(nn.Module):
         super(UserIntentPredictionHead, self).__init__()
         self.classifier = nn.Linear(hidden_size, num_labels)
         self.sigmoid = nn.Sigmoid()
-        self.alpha = 0.5
+        self.alpha = 0.1
 
     def forward(self, hidden_state):
         reversed_hidden_state = GradReverseLayerFunction.apply(hidden_state, self.alpha)
