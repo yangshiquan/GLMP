@@ -96,6 +96,7 @@ class Dataset(data.Dataset):
         response = self.preprocess(response, self.trg_word2id)
         ptr_index = torch.Tensor(self.data_info['ptr_index'][index])
         annotator_id_labels = torch.Tensor(self.data_info['annotator_id_labels'][index])
+        user_intent_labels = torch.Tensor(self.data_info['user_intent_labels'][index])
         selector_index = torch.Tensor(self.data_info['selector_index'][index])
         conv_arr = self.data_info['conv_arr'][index]
         conv_arr = self.preprocess(conv_arr, self.src_word2id, trg=False)
@@ -194,6 +195,8 @@ class Dataset(data.Dataset):
         kb_arr, kb_arr_lengths = merge(item_info['kb_arr'], True)
         annotator_id_labels, _ = merge(item_info['annotator_id_labels'], False)
         kb_arr_new = merge_kb(item_info['kb_arr_new'])
+        user_intent_labels, _ = merge(item_info['user_intent_labels'], False)
+
         
         # convert to contiguous and cuda
         context_arr = _cuda(context_arr.contiguous())
@@ -205,6 +208,7 @@ class Dataset(data.Dataset):
         if(len(list(kb_arr.size()))>1): kb_arr = _cuda(kb_arr.transpose(0,1).contiguous())
         annotator_id_labels = _cuda(annotator_id_labels.contiguous())
         kb_arr_new = _cuda(kb_arr_new.contiguous())
+        user_intent_labels = _cuda(user_intent_labels.contiguous())
         
         # processed information
         data_info = {}
