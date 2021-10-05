@@ -43,7 +43,7 @@ model = globals()[args['decoder']](
     n_layers=int(args['layer']),
     dropout=float(args['drop']))
 
-for epoch in range(20):
+for epoch in range(200):
     print("Epoch:{}".format(epoch))
     # Run the train function
     pbar = tqdm(enumerate(train),total=len(train))
@@ -51,6 +51,6 @@ for epoch in range(20):
         loss = model.train_batch(data, int(args['clip']), epoch, reset=(i==0))
         pbar.set_description(model.print_loss())
 
-    model.save_model('EPOCH-' + str(epoch) + '-LOSS-' + str(loss))
+    model.save_model('EPOCH-' + str(epoch) + '-LOSS-' + str(loss.item()))
     print("MODEL SAVED")
 

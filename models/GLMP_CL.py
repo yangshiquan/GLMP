@@ -45,7 +45,7 @@ class GLMP(nn.Module):
         return 'L:{:.2f}'.format(print_loss_avg)
 
     def save_model(self, dec_type):
-        name_data = "CL_PRETRAIN/" if self.task == '' else "BABI/"
+        name_data = "CL-PRETRAIN/" if self.task == '' else "BABI/"
         layer_info = str(self.n_layers)
         directory = 'save/GLMP-' + args["addName"] + name_data + str(self.task) + 'HDD' + str(
             self.hidden_size) + 'BSZ' + str(args['batch']) + 'DR' + str(self.dropout) + 'L' + layer_info + 'lr' + str(
