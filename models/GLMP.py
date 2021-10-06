@@ -55,8 +55,8 @@ class GLMP(nn.Module):
             self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators)
             self.clEntPred = ContextRNNCL(lang.n_words, hidden_size, dropout)
             self.clEntPred = torch.load('/Users/shiquan/PycharmProjects/GLMP/save/GLMP-CL-PRETRAIN/HDD128BSZ8DR0.2L1lr0.001EPOCH-0-LOSS-0.6270164251327515/cl_enc.th')
-            for param in self.clEntPred.parameters():
-                param.requires_grad = False
+            # for param in self.clEntPred.parameters():
+            #     param.requires_grad = False
             # self.entPred = torch.load('/home/shiquan/Projects/debias-glmp/GLMP/save/GLMP-KVR/HDD128BSZ4DR0.2L1lr0.001PRETRAINED/ent_pred.th')
 
         # Initialize optimizers and criterion

@@ -41,7 +41,8 @@ class ContextRNNCL(nn.Module):
     def forward(self, input_seqs, input_lengths, hidden=None):
         # Note: we run this all at once (over multiple batches of multiple sequences)
         # print("input_seqs in size: ", input_seqs.size())
-        input_seqs = input_seqs.transpose(0, 1)
+        # input_seqs = input_seqs.transpose(0, 1)
+        input_seqs = input_seqs.transpose(0, 1).cuda()
         embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
         # embedded = embedded.view(-1, input_seqs.size(-1), embedded.size(-1))
         embedded = self.dropout_layer(embedded)
