@@ -73,11 +73,11 @@ class EntityPredictionRNN(nn.Module):
         # embedded = torch.sum(embedded, 2).squeeze(2)
         # embedded = self.dropout_layer(embedded)
 
-        # input_seqs = input_seqs.transpose(0, 1).cuda()
+        input_seqs = input_seqs.transpose(0, 1).cuda()
         # input_seqs = input_seqs.transpose(0, 1)
         embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
         embedded = embedded.view(input_seqs.size()+(embedded.size(-1),))
-        embedded = torch.sum(embedded, 2).squeeze(2)
+        # embedded = torch.sum(embedded, 2).squeeze(2)
         embedded = self.dropout_layer(embedded)
         hidden = self.get_state(input_seqs.size(1))
         # print("input_seqs out size: ", input_seqs.size())
@@ -254,9 +254,9 @@ class LocalMemoryDecoder(nn.Module):
             all_decoder_outputs_topv[t] = topvi
 
             # compute bert input for kb entity prediction
-            # input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
-            entity_logits, intent_logits = extKnow(conv_arr, input_lens, kb_arr_plain, global_pointer)
-            bias_feas = cl_ent_pred(conv_arr, input_lens)
+            input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
+            entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
+            bias_feas = cl_ent_pred(input_ids, input_lens)
             bias_feas_mlp = self.mlp(bias_feas)
             bias_preds = extKnow.entity_prediction(bias_feas_mlp, kb_arr_plain.cuda(), global_pointer)
             # bias_preds = extKnow.entity_prediction(bias_feas_mlp, kb_arr_plain, global_pointer)
