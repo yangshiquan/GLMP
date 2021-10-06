@@ -199,7 +199,8 @@ class GLMP(nn.Module):
             torch.Tensor(data['ent_labels']).long(),
             conv_story,
             data['conv_arr_lengths'],
-            self.clEntPred
+            self.clEntPred,
+            conv_story
         )
 
         return outputs_vocab, outputs_ptr, decoded_fine, decoded_coarse, global_pointer, outputs_ptr_biased
