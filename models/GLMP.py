@@ -14,6 +14,7 @@ from utils.measures import wer, moses_multi_bleu
 from utils.masked_cross_entropy import *
 from utils.config import *
 from models.modules import *
+from models.modules_cl import *
 
 
 class GLMP(nn.Module):
@@ -52,6 +53,7 @@ class GLMP(nn.Module):
             self.extKnow = ExternalKnowledge(lang.n_words, hidden_size, n_layers, dropout)
             self.decoder = LocalMemoryDecoder(self.encoder.embedding, lang, hidden_size, self.decoder_hop, dropout) #Generator(lang, hidden_size, dropout)
             self.entPred = EntityPredictionRNN(lang.n_words, hidden_size, dropout, self.encoder.embedding, lang.n_annotators)
+            self.clEntPred = ContextRNNCL(lang.n_words, hidden_size, dropout)
             self.clEntPred = torch.load('/Users/shiquan/PycharmProjects/GLMP/save/GLMP-CL-PRETRAIN/HDD128BSZ8DR0.2L1lr0.001EPOCH-0-LOSS-0.6270164251327515/cl_enc.th')
             for param in self.clEntPred.parameters():
                 param.requires_grad = False
