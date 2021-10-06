@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 from BERT.bert_text_dataset import BERT_PRETRAINED_MODEL
 from constants import MAX_KB_ARR_LENGTH
-from transformers.tokenization_bert import BertTokenizer
-from pytorch_lightning import LightningModule
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 from typing import Callable, List

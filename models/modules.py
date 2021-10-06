@@ -73,8 +73,8 @@ class EntityPredictionRNN(nn.Module):
         # embedded = torch.sum(embedded, 2).squeeze(2)
         # embedded = self.dropout_layer(embedded)
 
-        input_seqs = input_seqs.transpose(0, 1).cuda()
-        # input_seqs = input_seqs.transpose(0, 1)
+        # input_seqs = input_seqs.transpose(0, 1).cuda()
+        input_seqs = input_seqs.transpose(0, 1)
         embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
         embedded = embedded.view(input_seqs.size()+(embedded.size(-1),))
         # embedded = torch.sum(embedded, 2).squeeze(2)
@@ -89,8 +89,8 @@ class EntityPredictionRNN(nn.Module):
            outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=False)
         # pdb.set_trace()
         intent_logits = self.intent_prediction(hidden.squeeze(0))
-        # entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr, global_pointer)
-        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr.cuda(), global_pointer)
+        entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr, global_pointer)
+        # entity_logits = self.entity_prediction(hidden.squeeze(0), kb_arr.cuda(), global_pointer)
         # hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1)).unsqueeze(0)
         # outputs = self.W(outputs)
         return entity_logits, intent_logits
@@ -122,6 +122,43 @@ class UserIntentPredictionHead(nn.Module):
         output = self.classifier(reversed_hidden_state)
         # output = self.classifier(hidden_state)
         return output
+
+
+class ContextRNNCL(nn.Module):
+    def __init__(self, input_size, hidden_size, dropout, n_layers=1):
+        super(ContextRNNCL, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.n_layers = n_layers
+        self.dropout = dropout
+        self.dropout_layer = nn.Dropout(dropout)
+        self.embedding = nn.Embedding(input_size, hidden_size, padding_idx=PAD_token)
+        self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=dropout, bidirectional=True)
+        self.W = nn.Linear(2 * hidden_size, hidden_size)
+        self.sim = Similarity(temp=1.0)
+
+    def get_state(self, bsz):
+        """Get cell states and hidden states."""
+        return _cuda(torch.zeros(2, bsz, self.hidden_size))
+
+    def forward(self, input_seqs, input_lengths, hidden=None):
+        # Note: we run this all at once (over multiple batches of multiple sequences)
+        # print("input_seqs in size: ", input_seqs.size())
+        input_seqs = input_seqs.transpose(0, 1)
+        embedded = self.embedding(input_seqs.contiguous().view(input_seqs.size(0), -1).long())
+        # embedded = embedded.view(-1, input_seqs.size(-1), embedded.size(-1))
+        embedded = self.dropout_layer(embedded)
+        hidden = self.get_state(input_seqs.size(1))
+        # print("input_seqs out size: ", input_seqs.size())
+        # print("embedded size: ", embedded.size())
+        if input_lengths:
+            embedded = nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=False, enforce_sorted=False)
+        outputs, hidden = self.gru(embedded, hidden)
+        if input_lengths:
+            outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs, batch_first=False)
+        hidden = self.W(torch.cat((hidden[0], hidden[1]), dim=1))
+
+        return hidden
 
 
 class ExternalKnowledge(nn.Module):
@@ -221,10 +258,11 @@ class LocalMemoryDecoder(nn.Module):
         self.projector = nn.Linear(2*embedding_dim, embedding_dim)
         self.conv_layer = nn.Conv1d(embedding_dim, embedding_dim, 5, padding=2)
         self.softmax = nn.Softmax(dim = 1)
+        self.mlp = nn.Linear(embedding_dim, embedding_dim)
 
     def forward(self, extKnow, story_size, story_lengths, copy_list, encode_hidden,
                 target_batches, max_target_length, batch_size, use_teacher_forcing,
-                get_decoded_words, global_pointer, conv_arr_plain, kb_arr_plain_new, kb_arr_plain, ent_labels, input_ids, input_lens):
+                get_decoded_words, global_pointer, conv_arr_plain, kb_arr_plain_new, kb_arr_plain, ent_labels, input_ids, input_lens, cl_ent_pred):
         # Initialize variables for vocab and pointer
         all_decoder_outputs_vocab = _cuda(torch.zeros(max_target_length, batch_size, self.num_vocab))
         # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, story_size[1]))
@@ -232,6 +270,7 @@ class LocalMemoryDecoder(nn.Module):
         # all_decoder_outputs_ptr = _cuda(torch.zeros(max_target_length, batch_size, kb_arr_plain.shape[1]))
         all_decoder_outputs_topv = _cuda(torch.zeros(max_target_length, batch_size, 1))
         all_decoder_outputs_intents = _cuda(torch.zeros(max_target_length, batch_size, self.lang.n_annotators))
+        all_decoder_outputs_ptr_biased = _cuda(torch.zeros(max_target_length, batch_size, MAX_KB_LEN))
         decoder_input = _cuda(torch.LongTensor([SOS_token] * batch_size))
         # memory_mask_for_step = _cuda(torch.ones(story_size[0], story_size[1]))
         kb_lens = [len(ele) for ele in kb_arr_plain_new]
@@ -243,37 +282,26 @@ class LocalMemoryDecoder(nn.Module):
 
         # Start to generate word-by-word
         for t in range(max_target_length):
-            temp = self.C(decoder_input)
             embed_q = self.dropout_layer(self.C(decoder_input)) # b * e
             if len(embed_q.size()) == 1: embed_q = embed_q.unsqueeze(0)
             _, hidden = self.sketch_rnn(embed_q.unsqueeze(0), hidden)
-            query_vector = hidden[0]
-            # pdb.set_trace()
             p_vocab = self.attend_vocab(self.C.weight, hidden.squeeze(0))
             all_decoder_outputs_vocab[t] = p_vocab
             _, topvi = p_vocab.data.topk(1)
             all_decoder_outputs_topv[t] = topvi
 
             # compute bert input for kb entity prediction
-            # input_ids, input_mask, kb_arr_ids = self.compute_bert_input(extKnow.bert_classifier.tokenizer,
-            #                                                             conv_arr_plain,
-            #                                                             all_decoder_outputs_topv,
-            #                                                             t,
-            #                                                             batch_size,
-            #                                                             kb_arr_plain)
-            # _, prob_soft = extKnow(input_ids, input_mask, ent_labels, kb_arr_ids)
-
-            # compute bert input for kb entity prediction
             input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
             # entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_ids, global_pointer)
             entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
+            bias_feas = cl_ent_pred(input_ids, input_lens)
+            bias_feas_mlp = self.mlp(bias_feas)
+            bias_preds = extKnow.entity_prediction(bias_feas_mlp, kb_arr_plain, global_pointer)
             all_decoder_outputs_ptr[t] = entity_logits
             all_decoder_outputs_intents[t] = intent_logits
-            prob_soft = entity_logits
-            
-            # query the external knowledge using the hidden state of sketch RNN
-            # prob_soft, prob_logits = extKnow(query_vector, global_pointer)
-            # all_decoder_outputs_ptr[t] = prob_logits
+            all_decoder_outputs_ptr_biased[t] = bias_preds
+            prob_soft = entity_logits - bias_preds
+            # prob_soft = entity_logits
 
             if use_teacher_forcing:
                 decoder_input = target_batches[:,t]
@@ -308,8 +336,7 @@ class LocalMemoryDecoder(nn.Module):
                 decoded_fine.append(temp_f)
                 decoded_coarse.append(temp_c)
 
-        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_intents
-        # return all_decoder_outputs_intents
+        return all_decoder_outputs_vocab, all_decoder_outputs_ptr, decoded_fine, decoded_coarse, all_decoder_outputs_ptr_biased
 
     def compute_entity_prediction_input(self,
                                         conv_arr_plain,
@@ -349,59 +376,24 @@ class LocalMemoryDecoder(nn.Module):
         #     kb_arr_padded[i, :len(kb_arr_ids)] = torch.Tensor(kb_arr_ids)
         return padded_seqs, lens
 
-    def compute_bert_input(self,
-                           tokenzier,
-                           conv_arr_plain,
-                           all_decoder_outputs_topv,
-                           current_step,
-                           batch_size,
-                           kb_arr_plain):  # conv_arr_plain: batch_size * conv_arr_len, all_decoder_outputs_topv: max_target_len * batch_size * 1
-        bert_input_arr = []
-        for bt in range(batch_size):
-            conv_arr_plain_t = conv_arr_plain[bt]
-            output_plain_t = all_decoder_outputs_topv[:(current_step+1), bt, 0]
-            for t in range(current_step+1):
-                conv_arr_plain_t.append(self.lang.index2word[output_plain_t[t].item()])
-            bert_input = " ".join(conv_arr_plain_t)
-            bert_input_arr.append(bert_input)
-
-        # convert to id and padding
-        lens = [len(ele.split(" ")) for ele in bert_input_arr]
-        max_len = max(lens)
-        padded_seqs = torch.zeros(batch_size, min(max_len, MAX_INPUT_LEN)).long()
-        input_mask = torch.zeros(batch_size, min(max_len, MAX_INPUT_LEN))
-        kb_arr_padded = torch.zeros(batch_size, MAX_KB_LEN).long()
-        for i, seq in enumerate(bert_input_arr):
-            end = min(lens[i], MAX_INPUT_LEN)
-            tokens = tokenzier.tokenize(seq)
-            tokens = self.trunc_seq(tokens, MAX_INPUT_LEN)
-            seq_id = tokenzier.convert_tokens_to_ids(tokens)
-            padded_seqs[i, :end] = torch.Tensor(seq_id[:end])
-            input_mask[i, :end] = 1
-        for i, ele in enumerate(kb_arr_plain):
-            kb_arr_id = tokenzier.convert_tokens_to_ids(ele)
-            kb_arr_padded[i, :len(kb_arr_id)] = torch.Tensor(kb_arr_id)
-        return padded_seqs, input_mask, kb_arr_padded
-
-    def trunc_seq(self, tokens, max_num_tokens):
-        """Truncates a pair of sequences to a maximum sequence length. Lifted from Google's BERT repo."""
-        l = 0
-        r = len(tokens)
-        trunc_tokens = list(tokens)
-        while r - l > max_num_tokens:
-            # We want to sometimes truncate from the front and sometimes from the
-            # back to add more randomness and avoid biases.
-            if random.random() < 0.5:
-                l += 1
-            else:
-                r -= 1
-        return trunc_tokens[l:r]
-
     def attend_vocab(self, seq, cond):
         scores_ = cond.matmul(seq.transpose(1,0))
         # scores = F.softmax(scores_, dim=1)
         return scores_
 
+
+class Similarity(nn.Module):
+    """
+    Dot product or cosine similarity
+    """
+
+    def __init__(self, temp):
+        super().__init__()
+        self.temp = temp
+        self.cos = nn.CosineSimilarity(dim=-1)
+
+    def forward(self, x, y):
+        return self.cos(x, y) / self.temp
 
 
 class AttrProxy(object):
