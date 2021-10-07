@@ -264,7 +264,7 @@ class LocalMemoryDecoder(nn.Module):
             all_decoder_outputs_intents[t] = intent_logits
             all_decoder_outputs_ptr_biased[t] = bias_preds
             # all_decoder_outputs_ptr_biased[t] = entity_logits
-            prob_soft = entity_logits - bias_preds
+            prob_soft = entity_logits - 0.1 * bias_preds
             # prob_soft = entity_logits
 
             if use_teacher_forcing:
