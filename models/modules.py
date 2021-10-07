@@ -256,16 +256,16 @@ class LocalMemoryDecoder(nn.Module):
             # compute bert input for kb entity prediction
             input_ids, input_lens = self.compute_entity_prediction_input(conv_arr_plain, target_batches, t, batch_size, kb_arr_plain)
             entity_logits, intent_logits = extKnow(input_ids, input_lens, kb_arr_plain, global_pointer)
-            bias_feas = cl_ent_pred(input_ids, input_lens)
-            bias_feas_mlp = self.mlp(bias_feas)
-            bias_preds = extKnow.entity_prediction(bias_feas_mlp, kb_arr_plain.cuda(), global_pointer)
+            # bias_feas = cl_ent_pred(input_ids, input_lens)
+            # bias_feas_mlp = self.mlp(bias_feas)
+            # bias_preds = extKnow.entity_prediction(bias_feas_mlp, kb_arr_plain.cuda(), global_pointer)
             # bias_preds = extKnow.entity_prediction(bias_feas_mlp, kb_arr_plain, global_pointer)
             all_decoder_outputs_ptr[t] = entity_logits
             all_decoder_outputs_intents[t] = intent_logits
-            all_decoder_outputs_ptr_biased[t] = bias_preds
-            # all_decoder_outputs_ptr_biased[t] = entity_logits
-            prob_soft = entity_logits - 0.1 * bias_preds
-            # prob_soft = entity_logits
+            # all_decoder_outputs_ptr_biased[t] = bias_preds
+            all_decoder_outputs_ptr_biased[t] = entity_logits
+            # prob_soft = entity_logits - 0.1 * bias_preds
+            prob_soft = entity_logits
 
             if use_teacher_forcing:
                 decoder_input = target_batches[:,t]

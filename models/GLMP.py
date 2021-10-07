@@ -126,11 +126,11 @@ class GLMP(nn.Module):
             all_decoder_outputs_ptr.transpose(0, 1).contiguous(),
             data['ptr_index'].contiguous(),
             data['response_lengths'])
-        loss_b = masked_cross_entropy(
-            all_decoder_outputs_ptr_biased.transpose(0, 1).contiguous(),
-            data['ptr_index'].contiguous(),
-            data['response_lengths'])
-        loss = loss_l + loss_v + loss_b
+        # loss_b = masked_cross_entropy(
+        #     all_decoder_outputs_ptr_biased.transpose(0, 1).contiguous(),
+        #     data['ptr_index'].contiguous(),
+        #     data['response_lengths'])
+        loss = loss_l + loss_v
         loss.backward()
 
         # Clip gradient norms
@@ -145,7 +145,7 @@ class GLMP(nn.Module):
         self.decoder_optimizer.step()
         self.entPred_optimizer.step()
         self.loss += loss.item()
-        self.loss_b += loss_b.item()
+        # self.loss_b += loss_b.item()
         self.loss_v += loss_v.item()
         self.loss_l += loss_l.item()
 
