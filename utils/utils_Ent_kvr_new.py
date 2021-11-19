@@ -400,7 +400,7 @@ def generate_memory(sent, speaker, time):
             temp = [word, speaker, 'turn' + str(time), 'word' + str(idx)] + ["PAD"] * (MEM_TOKEN_SIZE - 4)
             sent_new.append(temp)
     else:
-        sent_token = sent_token[:3] + ["PAD"] * (MEM_TOKEN_SIZE - len(sent_token))
+        sent_token = sent_token[::-1][:3] + ["PAD"] * (MEM_TOKEN_SIZE - len(sent_token))
         # sent_token = sent_token[::-1] + ["PAD"] * (MEM_TOKEN_SIZE - len(sent_token))
         sent_new.append(sent_token)
     return sent_new
