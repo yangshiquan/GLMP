@@ -380,7 +380,8 @@ def generate_memory(sent, speaker, time):
             temp = [word, speaker, 'turn' + str(time), 'word' + str(idx)] + ["PAD"] * (MEM_TOKEN_SIZE - 4)
             sent_new.append(temp)
     else:
-        sent_token = sent_token[::-1] + ["PAD"] * (MEM_TOKEN_SIZE - len(sent_token))
+        sent_token = sent_token[:3] + ["PAD"] * (MEM_TOKEN_SIZE - len(sent_token))
+        # sent_token = sent_token[::-1] + ["PAD"] * (MEM_TOKEN_SIZE - len(sent_token))
         sent_new.append(sent_token)
     return sent_new
 
@@ -413,7 +414,7 @@ def initialize_lang_multiwoz(lang, task):
 
 def initialize_lang(lang, task):
     # path = '/Users/shiquan/PycharmProjects/deBiasing-Dialogue/Dialogue_Annotator/datasets/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
-    path = '/home/yimeng/shiquan/GLMP/data/sgd/{}/{}_intents_states.json'.format(task, task)
+    path = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/{}/{}_intents_states.json'.format(task, task)
     # path = '/Users/shiquan/PycharmProjects/GLMP/data/sgd/{}_intents_states.json'.format(task, task)
     with open(path, 'r') as f:
         data = json.load(f)
