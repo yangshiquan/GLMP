@@ -331,8 +331,12 @@ def read_langs(file_name, lang, task, max_line=None):
                     line_list = line.split(" ")
                     if line_list[0] not in kb_arr_plain:
                         kb_arr_plain.append(line_list[0])
-                    if line_list[2] not in kb_arr_plain:
-                        kb_arr_plain.append(line_list[2])
+                    try:
+                        if line_list[2] not in kb_arr_plain:
+                            kb_arr_plain.append(line_list[2])
+                    except:
+                        print(line)
+                        exit(0)
                     kb_info = generate_memory(r, "", str(nid))
                     if len(kb_info[0]) > 4:
                         print(kb_info)
@@ -382,6 +386,7 @@ def generate_template(global_entity, sentence, sent_ent, kb_arr, domain):
                 try:
                     sketch_response.append('@'+ent_type)
                 except:
+                    sketch_response.append(word)
                     print(sentence)
                     print(word)
                     print(ent_type)
