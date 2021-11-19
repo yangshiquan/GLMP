@@ -379,7 +379,12 @@ def generate_template(global_entity, sentence, sent_ent, kb_arr, domain):
                             if word in poi_list or word.replace('_', ' ') in poi_list:
                                 ent_type = key
                                 break
-                sketch_response.append('@'+ent_type)
+                try:
+                    sketch_response.append('@'+ent_type)
+                except:
+                    print(sentence)
+                    print(word)
+                    print(ent_type)
     sketch_response = " ".join(sketch_response)
     return sketch_response
 
