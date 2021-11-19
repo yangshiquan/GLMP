@@ -285,6 +285,7 @@ def read_langs(file_name, lang, task, max_line=None):
                     sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
 
                     # obtain gt entity labels
+                    ent_labels = 0
                     if len(gold_ent) == 0:
                         ent_labels = len(kb_arr_plain)
                     elif len(gold_ent) >= 1:
