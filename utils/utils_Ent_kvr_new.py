@@ -362,12 +362,24 @@ def generate_template(global_entity, sentence, sent_ent, kb_arr, domain):
                 sketch_response.append(word)
             else:
                 ent_type = None
-                for key in global_entity.keys():
-                    global_entity[key] = [x.lower() for x in global_entity[key]]
-                    if word in global_entity[key] or word.replace('_', ' ') in global_entity[key]:
-                        ent_type = key
-                        break
-                sketch_response.append('@' + ent_type)
+                if domain != 'weather':
+                    for kb_item in kb_arr:
+                        if word == kb_item[0]:
+                            ent_type = kb_item[1]
+                            break
+                if ent_type == None:
+                    for key in global_entity.keys():
+                        if key!='poi':
+                            global_entity[key] = [x.lower() for x in global_entity[key]]
+                            if word in global_entity[key] or word.replace('_', ' ') in global_entity[key]:
+                                ent_type = key
+                                break
+                        else:
+                            poi_list = [d['poi'].lower() for d in global_entity['poi']]
+                            if word in poi_list or word.replace('_', ' ') in poi_list:
+                                ent_type = key
+                                break
+                sketch_response.append('@'+ent_type)
     sketch_response = " ".join(sketch_response)
     return sketch_response
 
