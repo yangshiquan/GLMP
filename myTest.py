@@ -18,8 +18,10 @@ BSZ = int(directory[2].split('BSZ')[1].split('DR')[0])
 DS = 'kvr' if 'kvr' in directory[1].split('-')[1].lower() else 'babi'
 DS = 'kvr'
 
-if DS=='kvr': 
-    from utils.utils_Ent_kvr import *
+# if DS=='kvr':
+#     from utils.utils_Ent_kvr import *
+if DS=='kvr':
+    from utils.utils_Ent_kvr_new import *
 elif DS=='babi':
     from utils.utils_Ent_babi import *
 elif DS=='multiwoz':
