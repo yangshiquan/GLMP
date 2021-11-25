@@ -71,7 +71,7 @@ class EntityPrediction(nn.Module):
         # Encode
         prob_logits = self.encoder(data['input'], data['input_arr_lengths'])
 
-        loss = self.criterion_ce(prob_logits, torch.tensor(data['target'], dtype=int))
+        loss = self.criterion_ce(prob_logits, torch.tensor(data['target'], dtype=int).cuda())
 
         loss.backward()
 
@@ -97,7 +97,7 @@ class EntityPrediction(nn.Module):
             prob_logits = self.encoder(data_dev['input'], data_dev['input_arr_lengths'])
             labels = torch.tensor(data_dev['target'], dtype=int)
             predictions = torch.argmax(prob_logits, dim=-1)
-            correct = predictions.eq(labels.view_as(predictions)).double()
+            correct = predictions.eq(labels.view_as(predictions).cuda()).double()
             total_correct += correct.sum()
             total += predictions.size(0)
 
