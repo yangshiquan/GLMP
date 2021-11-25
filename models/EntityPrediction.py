@@ -106,6 +106,9 @@ class EntityPrediction(nn.Module):
 
         acc_score = total_correct / float(total)
         print("ACC SCORE:\t" + str(acc_score))
+        if (acc_score >= matric_best):
+            self.save_model('ACC-{:.4f}'.format(acc_score))
+            print("MODEL SAVED")
 
         return acc_score
 
