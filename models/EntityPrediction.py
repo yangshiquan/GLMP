@@ -71,6 +71,7 @@ class EntityPrediction(nn.Module):
         # Encode
         prob_logits = self.encoder(data['input'], data['input_arr_lengths'])
 
+        # loss = self.criterion_ce(prob_logits, torch.tensor(data['target'], dtype=int))
         loss = self.criterion_ce(prob_logits, torch.tensor(data['target'], dtype=int).cuda())
 
         loss.backward()
@@ -97,15 +98,23 @@ class EntityPrediction(nn.Module):
             prob_logits = self.encoder(data_dev['input'], data_dev['input_arr_lengths'])
             labels = torch.tensor(data_dev['target'], dtype=int)
             predictions = torch.argmax(prob_logits, dim=-1)
-            correct = predictions.eq(labels.view_as(predictions).cuda()).double()
-            total_correct += correct.sum()
-            total += predictions.size(0)
+            decoded_ents = [self.lang.index2ent[elm] for elm in predictions.tolist()]
+            golden_ents = [self.lang.index2ent[elm] for elm in labels.tolist()]
+            for idx, elm in enumerate(golden_ents):
+                if elm != "NULL":
+                    pred_ent = decoded_ents[idx]
+                    total += 1
+                    if elm == pred_ent:
+                        total_correct += 1
+            # correct = predictions.eq(labels.view_as(predictions).cuda()).double()
+            # total_correct += correct.sum()
+            # total += predictions.size(0)
 
         # Set back to training mode
         self.encoder.train(True)
 
         acc_score = total_correct / float(total)
-        print("ACC SCORE: " + str(acc_score.item()))
+        print("ACC SCORE: " + str(acc_score))
         if (acc_score >= matric_best):
             self.save_model('ACC-{:.4f}'.format(acc_score))
             print("MODEL SAVED")
