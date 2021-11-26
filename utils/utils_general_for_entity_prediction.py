@@ -123,6 +123,7 @@ class Dataset(data.Dataset):
         """Converts words to ids."""
         if trg:
             story = [word2id[word] if word in word2id else UNK_token for word in sequence.split(' ')]
+            story = torch.Tensor(story).to(dtype=torch.long)
         else:
             story = []
             for i, word_triple in enumerate(sequence):
@@ -134,7 +135,7 @@ class Dataset(data.Dataset):
                 else:
                     temp = word2id[word_triple] if word_triple in word2id else UNK_token
                     story.append(temp)
-        story = torch.Tensor(story)
+            story = torch.Tensor(story)
         return story
 
     def collate_fn(self, data):
