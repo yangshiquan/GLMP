@@ -1,5 +1,7 @@
 import json
 import ast
+import pandas as pd
+import random
 
 from utils.utils_general_for_entity_prediction import *
 
@@ -12,8 +14,13 @@ def read_langs(file_name, lang, task, max_line=None):
     # with open('data/multiwoz/multiwoz_entities.json') as f:
     #     global_entity = json.load(f)
 
+    filtered_ids = pd.read_csv(
+        '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/aflite_filtered_ids_leave_out_restaurant_20000_50_0.9.csv')
+    df = pd.DataFrame(filtered_ids)
+    filtered_ids = df['sample_id'].tolist()
+
     with open(file_name) as fin:
-        cnt_lin, sample_counter, turn_cnt = 0, 1, 1
+        cnt_lin, sample_counter, turn_cnt = 1, 0, 1
         for line in fin:
             line = line.strip()
             if line:
@@ -24,6 +31,10 @@ def read_langs(file_name, lang, task, max_line=None):
 
                 nid, line = line.split(' ', 1)
                 if '\t' in line:
+                    if sample_counter in filtered_ids and task == 'train':
+                    # if random.random() < 0.25 and task == 'train':
+                        sample_counter += 1
+                        continue
                     # deal with dialogue history
                     u, r, gold_ent = line.split('\t')
                     gen_u = generate_memory(u, "$u", str(nid))
