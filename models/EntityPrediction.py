@@ -91,8 +91,8 @@ class EntityPrediction(nn.Module):
         self.encoder.train(False)
 
         # Add evaluation and metrics calculation logic here.
-        total, null_total = 0, 0
-        total_correct, null_total_correct = 0, 0
+        total, null_total, all = 0, 0, 0
+        total_correct, null_total_correct, all_correct = 0, 0, 0
         pbar = tqdm(enumerate(dev), total=len(dev))
         for j, data_dev in pbar:
             prob_logits = self.encoder(data_dev['input'], data_dev['input_arr_lengths'])
@@ -104,13 +104,17 @@ class EntityPrediction(nn.Module):
                 if elm != "NULL":
                     pred_ent = decoded_ents[idx]
                     total += 1
+                    all += 1
                     if elm == pred_ent:
                         total_correct += 1
+                        all_correct += 1
                 else:
                     null_total += 1
+                    all += 1
                     pred_ent = decoded_ents[idx]
                     if elm == pred_ent:
                         null_total_correct += 1
+                        all_correct += 1
 
             # correct = predictions.eq(labels.view_as(predictions).cuda()).double()
             # total_correct += correct.sum()
@@ -121,8 +125,10 @@ class EntityPrediction(nn.Module):
 
         acc_score = total_correct / float(total)
         acc_score_null = null_total_correct / float(null_total)
+        acc_score_all = all_correct / float(all)
         print("ACC SCORE (Tail): " + str(acc_score))
-        print("ACC SCORE (Head):" + str(acc_score_null))
+        print("ACC SCORE (Head): " + str(acc_score_null))
+        print("ACC SCORE (All): " + str(acc_score_all))
         if (acc_score >= matric_best):
             self.save_model('ACC-{:.4f}'.format(acc_score))
             print("MODEL SAVED")
