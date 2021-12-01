@@ -117,7 +117,7 @@ class GLMP(nn.Module):
         total_correct, null_total_correct, all_correct = 0, 0, 0
         pbar = tqdm(enumerate(dev), total=len(dev))
         for j, data_dev in pbar:
-            prob_logits = self.encoder(data_dev['input'], data_dev['input_arr_lengths'])
+            prob_logits = self.encoder(data_dev['input'], data_dev['input_arr_lengths'], args['pretrain'])
             labels = torch.tensor(data_dev['target'], dtype=int)
             predictions = torch.argmax(prob_logits, dim=-1)
             decoded_ents = [self.lang.index2ent[elm] for elm in predictions.tolist()]
