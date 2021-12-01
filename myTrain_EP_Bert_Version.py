@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
 from utils.config import *
-from models.EntityPrediction import *
+from models.EntityPrediction_Bert_Version import *
 
 '''
 Command:
@@ -15,7 +15,7 @@ if args['dataset']=='kvr':
     from utils.utils_Ent_kvr import *
     early_stop = 'BLEU'
 elif args['dataset']=='multiwoz':
-    from utils.utils_Ent_multiwoz_new_for_entity_prediction import *
+    from utils.utils_Ent_multiwoz_new_for_entity_prediction_Bert_Version import *
     early_stop = 'BLEU'
 elif args['dataset']=='sgd':
     from utils.utils_Ent_sgd_new import *
@@ -39,6 +39,7 @@ model = EntityPrediction(
     max_resp_len,
     args['path'],
     args['task'],
+    train.dataset.tokenizer,
     lr=float(args['learn']),
     n_layers=int(args['layer']),
     dropout=float(args['drop']))

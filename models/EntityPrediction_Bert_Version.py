@@ -1,10 +1,10 @@
 from torch.optim import lr_scheduler
 from torch import optim
-from models.modules_ep import *
+from models.modules_ep_Bert_Version import *
 
 
 class EntityPrediction(nn.Module):
-    def __init__(self, hidden_size, lang, max_resp_len, path, task, lr, n_layers, dropout):
+    def __init__(self, hidden_size, lang, max_resp_len, path, task, tokenizer, lr, n_layers, dropout):
         super(EntityPrediction, self).__init__()
         self.name = "EntityPrediction"
         self.task = task
@@ -27,7 +27,7 @@ class EntityPrediction(nn.Module):
                 print("MODEL {} LOADED".format(str(path)))
                 self.encoder = torch.load(str(path) + '/ep_enc.th', lambda storage, loc: storage)
         else:
-            self.encoder = ContextRNNEP(lang.n_words, lang.n_ents, hidden_size, dropout)
+            self.encoder = ContextRNNEP(lang.n_words, lang.n_ents, hidden_size, dropout, tokenizer)
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)

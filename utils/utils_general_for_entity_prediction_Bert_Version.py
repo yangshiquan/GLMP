@@ -101,6 +101,9 @@ class Dataset(data.Dataset):
         self.src_word2id = src_word2id
         self.trg_word2id = trg_word2id
         self.ent2id = ent2id
+        self.tokenizer = BertTokenizer.from_pretrained(BERT_PRETRAINED_MODEL,
+                                                       do_lower_case=bool(BERT_PRETRAINED_MODEL.endswith("uncased")))
+        self.tokenizer.add_tokens(list(ent2id.keys()))
 
     def __getitem__(self, index):
         """Returns one data pair (source and target)."""
@@ -122,6 +125,20 @@ class Dataset(data.Dataset):
     def __len__(self):
         return self.num_total_seqs
 
+    def trunc_seq(self, tokens, max_num_tokens=512):
+        """Truncates a pair of sequences to a maximum sequence length. Lifted from Google's BERT repo."""
+        l = 0
+        r = len(tokens)
+        trunc_tokens = list(tokens)
+        while r - l > max_num_tokens:
+            # We want to sometimes truncate from the front and sometimes from the
+            # back to add more randomness and avoid biases.
+            if random.random() < 0.5:
+                l += 1
+            else:
+                r -= 1
+        return trunc_tokens[l:r]
+
     def preprocess(self, sequence, word2id, trg=True):
         """Converts words to ids."""
         if trg:
@@ -129,15 +146,19 @@ class Dataset(data.Dataset):
             story = torch.Tensor(story).to(dtype=torch.long)
         else:
             story = []
-            for i, word_triple in enumerate(sequence):
-                if isinstance(word_triple, list):
-                    story.append([])
-                    for ii, word in enumerate(word_triple):
-                        temp = word2id[word] if word in word2id else UNK_token
-                        story[i].append(temp)
-                else:
-                    temp = word2id[word_triple] if word_triple in word2id else UNK_token
-                    story.append(temp)
+            sequence = [i for item in sequence for i in item]
+            truncated_sequence = self.trunc_seq(sequence)
+            for i, word_triple in enumerate(truncated_sequence):
+                seq_id = self.tokenizer.convert_tokens_to_ids(word_triple)
+                story.append(seq_id)
+                # if isinstance(word_triple, list):
+                #     story.append([])
+                #     for ii, word in enumerate(word_triple):
+                #         temp = word2id[word] if word in word2id else UNK_token
+                #         story[i].append(temp)
+                # else:
+                #     temp = word2id[word_triple] if word_triple in word2id else UNK_token
+                #     story.append(temp)
             story = torch.Tensor(story)
         return story
 
@@ -180,10 +201,12 @@ class Dataset(data.Dataset):
             item_info[key] = [d[key] for d in data]
 
         # merge sequences
-        input, input_arr_lengths = merge(item_info['input'], True)
+        # input, input_arr_lengths = merge(item_info['input'], True)
+        input, input_arr_lengths = merge(item_info['input'], False)
 
         # convert to contiguous and cuda
-        input = _cuda(input.transpose(0,1).contiguous())
+        # input = _cuda(input.transpose(0,1).contiguous())
+        input = _cuda(input.contiguous())
 
         # processed information
         data_info = {}
