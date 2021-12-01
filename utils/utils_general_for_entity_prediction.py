@@ -206,6 +206,7 @@ class Dataset(data.Dataset):
 
         # convert to contiguous and cuda
         # input = _cuda(input.transpose(0,1).contiguous())
+        input = _cuda(input.contiguous())
 
         # processed information
         data_info = {}
