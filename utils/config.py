@@ -13,6 +13,8 @@ else:
     USE_CUDA = False
 MAX_LENGTH = 10
 
+BERT_PRETRAINED_MODEL = "bert-base-uncased"
+
 parser = argparse.ArgumentParser(description='Seq_TO_Seq Dialogue bAbI')
 parser.add_argument('-ds','--dataset', help='dataset, babi or kvr', required=False)
 parser.add_argument('-t','--task', help='Task Number', required=False, default="")

@@ -39,6 +39,7 @@ model = EntityPrediction(
     max_resp_len,
     args['path'],
     args['task'],
+    train.dataset.tokenizer,
     lr=float(args['learn']),
     n_layers=int(args['layer']),
     dropout=float(args['drop']))
