@@ -50,7 +50,8 @@ class ContextRNNEP(nn.Module):
         batch_size, max_len = len(input_lengths), max(input_lengths)
         length_tensor = torch.tensor(input_lengths, dtype=torch.int64).unsqueeze(1).expand(batch_size, max_len)
         comparison_tensor = torch.arange(0, max_len).expand_as(length_tensor)
-        mask = torch.lt(comparison_tensor, length_tensor).long()
+        # mask = torch.lt(comparison_tensor, length_tensor).long()
+        mask = torch.lt(comparison_tensor, length_tensor).long().cuda()
         output = self.bert(input_seqs, mask)
         prob_logits = self.W3(self.W2(self.W(output[1])))
         return prob_logits
