@@ -76,7 +76,8 @@ class GLMP(nn.Module):
             paired_example = data['paired_example']
             cos_sim, labels = self.encoder(paired_example, data['paired_example_lengths'], args['pretrain'])
 
-            loss = self.criterion_ce(cos_sim, labels)
+            # loss = self.criterion_ce(cos_sim, labels)
+            loss = self.criterion_ce(cos_sim, labels.cuda())
 
             loss.backward()
 
