@@ -22,12 +22,12 @@ class GLMP(nn.Module):
         if path:
             if USE_CUDA:
                 print("MODEL {} LOADED".format(str(path)))
-                self.encoder = torch.load(str(path) + '/enc.th')
+                self.encoder = torch.load(str(path) + '/cl_enc.th')
             else:
                 print("MODEL {} LOADED".format(str(path)))
-                self.encoder = torch.load(str(path) + '/enc.th', lambda storage, loc: storage)
+                self.encoder = torch.load(str(path) + '/cl_enc.th', lambda storage, loc: storage)
         else:
-            self.encoder = ContextRNNCL(lang.n_words, hidden_size, dropout)
+            self.encoder = ContextRNNCL(lang.n_words, lang.n_ents, hidden_size, dropout)
 
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
@@ -45,7 +45,10 @@ class GLMP(nn.Module):
         return 'L:{:.2f}'.format(print_loss_avg)
 
     def save_model(self, dec_type):
-        name_data = "CL-PRETRAIN/" if self.task == '' else "BABI/"
+        if args['pretrain']:
+            name_data = "CL-PRETRAIN/" if self.task == '' else "BABI/"
+        else:
+            name_data = "CL-FINETUNE/" if self.task == '' else "BABI/"
         layer_info = str(self.n_layers)
         directory = 'save/GLMP-' + args["addName"] + name_data + str(self.task) + 'HDD' + str(
             self.hidden_size) + 'BSZ' + str(args['batch']) + 'DR' + str(self.dropout) + 'L' + layer_info + 'lr' + str(
@@ -68,20 +71,88 @@ class GLMP(nn.Module):
         # Zero gradients of both optimizers
         self.encoder_optimizer.zero_grad()
 
-        # Encode
-        paired_example = data['paired_example']
-        cos_sim, labels = self.encoder(paired_example, data['paired_example_lengths'])
+        if args['pretrain']:
+            # Encode
+            paired_example = data['paired_example']
+            cos_sim, labels = self.encoder(paired_example, data['paired_example_lengths'], args['pretrain'])
 
-        loss = self.criterion_ce(cos_sim, labels)
+            loss = self.criterion_ce(cos_sim, labels)
 
-        loss.backward()
+            loss.backward()
 
-        # Clip gradient norms
-        ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
+            # Clip gradient norms
+            ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
 
-        # Update parameters with optimizers
-        self.encoder_optimizer.step()
-        self.loss += loss.item()
+            # Update parameters with optimizers
+            self.encoder_optimizer.step()
+            self.loss += loss.item()
 
-        return loss
+            return loss
+        else:
+            # Encode
+            prob_logits = self.encoder(data['input'], data['input_arr_lengths'], args['pretrain'])
+
+            # loss = self.criterion_ce(prob_logits, torch.tensor(data['target'], dtype=int))
+            loss = self.criterion_ce(prob_logits, torch.tensor(data['target'], dtype=int).cuda())
+
+            loss.backward()
+
+            # Clip gradient norms
+            ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
+
+            # Update parameters with optimizers
+            self.encoder_optimizer.step()
+            self.loss += loss.item()
+
+            return loss
+
+    def evaluate(self, dev, matric_best, early_stop=None):
+        print("STARTING EVALUATION")
+        # Set to not-training mode to disable dropout
+        self.encoder.train(False)
+
+        # Add evaluation and metrics calculation logic here.
+        total, null_total, all = 0, 0, 0
+        total_correct, null_total_correct, all_correct = 0, 0, 0
+        pbar = tqdm(enumerate(dev), total=len(dev))
+        for j, data_dev in pbar:
+            prob_logits = self.encoder(data_dev['input'], data_dev['input_arr_lengths'])
+            labels = torch.tensor(data_dev['target'], dtype=int)
+            predictions = torch.argmax(prob_logits, dim=-1)
+            decoded_ents = [self.lang.index2ent[elm] for elm in predictions.tolist()]
+            golden_ents = [self.lang.index2ent[elm] for elm in labels.tolist()]
+            for idx, elm in enumerate(golden_ents):
+                if elm != "NULL":
+                    pred_ent = decoded_ents[idx]
+                    total += 1
+                    all += 1
+                    if elm == pred_ent:
+                        total_correct += 1
+                        all_correct += 1
+                else:
+                    null_total += 1
+                    all += 1
+                    pred_ent = decoded_ents[idx]
+                    if elm == pred_ent:
+                        null_total_correct += 1
+                        all_correct += 1
+
+            # correct = predictions.eq(labels.view_as(predictions).cuda()).double()
+            # total_correct += correct.sum()
+            # total += predictions.size(0)
+
+        # Set back to training mode
+        self.encoder.train(True)
+
+        acc_score = total_correct / float(total)
+        acc_score_null = null_total_correct / float(null_total)
+        acc_score_all = all_correct / float(all)
+        print("ACC SCORE (Tail): " + str(acc_score))
+        print("ACC SCORE (Head): " + str(acc_score_null))
+        print("ACC SCORE (All): " + str(acc_score_all))
+        if (acc_score >= matric_best):
+            self.save_model('ACC-{:.4f}'.format(acc_score))
+            print("MODEL SAVED")
+
+        return acc_score
 

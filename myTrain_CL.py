@@ -15,8 +15,10 @@ if args['dataset']=='kvr':
     from utils.utils_Ent_kvr import *
     early_stop = 'BLEU'
 elif args['dataset']=='multiwoz':
-    from utils.utils_Ent_multiwoz_new_for_contrastive_learning import *
-    early_stop = 'BLEU'
+    if args['pretrain']:
+        from utils.utils_Ent_multiwoz_new_for_contrastive_learning_new import *
+    else:
+        from utils.utils_Ent_multiwoz_new_for_entity_prediction import *
 elif args['dataset']=='sgd':
     from utils.utils_Ent_sgd_new import *
     early_stop = 'BLEU'
@@ -51,6 +53,22 @@ for epoch in range(200):
         loss = model.train_batch(data, int(args['clip']), epoch, reset=(i==0))
         pbar.set_description(model.print_loss())
 
-    model.save_model('EPOCH-' + str(epoch) + '-LOSS-' + str(loss.item()))
-    print("MODEL SAVED")
+    if args['pretrain']:
+        model.save_model('EPOCH-' + str(epoch) + '-LOSS-' + str(loss.item()))
+        print("MODEL SAVED")
+
+    if not args['pretrain']:
+        if ((epoch + 1) % int(args['evalp']) == 0):
+            acc = model.evaluate(dev, avg_best, early_stop)
+            model.scheduler.step(acc)
+
+            if (acc >= avg_best):
+                avg_best = acc
+                cnt = 0
+            else:
+                cnt += 1
+
+            if (cnt == 8 or (acc == 1.0 and early_stop == None)):
+                print("Ran out of patient, early stop...")
+                break
 
