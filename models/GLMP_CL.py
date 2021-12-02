@@ -29,6 +29,12 @@ class GLMP(nn.Module):
         else:
             self.encoder = ContextRNNCL(lang.n_words, lang.n_ents, hidden_size, dropout)
 
+        if not args['pretrain']:
+            for param in self.encoder.embedding.parameters():
+                param.requires_grad = False
+            for param in self.encoder.gru.parameters():
+                param.requires_grad = False
+
         # Initialize optimizers and criterion
         self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=lr)
         self.scheduler = lr_scheduler.ReduceLROnPlateau(self.encoder_optimizer, mode='max', factor=0.5, patience=1,
