@@ -35,7 +35,6 @@ model = GLMP(
 	max_resp_len,
 	args['path'],
 	"",
-	False,
 	lr=0.0,
 	n_layers=int(L),
 	dropout=0.0)
