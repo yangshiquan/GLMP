@@ -48,7 +48,7 @@ for j, data_test in pbar:
     _, prob_logits = model.encoder(data_test['gpt_input'], data_test['input_arr_lengths'])
     labels = data_test['response']
     predictions = torch.argmax(prob_logits, dim=-1)
-    decoded_sentences = [" ".join(train.tokenizer.convert_ids_to_tokens(elm)) for elm in predictions.tolist()]
+    decoded_sentences = [" ".join(train.dataset.tokenizer.convert_ids_to_tokens(elm)) for elm in predictions.tolist()]
     # golden_sentences = [" ".join(self.tokenizer.convert_ids_to_tokens(elm)) for elm in labels.tolist()]
     for sent in decoded_sentences:
         sent_new = ' '.join([sent.split('<|endofresponse|>')[0], "<|endofresponse|>"])
@@ -57,13 +57,13 @@ for j, data_test in pbar:
             tmp = tmp.strip(' ,.')
             tmp = tmp.replace('<|endofresponse>|', '')
             tmp = tmp.replace('<|endoftext|>', '')
-            tokens = train.tokenizer.encode(tmp)
+            tokens = train.dataset.tokenizer.encode(tmp)
             new_tokens = []
             for tok in tokens:
-                if tok in train.tokenizer.encode(train.tokenizer._eos_token):
+                if tok in train.dataset.tokenizer.encode(train.tokenizer._eos_token):
                     continue
                 new_tokens.append(tok)
-            response = train.tokenizer.decode(new_tokens).strip(' ,.')
+            response = train.dataset.tokenizer.decode(new_tokens).strip(' ,.')
         else:
             response = ''
         hyp.append(response)
@@ -73,7 +73,7 @@ for j, data_test in pbar:
 
     gpt_input = data_test['gpt_input'].tolist()
     for idx, context in enumerate(gpt_input):
-        context_text = train.tokenizer.convert_ids_to_tokens(context)
+        context_text = train.dataset.tokenizer.convert_ids_to_tokens(context)
         tmp = context_text.split('<|context|>')[1].split('<|endofcontext|>')[0]
         tmp = tmp.replace('<|endoftext|>', '')
         context_arr.append(tmp)
