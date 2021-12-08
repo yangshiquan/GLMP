@@ -73,7 +73,7 @@ for j, data_test in pbar:
 
     gpt_input = data_test['gpt_input'].tolist()
     for idx, context in enumerate(gpt_input):
-        context_text = train.dataset.tokenizer.convert_ids_to_tokens(context)
+        context_text = ' '.join(train.dataset.tokenizer.convert_ids_to_tokens(context))
         tmp = context_text.split('<|context|>')[1].split('<|endofcontext|>')[0]
         tmp = tmp.replace('<|endoftext|>', '')
         context_arr.append(tmp)
