@@ -89,12 +89,12 @@ def generate_template(global_entity, sentence, sent_ent, kb_arr, domain):
 
 
 def prepare_data_seq(task, batch_size=100):
-    file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    # file_train = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/train/train_utterances_w_kb_w_gold_w_bias.txt'
-    # file_dev = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/dev/dev_utterances_w_kb_w_gold.txt'
-    # file_test = '/home/yimeng/shiquan/debiasing-glmp/GLMP/data/MultiWOZ_2.2/test/test_utterances_w_kb_w_gold.txt'
+    # file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    # file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    # file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
+    file_train = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/train_utterances_w_kb_w_gold.txt'
+    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold.txt'
+    file_test = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/test_utterances_w_kb_w_gold.txt'
 
     lang = Lang()
 
