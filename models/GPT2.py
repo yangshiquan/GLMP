@@ -98,21 +98,37 @@ class GPT2(nn.Module):
         hyp, ref = [], []
         for j, data_dev in pbar:
             _, prob_logits = self.encoder(data_dev['gpt_input'], data_dev['input_arr_lengths'])
-            labels = torch.tensor(data_dev['gpt_input'], dtype=int)
+            labels = data_dev['response']
             predictions = torch.argmax(prob_logits, dim=-1)
             decoded_sentences = [" ".join(self.tokenizer.convert_ids_to_tokens(elm)) for elm in predictions.tolist()]
-            golden_sentences = [" ".join(self.tokenizer.convert_ids_to_tokens(elm)) for elm in labels.tolist()]
-            for elm in decoded_sentences:
-                hyp.append(elm)
-            for elm in golden_sentences:
-                ref.append(elm)
+            # golden_sentences = [" ".join(self.tokenizer.convert_ids_to_tokens(elm)) for elm in labels.tolist()]
+            for sent in decoded_sentences:
+                sent_new = ' '.join([sent.split('<|endofresponse|>')[0], "<|endofresponse|>"])
+                if '<|response|>' in sent_new:
+                    tmp = sent_new.split('<|response|>')[-1]
+                    tmp = tmp.strip(' ,.')
+                    tmp = tmp.replace('<|endofresponse>|', '')
+                    tmp = tmp.replace('<|endoftext|>', '')
+                    tokens = self.tokenizer.encode(tmp)
+                    new_tokens = []
+                    for tok in tokens:
+                        if tok in self.tokenizer.encode(self.tokenizer._eos_token):
+                            continue
+                        new_tokens.append(tok)
+                    response = self.tokenizer.decode(new_tokens).strip(' ,.')
+                else:
+                    response = ''
+                hyp.append(response)
+            for sent in labels:
+                tmp = sent.strip()
+                ref.append(tmp)
 
         # Set back to training mode
         self.encoder.train(True)
 
         bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
         print("BLEU SCORE:\t" + str(bleu_score))
-        # if (bleu_score >= matric_best):
-        self.save_model('BLEU-' + str(bleu_score))
-        print("MODEL SAVED")
+        if (bleu_score >= matric_best):
+            self.save_model('BLEU-' + str(bleu_score))
+            print("MODEL SAVED")
         return bleu_score

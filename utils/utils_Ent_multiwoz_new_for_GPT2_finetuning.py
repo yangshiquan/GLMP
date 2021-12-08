@@ -37,7 +37,8 @@ def read_langs(file_name, lang, task, max_line=None):
 
                     data_detail = {
                         'gpt_input': gpt_input,  # $$$$ is NULL token
-                        'kb_arr_plain': list(kb_arr_plain)
+                        'kb_arr_plain': list(kb_arr_plain),
+                        'response': r
                     }
                     data.append(data_detail)
 
