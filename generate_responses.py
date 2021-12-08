@@ -45,7 +45,7 @@ pbar = tqdm(enumerate(test), total=len(test))
 hyp, ref = [], []
 context_arr = []
 for j, data_test in pbar:
-    _, prob_logits = model(data_test['gpt_input'], data_test['input_arr_lengths'])
+    _, prob_logits = model.encoder(data_test['gpt_input'], data_test['input_arr_lengths'])
     labels = data_test['response']
     predictions = torch.argmax(prob_logits, dim=-1)
     decoded_sentences = [" ".join(train.tokenizer.convert_ids_to_tokens(elm)) for elm in predictions.tolist()]
