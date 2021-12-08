@@ -2,7 +2,6 @@ from utils.config import *
 from models.GPT2 import *
 import json
 
-USE_CUDA = False
 
 directory = args['path'].split("/")
 task = directory[2].split('HDD')[0]
