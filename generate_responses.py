@@ -60,7 +60,7 @@ for j, data_test in pbar:
             tokens = train.dataset.tokenizer.encode(tmp)
             new_tokens = []
             for tok in tokens:
-                if tok in train.dataset.tokenizer.encode(train.tokenizer._eos_token):
+                if tok in train.dataset.tokenizer.encode(train.dataset.tokenizer._eos_token):
                     continue
                 new_tokens.append(tok)
             response = train.dataset.tokenizer.decode(new_tokens).strip(' ,.')
