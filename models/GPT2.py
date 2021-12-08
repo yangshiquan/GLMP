@@ -74,7 +74,7 @@ class GPT2(nn.Module):
         # Encode
         loss, _ = self.encoder(data['gpt_input'], data['input_arr_lengths'])
 
-        # loss.backward()
+        loss.backward()
 
         # Clip gradient norms
         ec = torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), clip)
