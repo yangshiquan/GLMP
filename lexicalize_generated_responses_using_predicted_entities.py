@@ -19,7 +19,7 @@ for sample_id in generated_responses.keys():
         tokens = generated_response.split(" ")
         new_tokens = []
         for idx, tok in enumerate(tokens):
-            pred_ent = predicted_entities[sample_id][turn_id][str(idx)]
+            pred_ent = predicted_entities[sample_id][turn_id][str(idx)]['predicted_entity']
             if "@" in tok:
                 new_tokens.append(pred_ent)
             else:
