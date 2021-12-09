@@ -46,6 +46,7 @@ for j, data_test in pbar:
     sample_ids = data_test['sample_id']
     turn_cnts = data_test['turn_cnt']
     timesteps = data_test['timestep']
+    prob_logits[:, lang.ent2index['NULL']] = -1000000.0
     predictions = torch.argmax(prob_logits, dim=-1)
     decoded_ents = [lang.index2ent[elm] for elm in predictions.tolist()]
     golden_ents = [lang.index2ent[elm] for elm in labels.tolist()]
