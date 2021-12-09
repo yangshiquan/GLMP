@@ -38,7 +38,8 @@ def read_langs(file_name, lang, task, max_line=None):
                         context_arr += gen_u
                         r_list = generated_response.split(" ")
                         for idx, token in enumerate(r_list):
-                            inputs = context_arr + gen_r_new[:idx]
+                            # inputs = context_arr + gen_r_new[:idx]
+                            inputs = context_arr
                             if token in gold_ent:
                                 target = token
                             else:
