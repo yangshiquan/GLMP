@@ -55,7 +55,7 @@ for j, data_test in pbar:
         if '<|response|>' in sent_new:
             tmp = sent_new.split('<|response|>')[-1]
             tmp = tmp.strip(' ,.')
-            tmp = tmp.replace('<|endofresponse>|', '')
+            tmp = tmp.replace('<|endofresponse|>', '')
             tmp = tmp.replace('<|endoftext|>', '')
             tokens = train.dataset.tokenizer.encode(tmp)
             new_tokens = []
