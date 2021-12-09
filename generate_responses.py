@@ -57,13 +57,14 @@ for j, data_test in pbar:
             tmp = tmp.strip(' ,.')
             tmp = tmp.replace('<|endofresponse|>', '')
             tmp = tmp.replace('<|endoftext|>', '')
-            tokens = train.dataset.tokenizer.encode(tmp)
-            new_tokens = []
-            for tok in tokens:
-                if tok in train.dataset.tokenizer.encode(train.dataset.tokenizer._eos_token):
-                    continue
-                new_tokens.append(tok)
-            response = train.dataset.tokenizer.decode(new_tokens).strip(' ,.')
+            # tokens = train.dataset.tokenizer.encode(tmp)
+            # new_tokens = []
+            # for tok in tokens:
+            #     if tok in train.dataset.tokenizer.encode(train.dataset.tokenizer._eos_token):
+            #         continue
+            #     new_tokens.append(tok)
+            # response = train.dataset.tokenizer.decode(new_tokens).strip(' ,.')
+            response = tmp
         else:
             response = ''
         hyp.append(response)
