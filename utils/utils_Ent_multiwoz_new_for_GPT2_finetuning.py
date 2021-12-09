@@ -13,7 +13,7 @@ def read_langs(file_name, lang, task, max_line=None):
         global_entity = json.load(f)
 
     with open(file_name) as fin:
-        cnt_lin, sample_counter, turn_cnt = 0, 1, 1
+        cnt_lin, sample_counter, turn_cnt = 0, 0, 1
         for line in fin:
             line = line.strip()
             if line:
@@ -38,14 +38,15 @@ def read_langs(file_name, lang, task, max_line=None):
                     data_detail = {
                         'gpt_input': gpt_input,  # $$$$ is NULL token
                         'kb_arr_plain': list(kb_arr_plain),
-                        'response': r
+                        'response': r,
+                        'sample_id': int(sample_counter),
+                        'turn_cnt': int(turn_cnt)
                     }
                     data.append(data_detail)
 
                     dialogue_history = dialogue_history + " <|system|> " + r
                     if max_resp_len < len(r.split()):
                         max_resp_len = len(r.split())
-                    sample_counter += 1
                     turn_cnt += 1
                 else:
                     # deal with knowledge graph
@@ -59,6 +60,7 @@ def read_langs(file_name, lang, task, max_line=None):
             else:
                 cnt_lin += 1
                 turn_cnt = 1
+                sample_counter += 1
                 kb_arr_plain = []
                 if (max_line and cnt_lin >= max_line):
                     break
@@ -95,7 +97,7 @@ def prepare_data_seq(task, batch_size=100):
     # file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
     file_train = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/train_utterances_w_kb_w_gold.txt'
     file_dev = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold.txt'
-    file_test = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/test_utterances_w_kb_w_gold.txt'
+    file_test = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_only_restaurant.txt'
 
     lang = Lang()
 

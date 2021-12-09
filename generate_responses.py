@@ -47,10 +47,12 @@ context_arr = []
 for j, data_test in pbar:
     _, prob_logits = model.encoder(data_test['gpt_input'], data_test['input_arr_lengths'])
     labels = data_test['response']
+    sample_ids = data_test['sample_id']
+    turn_cnts = data_test['turn_cnt']
     predictions = torch.argmax(prob_logits, dim=-1)
     decoded_sentences = [" ".join(train.dataset.tokenizer.convert_ids_to_tokens(elm)) for elm in predictions.tolist()]
     # golden_sentences = [" ".join(self.tokenizer.convert_ids_to_tokens(elm)) for elm in labels.tolist()]
-    for sent in decoded_sentences:
+    for idx, sent in enumerate(decoded_sentences):
         sent_new = ' '.join([sent.split('<|endofresponse|>')[0], "<|endofresponse|>"])
         if '<|response|>' in sent_new:
             tmp = sent_new.split('<|response|>')[-1]
@@ -67,29 +69,41 @@ for j, data_test in pbar:
             response = tmp
         else:
             response = ''
-        hyp.append(response)
-    for sent in labels:
+        sample_id = sample_ids[idx]
+        turn_cnt = turn_cnts[idx]
+        hyp.append((sample_id, turn_cnt, response))
+    for idx, sent in enumerate(labels):
+        sample_id = sample_ids[idx]
+        turn_cnt = turn_cnts[idx]
         tmp = sent.strip()
-        ref.append(tmp)
+        ref.append((sample_id, turn_cnt, tmp))
 
     gpt_input = data_test['gpt_input'].tolist()
     for idx, context in enumerate(gpt_input):
         context_text = ' '.join(train.dataset.tokenizer.convert_ids_to_tokens(context))
         tmp = context_text.split('<|context|>')[1].split('<|endofcontext|>')[0]
         tmp = tmp.replace('<|endoftext|>', '')
-        context_arr.append(tmp)
+        sample_id = sample_ids[idx]
+        turn_cnt = turn_cnts[idx]
+        context_arr.append((sample_id, turn_cnt, tmp))
 
 dict = {}
 assert len(context_arr) == len(ref)
 assert len(context_arr) == len(hyp)
 for idx, elm in enumerate(context_arr):
-    dict[idx] = {
-        'context_arr': elm,
-        'gold_response': ref[idx],
-        'generated_response': hyp[idx]
+    sample_id, turn_cnt, sentence = elm
+    if sample_id not in dict:
+        dict[sample_id] = {}
+    if turn_cnt not in dict[sample_id]:
+        dict[sample_id][turn_cnt] = {}
+    dict[sample_id][turn_cnt] = {
+        'context_arr': sentence,
+        'gold_response': ref[idx][2],
+        'generated_response': hyp[idx][2]
     }
 
-file_path = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses.json"
+# file_path = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses.json"
+file_path = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses.json"
 with open(file_path, "w") as f:
     json_str = json.dumps(dict, indent=4)
     f.write(json_str)
@@ -97,5 +111,7 @@ with open(file_path, "w") as f:
 # Set back to training mode
 model.train(True)
 
-bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
+hyp_t = [elm[2] for elm in hyp]
+ref_t = [elm[2] for elm in ref]
+bleu_score = moses_multi_bleu(np.array(hyp_t), np.array(ref_t), lowercase=True)
 print("BLEU SCORE:\t" + str(bleu_score))
