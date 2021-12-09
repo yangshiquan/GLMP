@@ -31,9 +31,10 @@ def read_langs(file_name, lang, task, max_line=None):
                     else:
                         dialogue_history = dialogue_history + " <|user|> " + u
 
-                    gold_ent = ast.literal_eval(gold_ent)
-                    sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
-                    gpt_input = dialogue_history + " <|endofcontext|> <|response|> " + sketch_response + " <|endofresponse|> <|endoftext|>"
+                    # gold_ent = ast.literal_eval(gold_ent)
+                    # sketch_response = generate_template(global_entity, r, gold_ent, kb_arr, task_type)
+                    # gpt_input = dialogue_history + " <|endofcontext|> <|response|> " + sketch_response + " <|endofresponse|> <|endoftext|>"
+                    gpt_input = dialogue_history + " <|endofcontext|> <|response|> " + r + " <|endofresponse|> <|endoftext|>"
 
                     data_detail = {
                         'gpt_input': gpt_input,  # $$$$ is NULL token
@@ -95,8 +96,8 @@ def prepare_data_seq(task, batch_size=100):
     # file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
     # file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
     # file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    file_train = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/train_utterances_w_kb_w_gold.txt'
-    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold.txt'
+    file_train = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_leave_out_restaurant.txt'
+    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_leave_out_restaurant.txt'
     file_test = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_only_restaurant.txt'
 
     lang = Lang()
