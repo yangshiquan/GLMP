@@ -9,6 +9,7 @@ L = directory[2].split('L')[1].split('lr')[0]
 decoder = directory[1]
 BSZ = int(directory[2].split('BSZ')[1].split('DR')[0])
 DS = 'sgd'
+args['dataset'] = DS
 
 if DS=='kvr':
     from utils.utils_Ent_kvr_new_for_entity_prediction_at_testing_stage import *
