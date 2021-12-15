@@ -91,7 +91,7 @@ def read_langs(file_name, lang, task, max_line=None):
                     if line_list[2] not in kb_arr_plain:
                         kb_arr_plain.append(line_list[2])
                     kb_info = generate_memory(r, "", str(nid))
-                    context_arr = kb_info + context_arr
+                    # context_arr = kb_info + context_arr
                     kb_arr += kb_info
             else:
                 cnt_lin += 1
