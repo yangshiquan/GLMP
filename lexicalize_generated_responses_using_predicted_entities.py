@@ -1,6 +1,6 @@
 import json
 
-DS = "sgd"
+DS = "kvr"
 # generated_responses_file = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses.json"
 # predicted_entities_file = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_predicted_entities.json"
 generated_responses_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_{}.json".format(DS)
