@@ -73,7 +73,7 @@ def read_langs(file_name, lang, task, max_line=None):
                         'ent_idx_wet':list(set(ent_idx_wet)),
                         'conv_arr': list(conv_arr),
                         'conv_arr_plain': list(conv_arr_plain),
-                        'kb_arr': list(kb_arr + [['$$$$'] * MEM_TOKEN_SIZE]),
+                        'kb_arr': list([['$$$$'] * MEM_TOKEN_SIZE]),
                         'sample_id': int(sample_counter),
                         'turn_id': int(turn_cnt),
                         'domain': task_type,
