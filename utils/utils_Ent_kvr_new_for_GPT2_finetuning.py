@@ -161,9 +161,9 @@ def prepare_data_seq(task, batch_size=100):
     # file_train = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
     # file_dev = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
     # file_test = '/Users/shiquan/PycharmProjects/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_w_bias_p=0_5_sm.txt'
-    file_train = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/train_utterances_w_kb_w_gold_leave_out_restaurant.txt'
-    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold_leave_out_restaurant.txt'
-    file_test = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/test_utterances_w_kb_w_gold_only_restaurant.txt'
+    file_train = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/train_utterances_w_kb_w_gold.txt'
+    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/dev_utterances_w_kb_w_gold.txt'
+    file_test = '/home/shiquan/Projects/tmp/GLMP/data/multiwoz/test_utterances_w_kb_w_gold.txt'
 
     lang = Lang()
     pair_train, train_max_len = read_langs_multiwoz(file_train, lang, 'train', max_line=None)
