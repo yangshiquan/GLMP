@@ -138,7 +138,10 @@ class Dataset(data.Dataset):
                 else:
                     temp = word2id[word_triple] if word_triple in word2id else UNK_token
                     story.append(temp)
-            story = torch.Tensor(story)
+            try:
+                story = torch.Tensor(story)
+            except:
+                print(sequence)
         return story
 
     def collate_fn(self, data):
