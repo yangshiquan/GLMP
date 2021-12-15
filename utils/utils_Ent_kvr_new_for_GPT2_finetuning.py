@@ -52,6 +52,8 @@ def read_langs(file_name, lang, task, max_line=None):
                 else:
                     # deal with knowledge graph
                     line_list = line.split(" ")
+                    if len(line_list) < 3:
+                        continue
                     if line_list[0] not in kb_arr_plain:
                         kb_arr_plain.append(line_list[0])
                     if line_list[1] not in kb_arr_plain:
