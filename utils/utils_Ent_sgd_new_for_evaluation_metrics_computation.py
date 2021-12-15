@@ -85,7 +85,7 @@ def read_langs(file_name, lang, task, max_line=None):
                         'conv_arr_plain': list(conv_arr_plain),
                         'kb_arr': list(kb_arr + [['$$$$'] * MEM_TOKEN_SIZE]),
                         'sample_id': int(sample_counter),
-                        'turn_cnt': int(turn_cnt),
+                        'turn_id': int(turn_cnt),
                         'domain': task_type,
                         'kb_arr_plain': list(kb_arr_plain + ["[NULL]"]),
                         'ent_labels': ent_labels,
