@@ -109,13 +109,14 @@ class GPT2(nn.Module):
                     tmp = tmp.strip(' ,.')
                     tmp = tmp.replace('<|endofresponse>|', '')
                     tmp = tmp.replace('<|endoftext|>', '')
-                    tokens = self.tokenizer.encode(tmp)
-                    new_tokens = []
-                    for tok in tokens:
-                        if tok in self.tokenizer.encode(self.tokenizer._eos_token):
-                            continue
-                        new_tokens.append(tok)
-                    response = self.tokenizer.decode(new_tokens).strip(' ,.')
+                    # tokens = self.tokenizer.encode(tmp)
+                    # new_tokens = []
+                    # for tok in tokens:
+                    #     if tok in self.tokenizer.encode(self.tokenizer._eos_token):
+                    #         continue
+                    #     new_tokens.append(tok)
+                    # response = self.tokenizer.decode(new_tokens).strip(' ,.')
+                    response = tmp
                 else:
                     response = ''
                 hyp.append(response)
