@@ -169,9 +169,9 @@ def prepare_data_seq(task, batch_size=100):
     pair_train, train_max_len = read_langs_multiwoz(file_train, lang, 'train', max_line=None)
     train = get_seq(pair_train, lang, batch_size, True)
 
-    file_train = 'data/KVR/train_modified.txt'
-    file_dev = 'data/KVR/dev_modified.txt'
-    file_test = 'data/KVR/test_modified.txt'
+    file_train = '/home/shiquan/Projects/tmp/GLMP/data/KVR/train_modified.txt'
+    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/KVR/dev_modified.txt'
+    file_test = '/home/shiquan/Projects/tmp/GLMP/data/KVR/test_modified.txt'
 
     pair_train, train_max_len = read_langs(file_train, lang, 'train', max_line=None)
     pair_dev, dev_max_len = read_langs(file_dev, lang, 'dev', max_line=None)

@@ -126,9 +126,9 @@ def generate_memory(sent, speaker, time):
 
 
 def prepare_data_seq(task, batch_size=100):
-    file_train = 'data/KVR/train_modified.txt'
-    file_dev = 'data/KVR/dev_modified.txt'
-    file_test = 'data/KVR/test_modified.txt'
+    file_train = '/home/shiquan/Projects/tmp/GLMP/data/KVR/train_modified.txt'
+    file_dev = '/home/shiquan/Projects/tmp/GLMP/data/KVR/dev_modified.txt'
+    file_test = '/home/shiquan/Projects/tmp/GLMP/data/KVR/test_modified.txt'
 
     lang = Lang()
 
