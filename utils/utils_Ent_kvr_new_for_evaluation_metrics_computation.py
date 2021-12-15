@@ -78,7 +78,7 @@ def read_langs(file_name, lang, task, max_line=None):
                         'turn_id': int(turn_cnt),
                         'domain': task_type,
                         'kb_arr_plain': list(kb_arr_plain + ["[NULL]"]),
-                        'ent_labels': ent_labels,
+                        'ent_labels': 0,
                         'kb_arr_new': list(kb_arr_plain + ["[NULL]"]),
                     }
                     data.append(data_detail)
