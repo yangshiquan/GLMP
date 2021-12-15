@@ -9,14 +9,14 @@ HDD = directory[2].split('HDD')[1].split('BSZ')[0]
 L = directory[2].split('L')[1].split('lr')[0]
 decoder = directory[1]
 BSZ = int(directory[2].split('BSZ')[1].split('DR')[0])
-DS = 'multiwoz'
+DS = 'sgd'
 
 if DS=='kvr':
-    from utils.utils_Ent_kvr import *
+    from utils.utils_Ent_kvr_new_for_GPT2_finetuning import *
 elif DS=='multiwoz':
     from utils.utils_Ent_multiwoz_new_for_GPT2_finetuning import *
 elif DS=='sgd':
-    from utils.utils_Ent_sgd_new import *
+    from utils.utils_Ent_sgd_new_for_GPT2_finetuning import *
 else:
     print("You need to provide the --dataset information")
 
@@ -103,7 +103,7 @@ for idx, elm in enumerate(context_arr):
     }
 
 # file_path = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses.json"
-file_path = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses.json"
+file_path = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_{}.json".format(DS)
 with open(file_path, "w") as f:
     json_str = json.dumps(dict, indent=4)
     f.write(json_str)

@@ -2,14 +2,15 @@ from utils.measures import moses_multi_bleu
 import numpy as np
 
 
-DS = 'multiwoz'
+# DS = 'multiwoz'
+DS = 'sgd'
 
 if DS=='kvr':
-    from utils.utils_Ent_kvr import *
+    from utils.utils_Ent_kvr_new_for_evaluation_metrics_computation import *
 elif DS=='multiwoz':
     from utils.utils_Ent_multiwoz_new_for_evaluation_metrics_computation import *
 elif DS=='sgd':
-    from utils.utils_Ent_sgd_new import *
+    from utils.utils_Ent_sgd_new_for_evaluation_metrics_computation import *
 else:
     print("You need to provide the --dataset information")
 
@@ -73,8 +74,17 @@ if DS == 'multiwoz':
         global_entity_list = list(set(global_entity_list))
 
 
+if DS == 'sgd':
+    with open('data/sgd/sgd_entities.json') as f:
+        global_entity = json.load(f)
+        global_entity_list = []
+        for key in global_entity.keys():
+            global_entity_list += [item.lower().replace(' ', '_') for item in global_entity[key]]
+        global_entity_list = list(set(global_entity_list))
+
+
 # lex_resp_file = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses_lex.json"
-lex_resp_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_lex.json"
+lex_resp_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_lex_{}.json".format(DS)
 with open(lex_resp_file, "r") as f:
     lex_responses = json.load(f)
 
@@ -128,6 +138,32 @@ for j, data_test in pbar:
                                                 global_entity_list, data_test['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
             F1_train_pred += single_f1
             F1_train_count += count
+        elif DS == 'sgd':
+            # compute F1 SCORE
+            single_f1, count = compute_prf(data_test['ent_index'][bi], pred_sent.split(),
+                                                global_entity_list, data_test['kb_arr_plain'][bi])  # data[14]: ent_index, data[9]: kb_arr_plain.
+            F1_pred += single_f1
+            F1_count += count
+            single_f1, count = compute_prf(data_test['ent_idx_travel'][bi], pred_sent.split(),
+                                                global_entity_list, data_test['kb_arr_plain'][bi])  # data[28]: ent_idx_restaurant, data[9]: kb_arr_plain.
+            F1_travel_pred += single_f1
+            F1_travel_count += count
+            single_f1, count = compute_prf(data_test['ent_idx_hotel'][bi], pred_sent.split(),
+                                                global_entity_list, data_test['kb_arr_plain'][bi])  # data[29]: ent_idx_hotel, data[9]: kb_arr_plain.
+            F1_hotel_pred += single_f1
+            F1_hotel_count += count
+            single_f1, count = compute_prf(data_test['ent_idx_events'][bi], pred_sent.split(),
+                                                global_entity_list, data_test['kb_arr_plain'][bi])  # data[30]: ent_idx_attraction, data[9]: kb_arr_plain.
+            F1_events_pred += single_f1
+            F1_events_count += count
+            single_f1, count = compute_prf(data_test['ent_idx_weather'][bi], pred_sent.split(),
+                                                global_entity_list, data_test['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+            F1_weather_pred += single_f1
+            F1_weather_count += count
+            single_f1, count = compute_prf(data_test['ent_idx_others'][bi], pred_sent.split(),
+                                                global_entity_list, data_test['kb_arr_plain'][bi])  # data[31]: ent_idx_train, data[9]: kb_arr_plain.
+            F1_others_pred += single_f1
+            F1_others_count += count
 
 
 bleu_score = moses_multi_bleu(np.array(hyp), np.array(ref), lowercase=True)
@@ -155,3 +191,18 @@ elif DS == 'multiwoz':
     print("Attraction F1:\t{:.4f}".format(attraction_f1))
     print("Train F1:\t{:.4f}".format(train_f1))
     print("BLEU SCORE:\t" + str(bleu_score))
+elif DS == 'sgd':
+    F1_score = F1_pred / float(F1_count)
+    travel_f1 = 0.0 if F1_travel_count == 0 else (F1_restaurant_pred / float(F1_travel_count))
+    hotel_f1 = 0.0 if F1_hotel_count == 0 else (F1_hotel_pred / float(F1_hotel_count))
+    events_f1 = 0.0 if F1_events_count == 0 else (F1_events_pred / float(F1_events_count))
+    weather_f1 = 0.0 if F1_weather_count == 0 else (F1_weather_pred / float(F1_weather_count))
+    others_f1 = 0.0 if F1_others_count == 0 else (F1_others_pred / float(F1_others_count))
+    print("F1 SCORE:\t{:.4f}".format(F1_pred / float(F1_count)))
+    print("Travel F1:\t{:.4f}".format(travel_f1))
+    print("Hotel F1:\t{:.4f}".format(hotel_f1))
+    print("Events F1:\t{:.4f}".format(events_f1))
+    print("Weather F1:\t{:.4f}".format(weather_f1))
+    print("Others F1:\t{:.4f}".format(others_f1))
+    print("BLEU SCORE:\t" + str(bleu_score))
+

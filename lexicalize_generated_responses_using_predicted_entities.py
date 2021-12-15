@@ -1,10 +1,10 @@
 import json
 
-
+DS = "sgd"
 # generated_responses_file = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses.json"
 # predicted_entities_file = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_predicted_entities.json"
-generated_responses_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses.json"
-predicted_entities_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_predicted_entities.json"
+generated_responses_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_{}.json".format(DS)
+predicted_entities_file = "/home/shiquan/Projects/tmp/GLMP/outputs/test_predicted_entities_{}.json".format(DS)
 
 with open(generated_responses_file, "r") as f:
     generated_responses = json.load(f)
@@ -37,7 +37,7 @@ for sample_id in generated_responses.keys():
         }
 
 # file_path = "/Users/shiquan/PycharmProjects/GLMP/outputs/test_generated_responses_lex.json"
-file_path = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_lex.json"
+file_path = "/home/shiquan/Projects/tmp/GLMP/outputs/test_generated_responses_lex_{}.json".format(DS)
 with open(file_path, "w") as f:
     json_str = json.dumps(dict, indent=4)
     f.write(json_str)
