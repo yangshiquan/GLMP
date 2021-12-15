@@ -91,9 +91,6 @@ def read_langs(file_name, lang, task, max_line=None):
                     if line_list[2] not in kb_arr_plain:
                         kb_arr_plain.append(line_list[2])
                     kb_info = generate_memory(r, "", str(nid))
-                    if len(kb_info[0]) > 4:
-                        print(kb_info)
-                        print(r)
                     context_arr = kb_info + context_arr
                     kb_arr += kb_info
             else:
@@ -198,14 +195,13 @@ def read_langs_multiwoz(file_name, lang, task, max_line=None):
                     # deal with knowledge graph
                     r = line
                     line_list = line.split(" ")
+                    if len(line_list) < 3:
+                        continue
                     if line_list[0] not in kb_arr_plain:
                         kb_arr_plain.append(line_list[0])
                     if line_list[2] not in kb_arr_plain:
                         kb_arr_plain.append(line_list[2])
                     kb_info = generate_memory(r, "", str(nid))
-                    if len(kb_info[0]) > 4:
-                        print(kb_info)
-                        print(r)
                     context_arr = kb_info + context_arr
                     kb_arr += kb_info
             else:
