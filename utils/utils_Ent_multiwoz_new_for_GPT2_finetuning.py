@@ -1,5 +1,6 @@
 import json
 import ast
+import pandas as pd
 
 from utils.utils_general_for_gpt_finetuning import *
 
@@ -12,8 +13,12 @@ def read_langs(file_name, lang, task, max_line=None):
     with open('data/multiwoz/multiwoz_entities.json') as f:
         global_entity = json.load(f)
 
+    filtered_ids = pd.read_csv('/home/shiquan/Projects/afline_training/GLMP/data/MultiWOZ_2.2/train/aflite_filtered_ids_leave_out_restaurant_20000_50_0.9.csv')
+    df = pd.DataFrame(filtered_ids)
+    filtered_ids = df['sample_id'].tolist()
+
     with open(file_name) as fin:
-        cnt_lin, sample_counter, turn_cnt = 0, 0, 1
+        cnt_lin, sample_counter, turn_cnt, sample_cnt_for_filtering = 0, 0, 1, 0
         for line in fin:
             line = line.strip()
             if line:
@@ -24,6 +29,9 @@ def read_langs(file_name, lang, task, max_line=None):
 
                 nid, line = line.split(' ', 1)
                 if '\t' in line:
+                    if sample_cnt_for_filtering in filtered_ids and task == 'train':
+                        sample_cnt_for_filtering += 1
+                        continue
                     # deal with dialogue history
                     u, r, gold_ent = line.split('\t')
                     if turn_cnt == 1:
@@ -49,6 +57,7 @@ def read_langs(file_name, lang, task, max_line=None):
                     if max_resp_len < len(r.split()):
                         max_resp_len = len(r.split())
                     turn_cnt += 1
+                    sample_cnt_for_filtering += 1
                 else:
                     # deal with knowledge graph
                     line_list = line.split(" ")
